@@ -1,4 +1,4 @@
-const roleUpgrader = require('role.upgrader');
+const roleBuilder = require('role.builder');
 
 const roleCourier = {
     run(creep) {
@@ -42,7 +42,7 @@ const roleCourier = {
                     }
                 }
             } else {
-                roleUpgrader.run(creep);
+                roleBuilder.run(creep);
             }
             
         } else {

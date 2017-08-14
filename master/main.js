@@ -48,16 +48,16 @@ module.exports.loop = function loop() {
         console.log(Game.time);
         
         if (count.harvester === 0 && count.harvestersBig === 0 && count.couriers === 0) {
-            create({ work: 1, carry: 1, move: 1 }, 'harvester', `H_${Game.time}`);
+            Game.spawns.Spawn1.createCreep([WORK, CARRY, MOVE], `H_${Game.time}`, { role: 'harvester' });
             
         } else if (count.harvestersBig === 0) {
-            create({ work: 2, move: 1 }, 'static-harvester', `SH_${Game.time}`);
+           Game.spawns.Spawn1.createCreep([WORK, MOVE], `H_${Game.time}`, { role: 'static-harvester' });
             
         } else if (count.couriers < 2) {
             create({ work: 1, carry: 1, move: 1 }, 'courier', `C_${Game.time}`);
             
         } else if (count.harvestersBig < 4) {
-            create({ work: 2, move: 1 }, 'static-harvester', `SH_${Game.time}`);
+            create({ work: Math.floor((Game.rooms.W17N21.energyAvailable - 50) / 100), move: 1 }, 'static-harvester', `SH_${Game.time}`);
             
         } else if (count.upgraders < 1) {
             create({ work: 1, carry: 1, move: 1 }, 'upgrader', `U_${Game.time}`);

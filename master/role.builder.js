@@ -1,4 +1,3 @@
-const roleCourier = require('role.courier');
 const roleUpgrader = require('role.upgrader');
 
 const roleBuilder = {
