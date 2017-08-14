@@ -2,31 +2,39 @@ const roleUpgrader = {
     run(creep) {
         if (creep.memory.upgrading && creep.carry.energy == 0) {
             creep.memory.upgrading = false;
-            creep.say('🔄 harvest');
+            creep.memory.targetEnergy = null;
+            creep.say('U: E!');
         }
 
         if (!creep.memory.upgrading && creep.carry.energy == creep.carryCapacity) {
             creep.memory.upgrading = true;
-            creep.say('⚡ upgrade');
+            creep.say('U: U!');
         }
 
         if (creep.memory.upgrading) {
             if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(creep.room.controller, {
-                    visualizePathStyle: {
-                        stroke: '#ffffff'
-                    }
-                });
+                creep.moveTo(creep.room.controller);
             }
+            
         } else {
-            const sources = creep.room.find(FIND_SOURCES);
-
-            if (creep.harvest(sources[0]) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(sources[0], {
-                    visualizePathStyle: {
-                        stroke: '#ffaa00'
-                    }
-                });
+            if (creep.memory.targetEnergy == null) {
+                const resources = Game.rooms.W17N21.find(FIND_DROPPED_RESOURCES);
+                
+                if (resources.length) {
+                    creep.memory.targetEnergy = _.sample(resources).id;
+                }
+            }
+            
+            const target = Game.getObjectById(creep.memory.targetEnergy);
+            
+            if (target == null) {
+                creep.memory.targetEnergy = null;
+            }
+            
+            if (creep.memory.targetEnergy != null && creep.pickup(target) == ERR_NOT_IN_RANGE) {
+                if (creep.moveTo(target) === ERR_NO_PATH) {
+                    creep.memory.targetEnergy = null;
+                }
             }
         }
     }

@@ -1,6 +1,6 @@
 const roleUpgrader = require('role.upgrader');
 
-const roleHarvester = {
+const roleCourier = {
     run(creep) {
         if (creep.memory.transfering && creep.carry.energy == 0) {
             creep.memory.transfering = false;
@@ -37,7 +37,7 @@ const roleHarvester = {
             
         } else {
             if (creep.memory.targetEnergy == null) {
-                const sources = Game.rooms.W17N21.find(FIND_SOURCES_ACTIVE);
+                const sources = Game.rooms.W17N21.find(FIND_DROPPED_RESOURCES);
                 
                  if (sources.length) {
                     creep.memory.targetEnergy = _.sample(sources).id;
@@ -50,7 +50,7 @@ const roleHarvester = {
                 creep.memory.targetEnergy = null;
             }
             
-            if (creep.memory.targetEnergy != null && creep.harvest(target) === ERR_NOT_IN_RANGE) {
+            if (creep.memory.targetEnergy != null && creep.pickup(target) === ERR_NOT_IN_RANGE) {
                 if (creep.moveTo(target) === ERR_NO_PATH) {
                     creep.memory.targetEnergy = null;
                 }
@@ -59,4 +59,4 @@ const roleHarvester = {
     }
 };
 
-module.exports = roleHarvester;
+module.exports = roleCourier;

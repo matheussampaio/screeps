@@ -1,31 +1,41 @@
+const roleCourier = require('role.courier');
 const roleUpgrader = require('role.upgrader');
 
 const roleBuilder = {
     run(creep) {
         if (creep.memory.building && creep.carry.energy == 0) {
             creep.memory.building = false;
-            creep.say('🔄 harvest');
+            creep.memory.targetEnergy = null;
         }
 
         if (!creep.memory.building && creep.carry.energy == creep.carryCapacity) {
             creep.memory.building = true;
-            creep.say('🚧 build');
+            creep.memory.targetBuild = null;
         }
 
-        console.log(creep.name, creep.carry.energy, creep.carryCapacity, JSON.stringify(creep.memory));
-
         if (creep.memory.building) {
-            const construction = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES);
-
-            if (construction) {
-                const code = creep.build(construction);
-                if (code == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(construction, {
-                        visualizePathStyle: {
-                            stroke: '#ff0000'
-                        }
-                    });
+            if (creep.memory.targetBuild == null) {
+                const constructions = Game.rooms.W17N21.find(FIND_MY_CONSTRUCTION_SITES)
+                    .sort((a, b) => (a.progressTotal - a.progress) - (b.progressTotal - b.progress));
+                    
+                if (constructions.length) {
+                    creep.memory.targetBuild = _.sample(constructions).id;
                 }
+            }
+            
+            const target = Game.getObjectById(creep.memory.targetEnergy);
+            
+            if (target == null) {
+                creep.memory.targetBuild = null;
+            }
+            
+            if (creep.memory.targetBuild) {
+                if (creep.build(target) == ERR_NOT_IN_RANGE) {
+                    if (creep.moveTo(target) === ERR_NO_PATH) {
+                        creep.memory.targetBuild = null;
+                    }
+                }
+                
             // if no constructionSite is found
             } else {
                 roleUpgrader.run(creep);
@@ -33,16 +43,24 @@ const roleBuilder = {
 
         // if creep is supposed to harvest energy from source
         } else {
-            const source = creep.pos.findClosestByPath(FIND_SOURCES);
-
-            console.log(source);
-
-            if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(source, {
-                    visualizePathStyle: {
-                        stroke: '#00ff00'
-                    }
-                });
+            if (creep.memory.targetEnergy == null) {
+                const sources = Game.rooms.W17N21.find(FIND_DROPPED_RESOURCES);
+                
+                 if (sources.length) {
+                    creep.memory.targetEnergy = _.sample(sources).id;
+                }
+            }
+            
+            const target = Game.getObjectById(creep.memory.targetEnergy);
+            
+            if (target == null) {
+                creep.memory.targetEnergy = null;
+            }
+            
+            if (creep.memory.targetEnergy && creep.pickup(target) == ERR_NOT_IN_RANGE) {
+                if (creep.moveTo(target) !== OK) {
+                    creep.memory.targetEnergy = null;
+                }
             }
         }
     }
