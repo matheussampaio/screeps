@@ -45,23 +45,35 @@ module.exports.loop = function loop() {
     }
     
     if (Game.time % 5 === 0) {
-        console.log(Game.time);
-        
+        // Create first harvester
         if (count.harvester === 0 && count.harvestersBig === 0 && count.couriers === 0) {
             Game.spawns.Spawn1.createCreep([WORK, CARRY, MOVE], `H_${Game.time}`, { role: 'harvester' });
-            
-        } else if (count.harvestersBig === 0) {
-           Game.spawns.Spawn1.createCreep([WORK, MOVE], `H_${Game.time}`, { role: 'static-harvester' });
-            
-        } else if (count.couriers < 2) {
+        
+        // create first courier
+        } else if (count.couriers === 0) {
             create({ work: 1, carry: 1, move: 1 }, 'courier', `C_${Game.time}`);
             
+        // create first static harvester
+        } else if (count.harvestersBig === 0) {
+           Game.spawns.Spawn1.createCreep([WORK, MOVE], `H_${Game.time}`, { role: 'static-harvester' });
+        
+        // create all couriers
+        } else if (count.couriers < 2) {
+            create({ work: 1, carry: 1, move: 1 }, 'courier', `C_${Game.time}`);
+        
+        // create all static harvester
         } else if (count.harvestersBig < 4) {
-            create({ work: Math.floor((Game.rooms.W17N21.energyAvailable - 50) / 100), move: 1 }, 'static-harvester', `SH_${Game.time}`);
+            const work = Math.floor((Game.rooms.W17N21.energyAvailable - 50) / 100);
             
+            if (work > 2) {
+                create({ work, move: 1 }, 'static-harvester', `SH_${Game.time}`);
+            }
+        
+        // create all upgraders
         } else if (count.upgraders < 1) {
             create({ work: 1, carry: 1, move: 1 }, 'upgrader', `U_${Game.time}`);
-    
+        
+        // create all builders
         } else if (count.builders < 3) {
             create({ work: 1, carry: 1, move: 1 }, 'builder', `B_${Game.time}`);
         }
@@ -86,11 +98,9 @@ function create({ work = 0, carry = 0, move = 0 }, role, name) {
             creep.push(MOVE);
         }
         
-        console.log(`Trying ${role}:`, creep);
+        const result = Game.spawns.Spawn1.createCreep(creep, name, { role });
         
-        if (Game.spawns.Spawn1.createCreep(creep, name, { role }) >= 0) {
-            console.log('Created.');
-        }
+        console.log(`Trying role=[${role}], result=[${result}]:`, creep);
     } else {
         console.log(`Missing energy for ${role}`);
     }
