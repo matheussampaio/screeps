@@ -1,0 +1,20 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+updateRoomRCL1	C:\Users\matheus\AppData\Local\Screeps\scripts\screeps.com\master\main.js	/^const updateRoomRCL1 = function updateRoomRCL1({ controller, structures, roomName }) {$/;"	function	line:7
+const.harvesters	C:\Users\matheus\AppData\Local\Screeps\scripts\screeps.com\master\main.js	/^        harvesters: 2,$/;"	property	line:14
+const.upgraders	C:\Users\matheus\AppData\Local\Screeps\scripts\screeps.com\master\main.js	/^        upgraders: 2$/;"	property	line:15
+const	C:\Users\matheus\AppData\Local\Screeps\scripts\screeps.com\master\main.js	/^const updateRoomRCL1 = function updateRoomRCL1({ controller, structures, roomName }) {$/;"	function	line:7
+updateRoomRCL1	C:\Users\matheus\AppData\Local\Screeps\scripts\screeps.com\master\main.js	/^const updateRoomRCL1 = function updateRoomRCL1({ controller, structures, roomName }) {$/;"	function	line:7
+updateRoomRCL2	C:\Users\matheus\AppData\Local\Screeps\scripts\screeps.com\master\main.js	/^const updateRoomRCL2 = function updateRoomRCL2(room) {$/;"	function	line:27
+const.harvesters	C:\Users\matheus\AppData\Local\Screeps\scripts\screeps.com\master\main.js	/^        harvesters: 0,$/;"	property	line:29
+const.upgraders	C:\Users\matheus\AppData\Local\Screeps\scripts\screeps.com\master\main.js	/^        upgraders: 0,$/;"	property	line:30
+const.builders	C:\Users\matheus\AppData\Local\Screeps\scripts\screeps.com\master\main.js	/^        builders: 0$/;"	property	line:31
+updateRoomRCL2	C:\Users\matheus\AppData\Local\Screeps\scripts\screeps.com\master\main.js	/^const updateRoomRCL2 = function updateRoomRCL2(room) {$/;"	function	line:27
+loop	C:\Users\matheus\AppData\Local\Screeps\scripts\screeps.com\master\main.js	/^module.exports.loop = function loop() {$/;"	function	line:66
+switch	C:\Users\matheus\AppData\Local\Screeps\scripts\screeps.com\master\main.js	/^        switch (controller.level) {$/;"	function	line:88
+module.exports.loop	C:\Users\matheus\AppData\Local\Screeps\scripts\screeps.com\master\main.js	/^module.exports.loop = function loop() {$/;"	function	line:66
+loop	C:\Users\matheus\AppData\Local\Screeps\scripts\screeps.com\master\main.js	/^module.exports.loop = function loop() {$/;"	function	line:66

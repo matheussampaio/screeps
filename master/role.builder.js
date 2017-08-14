@@ -12,11 +12,14 @@ const roleBuilder = {
             creep.say('🚧 build');
         }
 
+        console.log(creep.name, creep.carry.energy, creep.carryCapacity, JSON.stringify(creep.memory));
+
         if (creep.memory.building) {
             const construction = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES);
 
             if (construction) {
-                if (creep.build(construction) == ERR_NOT_IN_RANGE) {
+                const code = creep.build(construction);
+                if (code == ERR_NOT_IN_RANGE) {
                     creep.moveTo(construction, {
                         visualizePathStyle: {
                             stroke: '#ff0000'
@@ -30,7 +33,9 @@ const roleBuilder = {
 
         // if creep is supposed to harvest energy from source
         } else {
-            const source = creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
+            const source = creep.pos.findClosestByPath(FIND_SOURCES);
+
+            console.log(source);
 
             if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(source, {
