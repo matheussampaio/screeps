@@ -7,7 +7,7 @@ const roleCourier = {
             creep.memory.targetEnergy = null;
         }
 
-        if (!creep.memory.transfering && creep.carry.energy < creep.carryCapacity) {
+        if (!creep.memory.transfering && creep.carry.energy == creep.carryCapacity) {
             creep.memory.transfering = true;
             creep.memory.targetTransfer = null;
         }
@@ -25,9 +25,19 @@ const roleCourier = {
                 }
             }
             
+            const target = Game.getObjectById(creep.memory.targetTransfer);
+            
+            if (target == null) {
+                creep.memory.targetTransfer = null;
+            }
+            
             if (creep.memory.targetTransfer) {
-                if (creep.transfer(Game.getObjectById(creep.memory.targetTransfer), RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    if (creep.moveTo(Game.getObjectById(creep.memory.targetTransfer)) === ERR_NO_PATH) {
+                const code = creep.transfer(target, RESOURCE_ENERGY);
+                
+                if (code !== OK) {
+                    if (code === ERR_NOT_IN_RANGE && creep.moveTo(target) !== OK) {
+                        creep.memory.targetTransfer = null;
+                    } else {
                         creep.memory.targetTransfer = null;
                     }
                 }

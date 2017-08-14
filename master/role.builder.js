@@ -16,22 +16,27 @@ const roleBuilder = {
         if (creep.memory.building) {
             if (creep.memory.targetBuild == null) {
                 const constructions = Game.rooms.W17N21.find(FIND_MY_CONSTRUCTION_SITES)
-                    .sort((a, b) => (a.progressTotal - a.progress) - (b.progressTotal - b.progress));
+                    .sort((a, b) => (a.progressTotal - a.progress) - (b.progressTotal - b.progress))
+                    .slice(0, 5);
                     
                 if (constructions.length) {
                     creep.memory.targetBuild = _.sample(constructions).id;
                 }
             }
             
-            const target = Game.getObjectById(creep.memory.targetEnergy);
+            const target = Game.getObjectById(creep.memory.targetBuild);
             
             if (target == null) {
                 creep.memory.targetBuild = null;
             }
             
             if (creep.memory.targetBuild) {
-                if (creep.build(target) == ERR_NOT_IN_RANGE) {
-                    if (creep.moveTo(target) === ERR_NO_PATH) {
+                const code = creep.build(target);
+                
+                if (code !== OK) {
+                    if (code === ERR_NOT_IN_RANGE && creep.moveTo(target) !== OK) {
+                        creep.memory.targetBuild = null;
+                    } else {
                         creep.memory.targetBuild = null;
                     }
                 }
