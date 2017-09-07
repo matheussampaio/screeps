@@ -8,6 +8,7 @@
     "noUnusedLocals": true,
     "sourceMap": true,
     "baseUrl": "./src/",
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "typeRoots": ["./src"]
   }
 }

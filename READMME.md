@@ -1,2 +1,0 @@
-MatheusSampaios' Screeps Code
-=============================

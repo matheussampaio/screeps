@@ -1,17 +1,13 @@
-import { Kernel } from '../kernel';
-
-export enum ProcessPriority {
-    High = 1,
-    Normal,
-    Low
-}
+import { Kernel } from '../kernel'
+import { CODES, PRIORITY } from '../utils'
 
 export enum ProcessStatus {
     Dead = 0,
-    Alive
+    Alive,
+    Idle
 }
 
-export abstract class Process {
+export class Process {
     public static fork(...args: any[]) {
         return new this(...args).pid
     }
@@ -19,10 +15,10 @@ export abstract class Process {
     public memory: any
     public parentPID: number
     public pid: number
-    public priority: ProcessPriority
+    public priority: PRIORITY
     public status: ProcessStatus
 
-    constructor(parentPID: number, { memory = {}, pid = -1, priority = ProcessPriority.Normal } = {}) {
+    constructor(parentPID: number, { memory = {}, pid = -1, priority = PRIORITY.NORMAL } = {}) {
         this.priority = priority
         this.status = ProcessStatus.Alive
         this.pid = pid !== -1 ? pid : Kernel.getNextPID()
@@ -41,11 +37,7 @@ export abstract class Process {
         Kernel.addProcess(this)
     }
 
-    public setMemory(memory: any) {
-        this.memory = memory
-    }
-
-    public stop() {
+    public stop(): CODES {
         Kernel.killProcess(this.pid)
 
         const parent = Kernel.getProcessByPID(this.parentPID)
@@ -53,32 +45,34 @@ export abstract class Process {
         if (parent != null && parent.notifyStop) {
             parent.notifyStop(this.pid)
         }
+
+        return CODES.OK
+    }
+
+    public idle(wakeAt?: number): CODES {
+        this.status = ProcessStatus.Idle
+
+        if (wakeAt != null) {
+            this.memory.wakeAt = Game.time + wakeAt
+        }
+
+        return CODES.OK
+    }
+
+    public wakeUp(): CODES {
+        this.status = ProcessStatus.Alive
+
+        delete this.memory.wakeAt
+
+        return CODES.OK
     }
 
     public notifyStop(pid: number) {
         this.memory.children = this.memory.children || {}
 
-        _.keys(this.memory.children, (key: string) => {
+        _.keys(this.memory.children).forEach((key: string) => {
             if (this.memory.children[key][pid]) {
                 delete this.memory.children[key][pid]
-            }
-        })
-    }
-
-    public cleanChildren() {
-        _.forIn(this.memory.children, (value: any, key: string) => {
-            if (_.isNumber(value) && Kernel.getProcessByPID(value) == null) {
-                delete this.memory.children[key]
-
-            } else if (_.isArray(value)) {
-                this.memory.children[key] = value.filter((pid: number) => Kernel.getProcessByPID(pid) != null)
-
-            } else {
-                _.forIn(value, (__: any, pid: string) => {
-                    if (Kernel.getProcessByPID(parseInt(pid, 10)) == null) {
-                        delete value[pid]
-                    }
-                })
             }
         })
     }
@@ -87,5 +81,7 @@ export abstract class Process {
         return [this.pid, this.parentPID, this.constructor.name, this.priority]
     }
 
-    public abstract run(): boolean
+    public run(): CODES {
+        return CODES.OK
+    }
 }

@@ -8,12 +8,6 @@ export class SHUCreep extends Process {
         // don't read this
     }
 
-    public static start({ parentPID, memory }) {
-        const proc = new SHUCreep(parentPID, { memory })
-        Kernel.addProcess(proc)
-        return proc.pid
-    }
-
     public run() {
         this.creep = Game.creeps[this.memory.creepName]
         this.room = Game.rooms[this.memory.roomName]

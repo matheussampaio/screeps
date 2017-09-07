@@ -1,0 +1,18 @@
+export enum CODES {
+    OK = 0,
+
+    ERROR = 100,
+
+    ERROR_SPAWN_NOT_FOUND = 101,
+    ERROR_CANT_FIND_PROCESS = 102,
+    ERROR_PARENT_PROCESS_DIED = 103,
+    ERROR_MISSING_METHOD_IMPLEMENTATION = 104
+}
+
+export enum PRIORITY {
+    VERY_HIGH = 5,
+    HIGH = 4,
+    NORMAL = 3,
+    LOW = 2,
+    VERY_LOW = 1
+}

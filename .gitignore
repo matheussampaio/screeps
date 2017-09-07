@@ -1,4 +1,5 @@
 node_modules/
+default/
 
 .DS_Store
 .tags1

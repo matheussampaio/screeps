@@ -11,8 +11,11 @@ export default {
 
     plugins: [
         typescript({
-            typescript: Typescript
+            typescript: Typescript,
+            // options: {
+            //     include: ''
+            // }
         }),
-        tslint()
+        // tslint()
     ]
 };

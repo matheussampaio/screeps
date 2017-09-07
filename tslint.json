@@ -8,6 +8,10 @@
     "variable-name": [true, "ban-keywords", "check-format", "allow-pascal-case", "allow-leading-underscore"],
     "quotemark": [true, "single", "avoid-escape"],
     "semicolon": [true, "never"],
-    "linebreak-style": [true, "LF"]
-  }
+    "linebreak-style": [true, "LF"],
+    "member-ordering": 0
+  },
+  "exclude": [
+    "**/*.d.ts"
+  ]
 }

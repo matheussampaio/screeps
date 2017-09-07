@@ -17,14 +17,17 @@
   "bugs": {
     "url": "https://github.com/matheussampaio/screeps/issues"
   },
+  "typings": "typings/index.d.ts",
   "homepage": "https://github.com/matheussampaio/screeps#readme",
   "devDependencies": {
+    "@types/lodash": "3.10.1",
     "gulp": "3.9.1",
     "gulp-screeps": "1.0.3",
     "nodemon": "^1.11.0",
     "rollup": "^0.48.2",
     "rollup-plugin-tslint": "0.1.24",
     "rollup-plugin-typescript": "0.8.1",
+    "screeps-typescript-declarations": "4.2.1",
     "tslint": "5.7.0",
     "typescript": "2.5.2"
   }

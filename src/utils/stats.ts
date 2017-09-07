@@ -1,6 +1,13 @@
 export class Stats {
     public static collect() {
-        Memory.stats = { cpu: {}, gcl: {}, memory: {}, rooms: {}, time: Game.time, totalCreepCount: _.size(Game.creeps) }
+        Memory.stats = {
+            cpu: {},
+            gcl: {},
+            memory: {},
+            rooms: {},
+            time: Game.time,
+            totalCreepCount: _.size(Game.creeps)
+        }
 
         // Collect room stats
         for (const roomName in Game.rooms) {
@@ -52,4 +59,3 @@ export class Stats {
         return `TIME=[${Game.time}] CPU=[${avgCPU}/${Memory.stats.cpu.limit}] RAM=[${avgRAM}KB/2048KB]`
     }
 }
-
