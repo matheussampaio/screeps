@@ -1,15 +1,16 @@
 import { RegisterProcess } from '../decorators'
 import { Kernel, Process, ProcessRegistry } from '../kernel'
 
-import { CODES } from '../utils'
+import { CODES, PRIORITY } from '../utils'
 
-import { EnergyCourierProcess, SpawnProcess, StaticHarvesterProcess } from './index'
+import { ControllerUpgraderProcess, EnergyCourierProcess, SpawnProcess, StaticHarvesterProcess } from './index'
 
 @RegisterProcess
 export class RoomControlProcess extends Process {
+    public ControllerUpgraderProcess: ControllerUpgraderProcess
+    public EnergyCourierProcess: EnergyCourierProcess
     public SpawnProcess: SpawnProcess
     public StaticHarvesterProcess: StaticHarvesterProcess
-    public EnergyCourierProcess: EnergyCourierProcess
 
     public room: Room
     public creeps: any = {}
@@ -21,6 +22,8 @@ export class RoomControlProcess extends Process {
             this.SpawnProcess = this.start('SpawnProcess') as SpawnProcess
             this.StaticHarvesterProcess = this.start('StaticHarvesterProcess') as StaticHarvesterProcess
             this.EnergyCourierProcess = this.start('EnergyCourierProcess') as EnergyCourierProcess
+            this.ControllerUpgraderProcess = this.start('ControllerUpgraderProcess', PRIORITY.LOW) as
+                ControllerUpgraderProcess
         }
 
         // if (this.room.controller.level >= 2) {
@@ -38,7 +41,7 @@ export class RoomControlProcess extends Process {
         return CODES.OK
     }
 
-    public start(processName: string) {
+    public start(processName: string, priority: PRIORITY = PRIORITY.NORMAL) {
         const childPID = this.memory.children[processName]
 
         if (childPID == null || Kernel.processTable[childPID] == null) {
@@ -46,7 +49,8 @@ export class RoomControlProcess extends Process {
             const options = {
                 memory: {
                     roomName: this.memory.roomName
-                }
+                },
+                priority
             }
 
             this.memory.children[processName] = ProcessCreep.fork(this.pid, options)

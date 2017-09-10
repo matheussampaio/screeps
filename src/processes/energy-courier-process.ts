@@ -11,7 +11,7 @@ export class EnergyCourierProcess extends Process {
 
         _.keys(this.memory.creeps).forEach((creepName) => {
             if (Game.creeps[creepName] == null) {
-                delete Game.creeps[creepName]
+                delete this.memory.creeps[creepName]
             }
         })
 
@@ -21,7 +21,7 @@ export class EnergyCourierProcess extends Process {
             const rcp = Kernel.getProcessByPID(this.parentPID) as RoomControlProcess
 
             rcp.SpawnProcess.add({
-                body: [MOVE, CARRY, MOVE, CARRY],
+                body: [CARRY, MOVE, CARRY, MOVE, MOVE, CARRY],
                 memory: {
                     mission: MISSIONS.FIND_ENERGY_TARGET
                 },
