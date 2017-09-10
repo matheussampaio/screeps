@@ -1,5 +1,5 @@
 export enum CODES {
-    OK = 0,
+    OK = 1,
 
     ERROR = 100,
 
@@ -15,4 +15,21 @@ export enum PRIORITY {
     NORMAL = 3,
     LOW = 2,
     VERY_LOW = 1
+}
+
+export enum MISSIONS {
+    COLLECT_ENERGY,
+    CONTAINER,
+    FIND_ENERGY_TARGET,
+    FIND_TRANSFER_TARGET,
+    GET_ENERGY,
+    HARVESTER,
+    MOVE_TO_ENERGY_TARGET,
+    MOVE_TO_TRANSFER_TARGET,
+    MOVING_TO_SOURCE,
+    TRANSFER_ENERGY,
+}
+
+export const DEBUG = {
+    SPAWN: true
 }

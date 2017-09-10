@@ -42,6 +42,7 @@ def run():
     if room.level >= 1:
         start SpawnerProcess if not running
         start StaticHarvesterProcess if not running
+        start EnergyCourierProcess if not running
         start UpgraderProcess if not running
 
     if room.level >= 2:
@@ -76,11 +77,9 @@ def run():
     return OK
 
 def add(req):
-    this.request.push(req)
-
-def wakeUp():
-    if this.request.length:
-        this.memory.status = ALIVE
+    if is not repeated
+        this.request.push(req)
+        this.wakeUp()
 ```
 
 

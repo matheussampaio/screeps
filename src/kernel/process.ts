@@ -18,10 +18,17 @@ export class Process {
     public priority: PRIORITY
     public status: ProcessStatus
 
-    constructor(parentPID: number, { memory = {}, pid = -1, priority = PRIORITY.NORMAL, status =  ProcessStatus.Alive } = {}) {
-        this.priority = priority
-        this.status = status
-        this.pid = pid !== -1 ? pid : Kernel.getNextPID()
+    constructor(parentPID: number, options: any = {}) {
+        _.defaults(options, {
+            memory: {},
+            pid: -1,
+            priority: PRIORITY.NORMAL,
+            status:  ProcessStatus.Alive
+        })
+
+        this.priority = options.priority
+        this.status = options.status
+        this.pid = options.pid !== -1 ? options.pid : Kernel.getNextPID()
 
         if (parentPID === -1) {
             throw new Error('missing parentPID')
@@ -29,9 +36,8 @@ export class Process {
 
         this.parentPID = parentPID
 
-        this.memory = _.merge(Kernel.getProcessMemory(this.pid), memory)
+        this.memory = _.merge(Kernel.getProcessMemory(this.pid), options.memory)
 
-        this.memory.children = this.memory.children || {}
         this.memory.processName = this.memory.processName || this.constructor.name
 
         Kernel.addProcess(this)

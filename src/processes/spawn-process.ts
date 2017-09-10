@@ -1,6 +1,6 @@
 import { RegisterProcess } from '../decorators'
 import { Kernel, Process } from '../kernel'
-import { CODES, PRIORITY } from '../utils'
+import { CODES, DEBUG, PRIORITY } from '../utils'
 
 export interface IRequestCreep {
     body: string[],
@@ -14,16 +14,17 @@ export interface IRequestCreep {
 @RegisterProcess
 export class SpawnProcess extends Process {
     public run(): CODES {
+
         this.memory.request = this.memory.request || []
 
         if (this.memory.request.length === 0) {
-            return this.idle()
+            return this.debug('[]') ? CODES.OK : this.idle()
         }
 
         const spawn = _.find(Game.spawns, (s) => s.room.name === this.memory.roomName && s.spawning == null)
 
         if (spawn == null) {
-            return this.idle(5)
+            return this.debug(`busy`) ? CODES.OK : this.idle(5)
         }
 
         let req = this.memory.request[0]
@@ -33,7 +34,7 @@ export class SpawnProcess extends Process {
             this.memory.request.shift()
 
             if (this.memory.request.length === 0) {
-                return this.idle()
+                return this.debug('[]') ? CODES.OK : this.idle()
             }
 
             req = this.memory.request[0]
@@ -43,8 +44,8 @@ export class SpawnProcess extends Process {
         const cost = spawn.getCreepCost(req.body)
         const room = Game.rooms[this.memory.roomName]
 
-        if (cost < room.energyAvailable) {
-            return this.idle(room.energyAvailable - cost)
+        if (cost > room.energyAvailable) {
+            return this.debug(`+${cost - room.energyAvailable} ${req.role}`) ? CODES.OK : this.idle(room.energyAvailable - cost)
         }
 
         const creepName = spawn.createCreep(req.body, req.memory)
@@ -54,7 +55,7 @@ export class SpawnProcess extends Process {
 
             ParentProcess.receiveCreep(creepName)
         } else {
-            console.log('error creating creep', creepName)
+            this.debug(`ERROR: ${creepName}`)
         }
 
         return CODES.OK
@@ -68,11 +69,26 @@ export class SpawnProcess extends Process {
         })
 
         if (result == null) {
+            request.memory.role = request.role
+
             this.memory.request.push(request)
 
             this.memory.request.sort((a: IRequestCreep, b: IRequestCreep) => b.priority - a.priority)
 
             this.wakeUp()
         }
+    }
+
+    private debug(text): boolean {
+        if (DEBUG.SPAWN) {
+            const room: Room = Game.rooms[this.memory.roomName]
+            const spawn = _.find(Game.spawns, (s) => s.room.name === this.memory.roomName)
+
+            if (spawn != null) {
+                room.visual.text(text, spawn.pos.x + 2, spawn.pos.y, { font: 0.5 })
+            }
+        }
+
+        return DEBUG.SPAWN
     }
 }

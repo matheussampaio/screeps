@@ -1,12 +1,15 @@
 import { RegisterProcess } from '../decorators'
 import { Kernel, Process, ProcessRegistry } from '../kernel'
+
 import { CODES } from '../utils'
-import { SpawnProcess } from './spawn-process'
+
+import { EnergyCourierProcess, SpawnProcess, StaticHarvesterProcess } from './index'
 
 @RegisterProcess
 export class RoomControlProcess extends Process {
-    public spawner: SpawnProcess
-    // public upgrader: UpgraderProcess
+    public SpawnProcess: SpawnProcess
+    public StaticHarvesterProcess: StaticHarvesterProcess
+    public EnergyCourierProcess: EnergyCourierProcess
 
     public room: Room
     public creeps: any = {}
@@ -15,7 +18,9 @@ export class RoomControlProcess extends Process {
         this.room = Game.rooms[this.memory.roomName]
 
         if (this.room.controller.level >= 1) {
-            this.spawner = this.start('SpawnProcess') as SpawnProcess
+            this.SpawnProcess = this.start('SpawnProcess') as SpawnProcess
+            this.StaticHarvesterProcess = this.start('StaticHarvesterProcess') as StaticHarvesterProcess
+            this.EnergyCourierProcess = this.start('EnergyCourierProcess') as EnergyCourierProcess
         }
 
         // if (this.room.controller.level >= 2) {

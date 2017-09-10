@@ -29,7 +29,7 @@ export class Kernel {
 
                         process.run()
 
-                        console.log(`${process.constructor.name}: + ${(Game.cpu.getUsed() - cpu).toFixed(3)}`)
+                        console.log(`${process.constructor.name}: + ${(Game.cpu.getUsed() - cpu).toFixed(6)}`)
                     } catch (error) {
                         console.log(error.stack)
 

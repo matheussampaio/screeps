@@ -1,10 +1,8 @@
 export function StructureSpawnInstall() {
-    StructureSpawn.prototype.getCreepCost = function getCreepCost(creep) {
+    StructureSpawn.prototype.getCreepCost = function getCreepCost(body: string[]) {
         let sum = 0
 
-        for (let i = 0; i < creep.body.length; i++) {
-            const part = creep.body[i]
-
+        for (const part of body) {
             sum += BODYPART_COST[part]
         }
 
