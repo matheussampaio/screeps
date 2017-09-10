@@ -79,7 +79,7 @@ export class Kernel {
     public static storeProcessTable() {
         Memory.processTable = _.filter(this.processTable, (p: Process) => p.status !== ProcessStatus.Dead)
             .sort((a: Process, b: Process) => a.priority - b.priority)
-            .map((p: Process) => [p.pid, p.parentPID, p.constructor.name, p.priority])
+            .map((p: Process) => p.serialize())
     }
 
     public static killProcess(pid: number) {
@@ -107,14 +107,14 @@ export class Kernel {
 
         Memory.processTable = Memory.processTable || []
 
-        for (const [pid, parentPID, processName, priority] of Memory.processTable) {
+        for (const [pid, parentPID, processName, priority, status] of Memory.processTable) {
             const ProcessClass = ProcessRegistry.fetch(processName)
 
             if (ProcessClass == null) {
                 continue
             }
 
-            const process = new ProcessClass(parentPID, { pid, priority })
+            const process = new ProcessClass(parentPID, { pid, priority, status })
 
             this.processTable[pid] = process
             this.queue.push(process)

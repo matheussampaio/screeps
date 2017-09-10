@@ -18,9 +18,9 @@ export class Process {
     public priority: PRIORITY
     public status: ProcessStatus
 
-    constructor(parentPID: number, { memory = {}, pid = -1, priority = PRIORITY.NORMAL } = {}) {
+    constructor(parentPID: number, { memory = {}, pid = -1, priority = PRIORITY.NORMAL, status =  ProcessStatus.Alive } = {}) {
         this.priority = priority
-        this.status = ProcessStatus.Alive
+        this.status = status
         this.pid = pid !== -1 ? pid : Kernel.getNextPID()
 
         if (parentPID === -1) {
@@ -78,7 +78,7 @@ export class Process {
     }
 
     public serialize() {
-        return [this.pid, this.parentPID, this.constructor.name, this.priority]
+        return [this.pid, this.parentPID, this.constructor.name, this.priority, this.status]
     }
 
     public run(): CODES {
