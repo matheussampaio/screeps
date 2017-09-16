@@ -3,10 +3,11 @@ import { Kernel, Process, ProcessRegistry } from '../kernel'
 
 import { CODES, PRIORITY } from '../utils'
 
-import { ControllerUpgraderProcess, EnergyCourierProcess, SpawnProcess, StaticHarvesterProcess } from './index'
+import { BuildersProgress, ControllerUpgraderProcess, EnergyCourierProcess, SpawnProcess, StaticHarvesterProcess } from './index'
 
 @RegisterProcess
 export class RoomControlProcess extends Process {
+    public BuildersProcess: BuilderProcess
     public ControllerUpgraderProcess: ControllerUpgraderProcess
     public EnergyCourierProcess: EnergyCourierProcess
     public SpawnProcess: SpawnProcess
@@ -26,9 +27,10 @@ export class RoomControlProcess extends Process {
                 ControllerUpgraderProcess
         }
 
-        // if (this.room.controller.level >= 2) {
-        //
-        // }
+        if (this.room.controller.level >= 2) {
+            this.BuildersProcess = this.start('BuildersProcess') as BuilderProcess
+        }
+
         //
         // if (this.room.controller.level >= 3) {
         //
@@ -42,6 +44,8 @@ export class RoomControlProcess extends Process {
     }
 
     public start(processName: string, priority: PRIORITY = PRIORITY.NORMAL) {
+        this.memory.children = this.memory.children || {}
+
         const childPID = this.memory.children[processName]
 
         if (childPID == null || Kernel.processTable[childPID] == null) {

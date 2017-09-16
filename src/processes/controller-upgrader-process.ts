@@ -32,6 +32,8 @@ export class ControllerUpgraderProcess extends Process {
         }
 
         creeps.forEach((creep: Creep) => {
+            creep.memory.mission = creep.memory.mission || MISSIONS.FIND_ENERGY_TARGET
+
             if (creep.memory.mission === MISSIONS.FIND_ENERGY_TARGET) {
                 creep.say('🔍: ⚡️')
                 const sources = room.find(FIND_DROPPED_RESOURCES)

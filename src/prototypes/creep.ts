@@ -5,6 +5,10 @@ export function CreepInstall() {
             target: RoomObject,
             { next, force }: { next: MISSIONS, force?: boolean }
         ) {
+        if (target === null) {
+            return ERR_INVALID_TARGET
+        }
+
         if (this.memory.path == null || force) {
             this.memory.path = this.pos.findPathTo(target).map((pos) => pos.direction)
         }
@@ -36,6 +40,22 @@ export function CreepInstall() {
         return result
     }
 
+    Creep.prototype.mMoveToTarget = function mMoveToTarget({ next, force }: { next: MISSIONS, force?: boolean }) {
+        if (this.memory.target == null) {
+            return ERR_INVALID_TARGET
+        }
+
+        const target = Game.getObjectById(this.memory.target)
+
+        if (target == null) {
+            delete this.memory.target
+
+            return ERR_INVALID_TARGET
+        }
+
+        return this.mMoveTo(target, { next, force })
+    }
+
     Creep.prototype.mGetEnergy = function mGetEnergy({ next }: { next: MISSIONS }) {
         if (this.memory.path == null ) {
             this.memory.path = this.pos.findPathTo(target).map((pos) => pos.direction)
@@ -58,5 +78,21 @@ export function CreepInstall() {
                 this.memory.stuck = this.memory.stuck + 1 || 1
             }
         }
+    }
+
+    Creep.prototype.mPickupTarget = function mPickupTarget() {
+        if (this.memory.target == null) {
+            return ERR_INVALID_TARGET
+        }
+
+        const target = Game.getObjectById(this.memory.target)
+
+        if (target == null) {
+            delete this.memory.target
+
+            return ERR_INVALID_TARGET
+        }
+
+        return this.pickup(target)
     }
 }
