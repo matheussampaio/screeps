@@ -1,7 +1,7 @@
 import { CreepInstall } from './creep'
-import { StructureSpawnInstall } from './structure-spawn'
+import { RoomInstall } from './room'
 
 export function install() {
     CreepInstall()
-    StructureSpawnInstall()
+    RoomInstall()
 }

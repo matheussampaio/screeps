@@ -1,5 +1,9 @@
 export class Stats {
     public static collect() {
+        if (Game.rooms.sim != null) {
+            return
+        }
+
         Memory.stats = {
             cpu: {},
             gcl: {},

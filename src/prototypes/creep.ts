@@ -1,98 +1,69 @@
-import { MISSIONS } from '../utils'
+declare global {
+    interface Creep {
+        __serializeBody: [number, string]
+
+        dieInPeace(substitue: Creep): void
+        getTarget(type: number, opts?: FindPathOpts & {
+            filter?: any | string;
+            algorithm?: string;
+            prop?: string;
+        }): RoomObject | null
+        serializeBody(): [number, string]
+    }
+}
 
 export function CreepInstall() {
-    Creep.prototype.mMoveTo = function mMoveTo(
-            target: RoomObject,
-            { next, force }: { next: MISSIONS, force?: boolean }
-        ) {
-        if (target === null) {
-            return ERR_INVALID_TARGET
-        }
+    Creep.prototype.getTarget = function getTarget(type: number, opts?: FindPathOpts & {
+            filter?: any | string;
+            algorithm?: string;
+            prop?: string;
+        }) {
 
-        if (this.memory.path == null || force) {
-            this.memory.path = this.pos.findPathTo(target).map((pos) => pos.direction)
-        }
+        const property = (opts && opts.prop) || 'target'
 
-        if (this.memory.path.length === 0) {
-            delete this.memory.path
-            delete this.memory.stuck
+        // if we have a previous target, try to use it
+        if (this.memory[property] != null) {
+            const target: RoomObject = Game.getObjectById(this.memory[property])
 
-            this.memory.mission = next
-
-            return OK
-        }
-
-        let result = OK
-
-        if (this.fatigue === 0) {
-            const direction = this.memory.path[0]
-
-            result = this.move(direction)
-
-            if (result === OK) {
-                this.memory.path.shift()
-                this.memory.stuck = 0
-            } else {
-                this.memory.stuck = this.memory.stuck + 1 || 1
+            if (target != null) {
+                return target
             }
         }
 
-        return result
+        // but if object is gone, find another one
+        const result: any = this.pos.findClosestByPath(type, opts)
+
+        if (result != null) {
+            this.memory[property] = result.id
+
+            return Game.getObjectById(this.memory[property])
+        }
+
+        delete this.memory[property]
+
+        return null
     }
 
-    Creep.prototype.mMoveToTarget = function mMoveToTarget({ next, force }: { next: MISSIONS, force?: boolean }) {
-        if (this.memory.target == null) {
-            return ERR_INVALID_TARGET
-        }
+    Creep.prototype.dieInPeace = function dieInPeace(substitue: Creep) {
+        substitue.memory = _.cloneDeep(this.memory)
 
-        const target = Game.getObjectById(this.memory.target)
+        this.memory = undefined
 
-        if (target == null) {
-            delete this.memory.target
-
-            return ERR_INVALID_TARGET
-        }
-
-        return this.mMoveTo(target, { next, force })
+        this.suicide()
     }
 
-    Creep.prototype.mGetEnergy = function mGetEnergy({ next }: { next: MISSIONS }) {
-        if (this.memory.path == null ) {
-            this.memory.path = this.pos.findPathTo(target).map((pos) => pos.direction)
+    Creep.prototype.serializeBody = function serializeBody() {
+        if (this.__serializeBody) {
+            return this.__serializeBody
         }
 
-        if (this.fatigue === 0) {
-            const direction = this.memory.path[0]
+        this.__serializeBody = [0, '']
 
-            if (this.move(direction) === OK) {
-                this.memory.path.shift()
-                this.memory.stuck = 0
-
-                if (this.memory.path.length === 0) {
-                    delete this.memory.path
-                    delete this.memory.stuck
-
-                    this.memory.mission = next
-                }
-            } else {
-                this.memory.stuck = this.memory.stuck + 1 || 1
-            }
-        }
-    }
-
-    Creep.prototype.mPickupTarget = function mPickupTarget() {
-        if (this.memory.target == null) {
-            return ERR_INVALID_TARGET
+        for (const part of this.body) {
+            this.__serializeBody[0] += BODYPART_COST[part.type]
+            this.__serializeBody[1] += part.type[0]
         }
 
-        const target = Game.getObjectById(this.memory.target)
-
-        if (target == null) {
-            delete this.memory.target
-
-            return ERR_INVALID_TARGET
-        }
-
-        return this.pickup(target)
+        return this.__serializeBody
     }
 }
