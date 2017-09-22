@@ -5,7 +5,7 @@ export const Substitute: IAction = {
     name: 'substitute',
     run(creep: Creep) {
         if (creep.memory.subTarget == null) {
-            return Agent.UNSHIFT_AND_CONTINUE
+            return Agent.SHIFT_AND_CONTINUE
         }
 
         const target: Creep = Game.getObjectById(creep.memory.subTarget)
@@ -16,12 +16,12 @@ export const Substitute: IAction = {
 
         creep.travelTo(target)
 
-        if (creep.pos.inRangeTo(target.pos, 1) || target.ticksToLive <= 2) {
+        if (creep.pos.isNearTo(target) || target.ticksToLive <= 2) {
             target.dieInPeace(creep)
 
             creep.memory.substitute = undefined
 
-            return Agent.SHIFT_AND_STOP
+            return Agent.SHIFT_AND_CONTINUE
         }
 
         return Agent.WAIT_NEXT_TICK

@@ -1,9 +1,0 @@
-!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
-!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
-!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
-!_TAG_PROGRAM_NAME	Exuberant Ctags	//
-!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
-!_TAG_PROGRAM_VERSION	5.8	//
-log	C:\Users\matheus\AppData\Local\Screeps\scripts\screeps.com\src\utils\utils.js	/^export function log(...args) {$/;"	function	line:1
-createCreep	C:\Users\matheus\AppData\Local\Screeps\scripts\screeps.com\src\utils\utils.js	/^export function createCreep({ role, number, room, getBody, getMemory }) {$/;"	function	line:5
-calculateBody	C:\Users\matheus\AppData\Local\Screeps\scripts\screeps.com\src\utils\utils.js	/^export function calculateBody({ energyAvailable = 0, work = [0, 0], carry = [0, 0], move = [0, 0] }) {$/;"	function	line:37

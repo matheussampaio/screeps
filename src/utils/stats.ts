@@ -1,16 +1,29 @@
-export class Stats {
-    public static collect() {
-        if (Game.rooms.sim != null) {
-            return
-        }
+let stats: any = {}
 
-        Memory.stats = {
+export class Stats {
+    public static init() {
+        stats = {
             cpu: {},
             gcl: {},
             memory: {},
-            rooms: {},
+            roomSummary: {},
+            times: {
+                roles: {},
+                actions: {}
+            },
             time: Game.time,
-            totalCreepCount: _.size(Game.creeps)
+            totalCreepCount: _.size(Game.creeps),
+            rooms: _.keys(Game.rooms)
+        }
+    }
+
+    static get times() {
+        return stats.times
+    }
+
+    public static collect() {
+        if (Game.rooms.sim != null) {
+            return
         }
 
         // Collect room stats
@@ -19,7 +32,8 @@ export class Stats {
             const isMyRoom = (room.controller ? room.controller.my : false)
 
             if (isMyRoom) {
-                const roomStats: any = Memory.stats.rooms[roomName] = {}
+                const roomStats: any = stats.roomSummary[roomName] = {}
+
                 roomStats.storageEnergy = (room.storage ? room.storage.store.energy : 0)
                 roomStats.terminalEnergy = (room.terminal ? room.terminal.store.energy : 0)
                 roomStats.energyAvailable = room.energyAvailable
@@ -27,39 +41,27 @@ export class Stats {
                 roomStats.controllerProgress = room.controller!.progress
                 roomStats.controllerProgressTotal = room.controller!.progressTotal
                 roomStats.controllerLevel = room.controller!.level
+
+                const lastProgress = _.get(Memory, `stats.roomSummary.${roomName}.controllerProgress`, roomStats.controllerProgress)
+
+                roomStats.controllerDiff = roomStats.controllerProgress - lastProgress
             }
         }
 
         // Collect GCL stats
-        Memory.stats.gcl.progress = Game.gcl.progress
-        Memory.stats.gcl.progressTotal = Game.gcl.progressTotal
-        Memory.stats.gcl.level = Game.gcl.level
+       stats.gcl.progress = Game.gcl.progress
+       stats.gcl.progressTotal = Game.gcl.progressTotal
+       stats.gcl.level = Game.gcl.level
 
         // Collect Memory stats
-        Memory.stats.memory.used = RawMemory.get().length
+       stats.memory.used = RawMemory.get().length
 
         // Collect CPU stats
-        Memory.stats.cpu.bucket = Game.cpu.bucket
-        Memory.stats.cpu.limit = Game.cpu.limit
-        Memory.stats.cpu.used = Game.cpu.getUsed()
+       stats.cpu.bucket = Game.cpu.bucket
+       stats.cpu.limit = Game.cpu.limit
+       stats.cpu.used = Game.cpu.getUsed()
+       stats.cpu.tickLimit = Game.cpu.tickLimit
 
-        Memory.avg = Memory.avg || []
-
-        Memory.avg.push({
-            cpu: Memory.stats.cpu.used,
-            ram: Memory.stats.memory.used
-        })
-
-        if (Memory.avg.length >= 50) {
-            console.log(Stats.summary())
-            Memory.avg = []
-        }
-    }
-
-    public static summary() {
-        const avgCPU = _.ceil(_.sum(Memory.avg, 'cpu') / Memory.avg.length, 2)
-        const avgRAM = _.ceil(_.sum(Memory.avg, 'ram') / Memory.avg.length / 1024, 2)
-
-        return `TIME=[${Game.time}] CPU=[${avgCPU}/${Memory.stats.cpu.limit}] RAM=[${avgRAM}KB/2048KB]`
+       Memory.stats = stats
     }
 }

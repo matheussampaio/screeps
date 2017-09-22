@@ -9,9 +9,7 @@ export const DieInPeace: IAction = {
             return Agent.WAIT_NEXT_TICK
         }
 
-        console.log(creep.name, 'die in piece in', creep.ticksToLive - (creep.body.length * CREEP_SPAWN_TIME + 1400 ))
-
-        if (creep.ticksToLive < creep.body.length * CREEP_SPAWN_TIME + 1400) {
+        if (creep.ticksToLive < creep.body.length * CREEP_SPAWN_TIME + 25) {
             creep.memory.substitute = true
 
             const room = Game.rooms[creep.memory.room || creep.room.name]
@@ -21,6 +19,7 @@ export const DieInPeace: IAction = {
                     body: creep.serializeBody(),
                     name: `${creep.memory.role}_${Game.time}`,
                     memory: {
+                        role: creep.memory.role,
                         subTarget: creep.id,
                         actions: [[Substitute.name]]
                     }

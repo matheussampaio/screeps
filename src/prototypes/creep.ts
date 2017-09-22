@@ -1,6 +1,6 @@
 declare global {
     interface Creep {
-        __serializeBody: [number, string]
+        __serializeBody: string
 
         dieInPeace(substitue: Creep): void
         getTarget(type: number, opts?: FindPathOpts & {
@@ -8,7 +8,7 @@ declare global {
             algorithm?: string;
             prop?: string;
         }): RoomObject | null
-        serializeBody(): [number, string]
+        serializeBody(): string
     }
 }
 
@@ -57,13 +57,72 @@ export function CreepInstall() {
             return this.__serializeBody
         }
 
-        this.__serializeBody = [0, '']
+        this.__serializeBody = ''
 
         for (const part of this.body) {
-            this.__serializeBody[0] += BODYPART_COST[part.type]
-            this.__serializeBody[1] += part.type[0]
+            this.__serializeBody += part.type === CLAIM ? part.type[1] : part.type[0]
         }
 
         return this.__serializeBody
+    }
+
+    Creep.uncompressBody = function parseBodyString(compactBody: string): string[] {
+        return _.map(compactBody, (p) => {
+            switch (p) {
+                case MOVE[0]:
+                    return MOVE
+                case WORK[0]:
+                    return WORK
+                case CARRY[0]:
+                    return CARRY
+                case ATTACK[0]:
+                    return ATTACK
+                case RANGED_ATTACK[0]:
+                    return RANGED_ATTACK
+                case TOUGH[0]:
+                    return TOUGH
+                case HEAL[0]:
+                    return HEAL
+                case CLAIM[1]:
+                    return CLAIM
+                default:
+                    return MOVE
+            }
+        })
+    }
+
+    Creep.compressBody = function compressBody(body: string[]): string {
+        return _.reduce(body, (compressed, part) => {
+            if (part === CLAIM) {
+                return compressed + part[1]
+            }
+
+            return compressed + part[0]
+        }, '')
+    }
+
+    Creep.energyNeededFromCompressedBody = function energyNeededFromCompressedBody(body: string): number {
+        return _.sum(body.split(''), (part) => {
+            switch (part) {
+                case MOVE[0]:
+                    return BODYPART_COST[MOVE]
+                case WORK[0]:
+                    return BODYPART_COST[WORK]
+                case CARRY[0]:
+                    return BODYPART_COST[CARRY]
+                case ATTACK[0]:
+                    return BODYPART_COST[ATTACK]
+                case RANGED_ATTACK[0]:
+                    return BODYPART_COST[RANGED_ATTACK]
+                case TOUGH[0]:
+                    return BODYPART_COST[TOUGH]
+                case HEAL[0]:
+                    return BODYPART_COST[HEAL]
+                case CLAIM[1]:
+                    return BODYPART_COST[CLAIM]
+                default:
+                    return 0
+            }
+        })
     }
 }

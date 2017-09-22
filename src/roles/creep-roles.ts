@@ -48,8 +48,6 @@ const roles: { [key: string]: ICreepRole } = {
                 }
             }
 
-            console.log('result', JSON.stringify(result))
-
             return result
         }
     },
@@ -67,7 +65,7 @@ const roles: { [key: string]: ICreepRole } = {
     },
     Builder: {
         critical: 1,
-        defaults: [[Builder.name]],
+        defaults: [[Builder.name], [DieInPeace.name]],
         level: 2,
         maximum: 2
     },

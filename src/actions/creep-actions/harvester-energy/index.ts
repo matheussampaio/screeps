@@ -1,15 +1,14 @@
 import { Agent } from '../../../agent'
 import { IAction } from '../../../interfaces'
-import { TravelTo } from '../commons'
 
 export const HarvesterEnergy: IAction = {
     name: 'harvester_energy',
     run(creep: Creep) {
-        const source: Source = Game.getObjectById(creep.memory.source)
+        const source: Source | null = Game.getObjectById(creep.memory.source)
 
         // sleep if doesnt have source
         if (source == null) {
-            return Agent.WAIT_NEXT_TICK
+            return [Agent.UNSHIFT_AND_CONTINUE, FindSource.name]
         }
 
         creep.memory.room = creep.memory.room || creep.room.name
@@ -21,33 +20,70 @@ export const HarvesterEnergy: IAction = {
 
         // if doesnt have target, find one
         if (creep.memory.target == null) {
-            return [Agent.UNSHIFT_AND_CONTINUE, FindHarvesterTarget.name]
+            return [Agent.UNSHIFT_AND_CONTINUE, FindMovementTarget.name]
+        }
+
+        const target: RoomPosition | null = creep.room.getPositionAt(creep.memory.target.x, creep.memory.target.y)
+
+        if (target && !creep.pos.isEqualTo(target)) {
+            creep.travelTo(target)
+            return Agent.SHIFT_AND_STOP
         }
 
         // create container
-        if (creep.getActiveBodyparts(WORK) >= 6 && source.energy === 0) {
+        if (creep.memory.working && creep.getActiveBodyparts(WORK) && creep.getActiveBodyparts(CARRY) && Game.time % 10 === 0) {
             return [Agent.UNSHIFT_AND_CONTINUE, BuildContainer.name]
         }
 
-        const result = creep.harvest(source)
+        if (source.energy) {
+            const result = creep.harvest(source)
 
-        if (result === OK) {
-            creep.memory.working = true
-        }
-
-        if (result === ERR_NOT_IN_RANGE) {
-            creep.memory.travelTo = creep.memory.target
-            return [Agent.UNSHIFT_AND_CONTINUE, TravelTo.name]
+            if (result === OK) {
+                creep.memory.working = true
+            }
         }
 
         return Agent.SHIFT_AND_STOP
     }
 }
 
-export const FindHarvesterTarget: IAction = {
-    name: 'find-harvester-target',
+export const FindSource: IAction = {
+    name: 'find-source',
     run(creep: Creep) {
-        const source: Source = Game.getObjectById(creep.memory.source)
+        const sources: Source[] = creep.room.find(FIND_SOURCES).filter((source: Source) => {
+            const creepName = creep.room.memory.sources[source.id]
+
+            return Game.creeps[creepName] == null
+        }) as Source[]
+
+        // TODO: if more than one source, sort them by distance
+
+        for (const source of sources) {
+            const harvester = source.pos.findInRange(FIND_MY_CREEPS, 1).find((c: Creep) => {
+                return c.memory.role === 'HarvesterEnergy'
+            })
+
+            if (harvester == null) {
+                creep.memory.source = source.id
+                creep.room.memory.sources[source.id] = creep.name
+
+                return Agent.SHIFT_AND_CONTINUE
+            }
+        }
+
+        return Agent.WAIT_NEXT_TICK
+    }
+}
+
+export const FindMovementTarget: IAction = {
+    name: 'find-movement-target',
+    run(creep: Creep) {
+        const source: Source | null = Game.getObjectById(creep.memory.source)
+
+        if (source == null) {
+            creep.memory.source = undefined
+            return Agent.SHIFT_AND_STOP
+        }
 
         // if not working yet
         const containers: Structure[] = source.pos.findInRange(FIND_STRUCTURES, 1, {
@@ -57,7 +93,7 @@ export const FindHarvesterTarget: IAction = {
         })
 
         if (containers && containers.length) {
-            creep.memory.target = containers[0].id
+            creep.memory.target = containers[0].pos
             return Agent.SHIFT_AND_CONTINUE
         }
 
@@ -66,11 +102,13 @@ export const FindHarvesterTarget: IAction = {
         })
 
         if (containersInConstructions && containersInConstructions.length) {
-            creep.memory.target = containersInConstructions[0].id
+            creep.memory.target = containersInConstructions[0].pos
             return Agent.SHIFT_AND_CONTINUE
         }
 
-        creep.memory.target = source.id
+        const path = creep.pos.findPathTo(source)
+
+        creep.memory.target = path[path.length - 2]
 
         return Agent.SHIFT_AND_CONTINUE
     }
@@ -95,6 +133,8 @@ export const BuildContainer: IAction = {
 
         if (container != null) {
             // TODO: Repair the container
+
+            console.log('containers', JSON.stringify(container))
 
             return Agent.SHIFT_AND_STOP
         }

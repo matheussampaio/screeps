@@ -29,7 +29,7 @@ export const GetEnergy: IAction = {
             return [Agent.UNSHIFT_AND_CONTINUE, TravelTo.name]
         }
 
-        if (result === ERR_INVALID_TARGET) {
+        if (result !== OK) {
             delete creep.memory.energy
         }
 
@@ -40,18 +40,26 @@ export const GetEnergy: IAction = {
 export const FindEnergyToGrab: IAction = {
     name: 'find-energy-to-grab',
     run(creep: Creep) {
-        creep.getTarget(FIND_DROPPED_RESOURCES, { algorithm: 'astart', prop: 'energy' })
+        // try to pickup dropped energy
+        const resource: Resource = _.sample(creep.room.find(FIND_DROPPED_RESOURCES))
 
-        if (creep.memory.energy != null) {
+        if (resource != null) {
+            creep.memory.energy = resource.id
             return Agent.SHIFT_AND_CONTINUE
         }
 
-        creep.getTarget(FIND_STRUCTURES, {
+        // try to find a container
+        const containers: StructureContainer[] = creep.room.find(FIND_STRUCTURES, {
             filter: (s: StructureContainer) => s.structureType === STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY],
-            prop: 'energy'
         })
 
-        if (creep.memory.energy != null) {
+        // get the container with more energy
+        const container: StructureContainer = _.max(containers, (container: StructureContainer) => {
+            return container.store[RESOURCE_ENERGY]
+        })
+
+        if (container != null) {
+            creep.memory.energy = container.id
             return Agent.SHIFT_AND_CONTINUE
         }
 

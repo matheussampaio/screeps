@@ -1,5 +1,5 @@
 import { IAction } from '../interfaces'
-import { getCpuLimit } from '../utils'
+import { getCpuLimit, Stats } from '../utils'
 import { ActionsRegistry } from './actions-registry'
 
 export class Agent {
@@ -10,23 +10,24 @@ export class Agent {
     public static readonly UNSHIFT_AND_STOP = 'UNSHIFT_AND_STOP'
     public static readonly SHIFT_UNSHIFT_AND_CONTINUE = 'SHIFT_UNSHIFT_AND_CONTINUE'
     public static readonly SHIFT_UNSHIFT_AND_STOP = 'SHIFT_UNSHIFT_AND_STOP'
-    public static readonly SAFE_ACTIONS_INTERATIONS = 30
+
+    public static readonly SAFE_ACTIONS_INTERATIONS = 100
 
     public static readonly DEBUG = false
 
     public static run(agent: any, defaults: string[][]) {
-        if (Agent.DEBUG) {
+        if (agent.memory.DEBUG) {
             console.log('\nRunning agent:', agent)
             console.log('actions:', agent.memory.actions)
         }
 
-        _.defaults(agent.memory, {
-            actions: _.cloneDeep(defaults)
-        })
+        if (agent.memory.actions == null) {
+            agent.memory.actions = _.cloneDeep(defaults)
+        }
 
         for (let i = 0; i < defaults.length; i++) {
             if (agent.memory.actions[i] == null || agent.memory.actions[i].length <= 0) {
-                if (Agent.DEBUG) {
+                if (agent.memory.DEBUG) {
                     console.log(`Empty group (${i}), setting default:`, defaults[i])
                 }
                 agent.memory.actions[i] = _.cloneDeep(defaults[i])
@@ -41,27 +42,35 @@ export class Agent {
             let group = agent.memory.actions[i]
 
             if (_.isString(group)) {
-                if (Agent.DEBUG) {
+                if (agent.memory.DEBUG) {
                     console.log(`String group found (${i}), changing to array:`, group)
                 }
                 group = agent.memory.actions[i] = [group]
             }
 
             // make sure we don't get a infinty loop
-            const MAX_ITERATIONS = Math.min(group.length * 2, Agent.SAFE_ACTIONS_INTERATIONS)
-
             let times = 0
             let actions: string[]
             let result
             let action: IAction
 
-            if (Agent.DEBUG) {
+            if (agent.memory.DEBUG) {
                 console.log('running group:', i)
             }
 
             // for each action in the group
-            while (group.length && times++ < MAX_ITERATIONS && Game.cpu.getUsed() < getCpuLimit()) {
+            while (group.length) {
                 action = ActionsRegistry.fetch(group[0])
+
+                if (times++ >= Agent.SAFE_ACTIONS_INTERATIONS) {
+                    console.log('Too many interations, stoppping...', group[0])
+                    break
+                }
+
+                if (Game.cpu.getUsed() >= getCpuLimit()) {
+                    console.log('Too much CPU used, stopping...')
+                    break
+                }
 
                 // check if actions exists
                 if (action == null) {
@@ -69,8 +78,35 @@ export class Agent {
                     break
                 }
 
-                // run the action
-                const actionsResult = action.run(agent)
+                let actionsResult
+
+                const startCPU = Game.cpu.getUsed()
+
+                if (agent.memory.DEBUG) {
+                    console.log('running action:', group[0])
+                }
+
+                try {
+                    actionsResult = action.run(agent)
+                } catch (error) {
+                    console.log('ERROR:', group[0], error.stack)
+                    break
+                }
+
+                const spentCPU = Game.cpu.getUsed() - startCPU
+
+                const actionName = group[0]
+
+                if (Stats.times.actions[actionName] == null) {
+                    Stats.times.actions[actionName] = { totalCPU: spentCPU, count: 1 }
+                } else {
+                    Stats.times.actions[actionName].totalCPU += spentCPU
+                    Stats.times.actions[actionName].count += 1
+                }
+
+                const average = Stats.times.actions[actionName].totalCPU / Stats.times.actions[actionName].count
+
+                Stats.times.actions[actionName].average = average
 
                 // inside the actions, we can return an Array or a String
                 if (_.isArray(actionsResult)) {
@@ -81,7 +117,7 @@ export class Agent {
                     actions = []
                 }
 
-                if (Agent.DEBUG) {
+                if (agent.memory.DEBUG) {
                     console.log(`\t`, agent.name, action.name, result, JSON.stringify(actions))
                 }
 

@@ -1,3 +1,4 @@
+// more info here: https://github.com/pcmulder/gulp-screeps
 module.exports = {
     email: 'EMAIL',
     password: 'PASSWORD',

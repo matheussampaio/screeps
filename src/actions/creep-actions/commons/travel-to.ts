@@ -14,11 +14,14 @@ export const TravelTo: IAction = {
             return Agent.SHIFT_AND_CONTINUE
         }
 
-        if (creep.pos.getRangeTo(target.pos) > 1) {
+        const range = creep.memory.range == null ? 1 : creep.memory.range
+
+        if (creep.pos.getRangeTo(target.pos) > range) {
             creep.travelTo(target)
             return Agent.WAIT_NEXT_TICK
         }
 
+        creep.memory.range = undefined
         creep.memory.travelTo = undefined
         creep.memory._trav = undefined
 

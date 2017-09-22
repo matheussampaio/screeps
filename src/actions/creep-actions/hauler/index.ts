@@ -1,7 +1,7 @@
 import { Agent } from '../../../agent'
 import { IAction } from '../../../interfaces'
 import { GetEnergy } from '../commons'
-import { Upgrader } from '../upgrader'
+import { Builder } from '../builder'
 
 export const Hauler: IAction = {
     name: 'hauler',
@@ -40,17 +40,22 @@ export const FindTransferTarget: IAction = {
     name: 'find_transfer_target',
     run(creep: Creep) {
         let target = creep.getTarget(FIND_MY_STRUCTURES, {
-            filter: (s: StructureExtension) => {
-                return s.structureType === STRUCTURE_EXTENSION && s.energy < s.energyCapacity
-            }
+            filter: (s: StructureExtension) => (s.structureType === STRUCTURE_EXTENSION || s.structureType === STRUCTURE_SPAWN) && s.energy < s.energyCapacity
         })
 
         if (target == null) {
-            target = creep.getTarget(FIND_MY_SPAWNS, { filter: (s: StructureSpawn) => s.energy < s.energyCapacity })
+            target = creep.getTarget(FIND_MY_STRUCTURES, {
+                filter: (s: StructureTower) => s.structureType === STRUCTURE_TOWER && s.energy < s.energyCapacity
+            })
+        }
+
+        if (target == null && creep.room.storage) {
+           creep.memory.target = creep.room.storage.id
+           return Agent.SHIFT_AND_CONTINUE
         }
 
         if (target == null) {
-            return [Agent.UNSHIFT_AND_CONTINUE, Upgrader.name]
+            return [Agent.SHIFT_UNSHIFT_AND_CONTINUE, Builder.name]
         }
 
         return Agent.SHIFT_AND_CONTINUE

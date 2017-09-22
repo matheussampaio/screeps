@@ -2,7 +2,7 @@ import { Agent } from '../../../agent'
 import { IAction } from '../../../interfaces'
 import { GetEnergy } from '../commons'
 import { TravelTo } from '../commons'
-import { Hauler } from '../hauler'
+import { Upgrader } from '../upgrader'
 
 export const Builder: IAction = {
     name: 'builder',
@@ -14,7 +14,7 @@ export const Builder: IAction = {
         const construction = creep.getTarget(FIND_CONSTRUCTION_SITES, { prop: 'construction' }) as ConstructionSite
 
         if (construction == null) {
-            return [Agent.UNSHIFT_AND_CONTINUE, Hauler.name]
+            return [Agent.SHIFT_UNSHIFT_AND_CONTINUE, Upgrader.name]
         }
 
         const result = creep.build(construction)
@@ -28,6 +28,6 @@ export const Builder: IAction = {
             delete creep.memory.construction
         }
 
-        return Agent.SHIFT_AND_CONTINUE
+        return Agent.SHIFT_AND_STOP
     }
 }

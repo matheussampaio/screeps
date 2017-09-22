@@ -6,7 +6,7 @@
   "scripts": {
     "build": "rollup --config",
     "publish": "gulp publish",
-    "debug": "nodemon -e ts -w src -d 1 -x 'npm run build && npm run publish'"
+    "debug": "nodemon -e ts -w src -d 1 -x \"npm run build && npm run publish\""
   },
   "repository": {
     "type": "git",
@@ -24,17 +24,15 @@
     "gulp": "3.9.1",
     "gulp-screeps": "1.0.3",
     "nodemon": "^1.11.0",
-    "power-assert": "1.4.4",
+    "npm": "^5.4.2",
     "rollup": "^0.48.2",
     "rollup-plugin-filesize": "1.4.2",
     "rollup-plugin-git-version": "0.2.1",
     "rollup-plugin-typescript": "0.8.1",
-    "rollup-plugin-uglify": "2.0.1",
+    "screeps-typescript-declarations": "github:screepers/Screeps-Typescript-Declarations",
     "tslint": "5.7.0",
-    "typescript": "2.5.2",
-    "uglify-es": "3.1.1"
+    "typescript": "2.5.2"
   },
   "dependencies": {
-    "screeps-typescript-declarations": "4.2.1"
   }
 }
