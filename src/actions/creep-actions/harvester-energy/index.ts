@@ -127,14 +127,12 @@ export const BuildContainer: IAction = {
             creep.pickup(energy[0])
         }
 
-        const container = creep.pos.lookFor(LOOK_STRUCTURES).find((s: Structure) => {
+        const container: StructureContainer = creep.pos.lookFor(LOOK_STRUCTURES).find((s: Structure) => {
             return s.structureType === STRUCTURE_CONTAINER
-        })
+        }) as StructureContainer
 
         if (container != null) {
-            // TODO: Repair the container
-
-            console.log('containers', JSON.stringify(container))
+            console.log('repair result', creep.repair(container))
 
             return Agent.SHIFT_AND_STOP
         }
