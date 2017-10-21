@@ -4,6 +4,8 @@ import { CreepRequest } from '../interfaces'
 declare global {
     interface Room {
         queueCreep({ name, body, priority, memory }: { name?: string, body: string, priority: Priority, memory: any }): void
+        hasFreeEnergy(): boolean
+        canSubstitueForABetterCreep(body: string, role: string): Creep | null
 
         creeps: any
         spawns: StructureSpawn[]
@@ -84,4 +86,28 @@ export function RoomInstall() {
             this.creeps[role].push(Object.assign({ request: true }, creepRequest))
         }
     }
+
+    Room.prototype.hasFreeEnergy = function hasFreeEnergy(): boolean {
+        return this.energyAvailable === this.energyCapacityAvailable && this.memory.queue.length === 0
+    }
+
+    Room.prototype.canSubstitueForABetterCreep = function canSubstitueForABetterCreep(body: string, role: string): Creep | null {
+        const creeps: Creep[] = _.filter(Game.creeps, (creep: Creep) => {
+            return creep.my && creep.room.name === this.name && creep.memory.role === role
+        })
+        .sort((c1: Creep, c2: Creep) => {
+            if (c1.body.length !== c2.body.length) {
+                return c1.body.length - c2.body.length
+            }
+
+            return c1.ticksToLive - c2.ticksToLive
+        })
+
+        if (creeps.length && body.length > creeps[0].body.length) {
+            return creeps[0]
+        }
+
+        return null
+    }
+
 }

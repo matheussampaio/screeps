@@ -75,4 +75,35 @@ export class CreateBody {
             .map(part => _.repeat(part[0], this.body[part]))
             .join('')
     }
+
+    static harvester(energy: number): string {
+        return new CreateBody({ minimumEnergy: 150, energy })
+            .addWithMove([WORK], { work: 2 })
+            .add(CARRY)
+            .add(WORK, { work: 7 })
+            .add(MOVE, { move: 7 })
+            .value()
+    }
+
+    static hauler(energy: number): string {
+        return new CreateBody({ minimumEnergy: 100, energy })
+            .addWithMove(CARRY, { carry: 2})
+            .addWithMove(WORK)
+            .addWithMove([CARRY, WORK], { carry: 20, work: 5})
+            .value()
+    }
+
+    static builder(energy: number): string {
+        return new CreateBody({ minimumEnergy: 250, energy })
+            .add([MOVE, WORK, CARRY, MOVE], { move: 2 })
+            .addWithMove([WORK, CARRY], { work: 13, carry: 12 })
+            .value()
+    }
+
+    static upgrader(energy: number): string {
+        return new CreateBody({ minimumEnergy: 250, energy })
+            .add([MOVE, WORK, CARRY, MOVE], { move: 2 })
+            .addWithMove([WORK, CARRY], { work: 13, carry: 12 })
+            .value()
+    }
 }

@@ -2,6 +2,7 @@ import { Agent } from '../../agent'
 import { IAction } from '../../interfaces'
 import { Priority } from '../../enums'
 import { CreateBody } from '../../utils'
+import { Substitute } from '../creep-actions'
 
 export const Builder1: IAction = {
     name: 'builder-1',
@@ -19,12 +20,24 @@ export const Builder1: IAction = {
                 memory: {
                     role: 'Builder'
                 },
-                priority: builders === 0 ? Priority.HIGH : Priority.NORMAL,
-                body: new CreateBody({ minimumEnergy: 250, energy: room.energyAvailable })
-                    .add([MOVE, WORK, CARRY, MOVE], { move: 2 })
-                    .addWithMove([WORK, CARRY], { work: 13, carry: 12 })
-                    .value()
+                priority: Priority.NORMAL,
+                body: CreateBody.builder(room.energyAvailable)
             })
+        } else if (room.hasFreeEnergy() && Game.time % 10 === 6) {
+            const body = CreateBody.builder(room.energyAvailable)
+            const oldBuilder: Creep | null = room.canSubstitueForABetterCreep(body, 'Builder')
+
+            if (oldBuilder) {
+                room.queueCreep({
+                    body,
+                    memory: {
+                        role: oldBuilder.memory.role,
+                        subTarget: oldBuilder.id,
+                        actions: [[Substitute.name]]
+                    },
+                    priority: Priority.NORMAL,
+                })
+            }
         }
 
         return Agent.SHIFT_AND_CONTINUE
