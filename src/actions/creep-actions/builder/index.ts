@@ -11,20 +11,22 @@ export const Builder: IAction = {
             return [Agent.UNSHIFT_AND_CONTINUE, GetEnergy.name]
         }
 
-        const construction = creep.getTarget(FIND_CONSTRUCTION_SITES, { prop: 'construction' }) as ConstructionSite
+        // search for construction site
+        let construction: ConstructionSite = creep.getTarget(FIND_CONSTRUCTION_SITES, { prop: 'construction' }) as ConstructionSite
 
+        // if can't find anything, upgrade the controller
         if (construction == null) {
             return [Agent.SHIFT_UNSHIFT_AND_CONTINUE, Upgrader.name]
         }
 
-        const result = creep.build(construction)
+        let result = creep.build(construction)
 
+        // move to the target or invalidate the target
         if (result === ERR_NOT_IN_RANGE) {
             creep.memory.travelTo = creep.memory.construction
             return [Agent.UNSHIFT_AND_CONTINUE, TravelTo.name]
-        }
 
-        if (result === ERR_INVALID_TARGET) {
+        } else if (result === ERR_INVALID_TARGET) {
             delete creep.memory.construction
         }
 

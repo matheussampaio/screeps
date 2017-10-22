@@ -67,10 +67,12 @@ export function loop() {
     for (const roomName in Game.rooms) {
         const room: Room = Game.rooms[roomName]
 
-        const role: IRoomRole | null = RoomRoles.get('default')
+        if (room.controller && room.controller.my) {
+            const role: IRoomRole | null = RoomRoles.get('default')
 
-        if (role != null) {
-            Agent.run(room, role.defaults)
+            if (role != null) {
+                Agent.run(room, role.defaults)
+            }
         }
     }
 

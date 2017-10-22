@@ -40,7 +40,7 @@ export const FindTransferTarget: IAction = {
     name: 'find_transfer_target',
     run(creep: Creep) {
         let target = creep.getTarget(FIND_MY_STRUCTURES, {
-            filter: (s: StructureTower) => s.structureType === STRUCTURE_TOWER && s.energy < s.energyCapacity
+            filter: (s: StructureTower) => s.structureType === STRUCTURE_TOWER && s.energy < s.energyCapacity - 250
         })
 
         if (target == null) {
