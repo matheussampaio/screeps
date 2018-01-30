@@ -27,17 +27,13 @@ export const CreateCreep: IAction = {
             const spawn = room.spawns.find((s: StructureSpawn) => !s.spawning)
 
             if (spawn) {
-                const body: string[] = Creep.uncompressBody(_.repeat(request.body, Math.floor(room.energyAvailable / request.energyNeeded)))
+                const body: string[] = Creep.uncompressBody(request.body)
                 const name = request.name || `${request.memory.role}_${Game.time}`
                 const memory = Object.assign({ room: room.name }, request.memory)
 
-                let result = spawn.createCreep(body, name, memory)
+                const result = spawn.spawnCreep(body, name, { memory })
 
-                if (result === ERR_NAME_EXISTS) {
-                    result = spawn.createCreep(body, undefined, memory)
-                }
-
-                if (_.isString(result)) {
+                if (result === OK) {
                     room.queue.shift()
                 }
             }

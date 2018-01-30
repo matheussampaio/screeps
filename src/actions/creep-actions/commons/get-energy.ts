@@ -55,10 +55,11 @@ export const FindEnergyToGrab: IAction = {
 
         // get the container with more energy
         const container: StructureContainer = _.max(containers, (container: StructureContainer) => {
-            return container.store[RESOURCE_ENERGY]
+            return _.sum(container.store[RESOURCE_ENERGY])
         })
 
-        if (container != null) {
+        // _.max returns -Infinity if containers is empty
+        if (container !== -Infinity && container != null) {
             creep.memory.energy = container.id
             return Agent.SHIFT_AND_CONTINUE
         }

@@ -1,12 +1,12 @@
 import { Agent } from '../../../agent'
 import { IAction } from '../../../interfaces'
-import { GetEnergy } from '../commons'
+import { GetEnergyFromStorage } from '../commons'
 
 export const Upgrader: IAction = {
     name: 'upgrader',
     run(creep: Creep) {
         if (creep.carry.energy === 0) {
-            return [Agent.UNSHIFT_AND_CONTINUE, GetEnergy.name]
+            return [Agent.UNSHIFT_AND_CONTINUE, GetEnergyFromStorage.name]
         }
 
         const result = creep.upgradeController(creep.room.controller)

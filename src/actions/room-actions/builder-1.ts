@@ -7,7 +7,7 @@ import { Substitute } from '../creep-actions'
 export const Builder1: IAction = {
     name: 'builder-1',
     run(room: Room) {
-        const MAX_BUILDERS = 3
+        const MAX_BUILDERS = 0
 
         let builders = 0
 

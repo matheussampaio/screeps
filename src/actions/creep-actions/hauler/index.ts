@@ -10,9 +10,9 @@ export const Hauler: IAction = {
             return [Agent.UNSHIFT_AND_CONTINUE, GetEnergy.name]
         }
 
-        const target: StructureSpawn | StructureExtension = Game.getObjectById(creep.memory.target)
+        const target: StructureSpawn | StructureExtension | StructureStorage = Game.getObjectById(creep.memory.target)
 
-        if (target == null || target.energy === target.energyCapacity) {
+        if (target == null || target.isFull()) {
             delete creep.memory.target
             return [Agent.UNSHIFT_AND_CONTINUE, FindTransferTarget.name]
         }
@@ -32,6 +32,10 @@ export const Hauler: IAction = {
             delete creep.memory.target
         }
 
+        if (result === ERR_FULL) {
+            delete creep.memory.target
+        }
+
         return Agent.SHIFT_AND_STOP
     }
 }
@@ -45,17 +49,21 @@ export const FindTransferTarget: IAction = {
 
         if (target == null) {
             target = creep.getTarget(FIND_MY_STRUCTURES, {
-                filter: (s: StructureExtension) => (s.structureType === STRUCTURE_EXTENSION || s.structureType === STRUCTURE_SPAWN) && s.energy < s.energyCapacity
+                filter: (s: StructureExtension) => (s.structureType === STRUCTURE_EXTENSION || s.structureType === STRUCTURE_SPAWN) && !s.isFull()
             })
         }
 
-        if (target == null && creep.room.storage) {
+        if (target == null && creep.room.storage && !creep.room.storage.isFull()) {
            creep.memory.target = creep.room.storage.id
            return Agent.SHIFT_AND_CONTINUE
         }
 
         if (target == null) {
             return [Agent.SHIFT_UNSHIFT_AND_CONTINUE, Builder.name]
+        }
+
+        if (target == null) {
+            return Agent.WAIT_NEXT_TICK
         }
 
         return Agent.SHIFT_AND_CONTINUE

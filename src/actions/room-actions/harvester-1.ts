@@ -55,13 +55,13 @@ export const Harvester1: IAction = {
         }
 
         // otherwise check if we need to spawn a hauler
-        if (haulers < _.size(room.memory.sources)) {
+        if (haulers < _.size(room.memory.sources) - _.size(room.memory.links.sources)) {
             room.queueCreep({
                 memory: {
                     role: 'Hauler'
                 },
                 priority: haulers === 0 ? Priority.VERY_HIGH : Priority.NORMAL,
-                body:CreateBody.hauler(room.energyAvailable)
+                body: CreateBody.hauler(room.energyAvailable)
             })
         } else if (room.hasFreeEnergy() && Game.time % 10 === 2) {
             const body = CreateBody.hauler(room.energyAvailable)
@@ -78,6 +78,16 @@ export const Harvester1: IAction = {
                     priority: haulers === 0 ? Priority.VERY_HIGH : Priority.NORMAL,
                 })
             }
+        }
+
+        if (room.storage && room.creeps.Courier == null) {
+            room.queueCreep({
+                memory: {
+                    role: 'Courier'
+                },
+                priority: Priority.NORMAL,
+                body: CreateBody.hauler(room.energyAvailable)
+            })
         }
 
         return Agent.SHIFT_AND_CONTINUE

@@ -11,7 +11,7 @@ export class Agent {
     public static readonly SHIFT_UNSHIFT_AND_CONTINUE = 'SHIFT_UNSHIFT_AND_CONTINUE'
     public static readonly SHIFT_UNSHIFT_AND_STOP = 'SHIFT_UNSHIFT_AND_STOP'
 
-    public static readonly SAFE_ACTIONS_INTERATIONS = 100
+    public static readonly SAFE_ACTIONS_INTERATIONS = 10
 
     public static readonly DEBUG = false
 

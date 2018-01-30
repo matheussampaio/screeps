@@ -1,6 +1,6 @@
 import { Agent } from '../../../agent'
 import { IAction } from '../../../interfaces'
-import { GetEnergy } from '../commons'
+import { GetEnergyFromStorage } from '../commons'
 import { TravelTo } from '../commons'
 import { Upgrader } from '../upgrader'
 
@@ -8,7 +8,7 @@ export const Builder: IAction = {
     name: 'builder',
     run(creep: Creep) {
         if (creep.carry.energy === 0) {
-            return [Agent.UNSHIFT_AND_CONTINUE, GetEnergy.name]
+            return [Agent.UNSHIFT_AND_CONTINUE, GetEnergyFromStorage.name]
         }
 
         // search for construction site

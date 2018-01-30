@@ -13,11 +13,19 @@ export const RoomDefenses: IAction = {
 
         const ramparts: Structure[] = room.find(FIND_MY_STRUCTURES, {
             filter: (s: StructureRampart) => {
-                return s.structureType === STRUCTURE_RAMPART && s.hits < MILLION * 0.5
+                return s.structureType === STRUCTURE_RAMPART && s.hits < MILLION * 0.2
             }
         })
 
         ramparts.sort((a: StructureRampart, b: StructureRampart) => a.hits - b.hits)
+
+        const roads: Structure[] = room.find(FIND_STRUCTURES, {
+            filter: (s: StructureRoad) => {
+                return s.structureType === STRUCTURE_ROAD && s.hitsMax - s.hits >= 800
+            }
+        })
+
+        roads.sort((a: StructureRoad, b: StructureRoad) => a.hits - b.hits)
 
         for (const tower of towers) {
             const enemy: Creep = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS)
@@ -26,6 +34,8 @@ export const RoomDefenses: IAction = {
                 tower.attack(enemy)
             } else if (ramparts.length) {
                 tower.repair(ramparts[0])
+            } else if (roads.length) {
+                tower.repair(roads.shift())
             }
         }
 

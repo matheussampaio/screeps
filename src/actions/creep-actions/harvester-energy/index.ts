@@ -43,6 +43,40 @@ export const HarvesterEnergy: IAction = {
             }
         }
 
+        const linkId = _.get(creep, `room.memory.links.sources.${creep.memory.source}`)
+
+        if (linkId && creep.carry.energy) {
+            const link = Game.getObjectById(linkId)
+
+            if (link.energy < link.energyCapacity) {
+                const result = creep.transfer(link, RESOURCE_ENERGY)
+
+                if (result === ERR_NOT_IN_RANGE) {
+                    creep.travelTo(link)
+                }
+            } else if (link.cooldown === 0) {
+                const linkStorageId = _.get(creep, 'room.memory.links.storage')
+
+                if (linkStorageId) {
+                    const linkStorage = Game.getObjectById(linkStorageId)
+
+                    if (linkStorage.energy === 0) {
+                        link.transferEnergy(linkStorage)
+                    } else {
+                        const linkControllerId = _.get(creep, 'room.memory.links.controller')
+
+                        if (linkControllerId) {
+                            const linkController = Game.getObjectById(linkControllerId)
+
+                            if (linkController.energy === 0) {
+                                link.transferEnergy(linkStorage)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         return Agent.SHIFT_AND_STOP
     }
 }
