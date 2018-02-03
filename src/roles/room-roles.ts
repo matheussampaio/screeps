@@ -1,8 +1,13 @@
 import { IRoomRole } from '../interfaces'
 
 import {
-    Builder1, CreateCreep, Harvester1, RoomController, RoomDefenses,
-    RoomPlanner, Upgrader1, DebugVisualizeRoom
+    Builder1,
+    CreateCreep,
+    Harvester1,
+    RoomController,
+    RoomDefenses,
+    RoomPlanner,
+    Upgrader1,
 } from '../actions'
 
 const roles: { [key: string]: IRoomRole } = {

@@ -10,9 +10,9 @@ export class CreateBody {
         BODYPARTS_ALL.forEach(part => this.body[part] = 0)
     }
 
-    add(parts: string | string[], maximum: any = {}) {
+    add(parts: BodyPartConstant | BodyPartConstant[], maximum: any = {}) {
         if (_.isString(parts)) {
-            parts = [ parts ]
+            parts = [parts]
         }
 
         let i = 0
@@ -32,9 +32,9 @@ export class CreateBody {
         return this
     }
 
-    addWithMove(parts: string | string[], maximum = {}) {
+    addWithMove(parts: BodyPartConstant | BodyPartConstant[], maximum = {}) {
         if (_.isString(parts)) {
-            parts = [ parts ]
+            parts = [parts]
         }
 
         let i = 0
@@ -57,14 +57,14 @@ export class CreateBody {
         return this
     }
 
-    canAddThisPart(part: string, energyNeeded: number, maximum: any) {
+    canAddThisPart(part: BodyPartConstant, energyNeeded: number, maximum: any) {
         const hasEnoughEnergy = this.energy >= energyNeeded
         const limitForThisPartReached = this.body[part] >= (maximum[part] || 1)
 
         return hasEnoughEnergy && !limitForThisPartReached
     }
 
-    canAddMoreParts(parts: string[], maximum: any, minimumCost: number, movesPart = 0) {
+    canAddMoreParts(parts: BodyPartConstant[], maximum: any, minimumCost: number, movesPart = 0) {
         return this.size + movesPart < CreateBody.MAX_CREEP_SIZE
             && this.energy >= minimumCost
             && parts.some(part => this.body[part] < (maximum[part] || 1))
@@ -77,7 +77,7 @@ export class CreateBody {
     }
 
     static harvester(energy: number): string {
-        return new CreateBody({ minimumEnergy: 150, energy })
+        return new CreateBody({ energy, minimumEnergy: 150 })
             .addWithMove([WORK], { work: 2 })
             .add(CARRY)
             .add(WORK, { work: 7 })
@@ -86,22 +86,22 @@ export class CreateBody {
     }
 
     static hauler(energy: number): string {
-        return new CreateBody({ minimumEnergy: 100, energy })
-            .addWithMove(CARRY, { carry: 2})
+        return new CreateBody({ energy, minimumEnergy: 100 })
+            .addWithMove(CARRY, { carry: 2 })
             .addWithMove(WORK)
-            .addWithMove([CARRY, WORK], { carry: 20, work: 5})
+            .addWithMove([CARRY, WORK], { carry: 20, work: 5 })
             .value()
     }
 
     static builder(energy: number): string {
-        return new CreateBody({ minimumEnergy: 250, energy })
+        return new CreateBody({ energy, minimumEnergy: 250 })
             .add([MOVE, WORK, CARRY, MOVE], { move: 2 })
             .addWithMove([WORK, CARRY], { work: 13, carry: 12 })
             .value()
     }
 
     static upgrader(energy: number): string {
-        return new CreateBody({ minimumEnergy: 250, energy })
+        return new CreateBody({ energy, minimumEnergy: 250 })
             .add([MOVE, WORK, CARRY, MOVE], { move: 2 })
             .addWithMove([WORK, CARRY], { work: 13, carry: 12 })
             .value()

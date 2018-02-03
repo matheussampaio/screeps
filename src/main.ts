@@ -1,4 +1,3 @@
-import { version } from '../package.json'
 import '../Traveler/Traveler'
 import * as Actions from './actions'
 import { ActionsRegistry, Agent } from './agent'
@@ -10,8 +9,6 @@ import { Stats } from './utils'
 _.values(Actions).forEach((action: IAction) => ActionsRegistry.register(action))
 
 install()
-
-console.log(version)
 
 export function loop() {
     console.log(`#${Game.time}`)

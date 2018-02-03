@@ -29,33 +29,3 @@ export function getCpuLimit() {
 
     return _cpuLimit
 }
-
-export function getBody(room) {
-    let energy = 0
-
-    if (room.energyAvailable < 200) {
-        return [200, 'MWMC']
-    }
-
-    const parts = [
-        ['M', 50],
-        ['W', 100],
-        ['C', 50]
-    ]
-
-    let i = 0
-    let body = ''
-
-    while (room.energyAvailable - energy >= 50) {
-        const part = parts[i % parts.length]
-
-        if (part[1] <= room.energyAvailable - energy) {
-            body += part[0]
-            energy += part[1]
-        }
-
-        i++
-    }
-
-    return [energy, body]
-}

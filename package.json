@@ -5,8 +5,9 @@
   "private": true,
   "scripts": {
     "build": "rollup --config",
+    "debug": "rollup --config --watch",
     "publish": "gulp publish",
-    "debug": "nodemon -e ts -w src -d 1 -x \"npm run build && npm run publish\""
+    "debug2": "nodemon -e ts -w src -d 1 -x \"npm run build && npm run publish\""
   },
   "repository": {
     "type": "git",
@@ -21,17 +22,16 @@
   "homepage": "https://github.com/matheussampaio/screeps#readme",
   "devDependencies": {
     "@types/lodash": "3.10.1",
+    "@types/node": "^9.4.0",
     "@types/screeps": "^2.2.0",
     "gulp": "^3.9.1",
     "gulp-screeps": "^1.0.3",
     "mermaid": "^7.1.2",
     "nodemon": "^1.11.0",
-    "npm": "^5.4.2",
-    "rollup": "^0.48.2",
-    "rollup-plugin-filesize": "^1.4.2",
-    "rollup-plugin-git-version": "^0.2.1",
+    "rollup": "^0.55.3",
     "rollup-plugin-typescript": "^0.8.1",
-    "tslint": "^5.7.0",
-    "typescript": "^2.5.2"
+    "tslint": "^5.9.1",
+    "tslint-config-airbnb": "^5.5.0",
+    "typescript": "^2.7.1"
   }
 }

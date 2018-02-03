@@ -42,26 +42,30 @@ export class Stats {
                 roomStats.controllerProgressTotal = room.controller!.progressTotal
                 roomStats.controllerLevel = room.controller!.level
 
-                const lastProgress = _.get(Memory, `stats.roomSummary.${roomName}.controllerProgress`, roomStats.controllerProgress)
+                const lastProgress = _.get(
+                    Memory,
+                    `stats.roomSummary.${roomName}.controllerProgress`,
+                    roomStats.controllerProgress
+                )
 
                 roomStats.controllerDiff = roomStats.controllerProgress - lastProgress
             }
         }
 
         // Collect GCL stats
-       stats.gcl.progress = Game.gcl.progress
-       stats.gcl.progressTotal = Game.gcl.progressTotal
-       stats.gcl.level = Game.gcl.level
+        stats.gcl.progress = Game.gcl.progress
+        stats.gcl.progressTotal = Game.gcl.progressTotal
+        stats.gcl.level = Game.gcl.level
 
         // Collect Memory stats
-       stats.memory.used = RawMemory.get().length
+        stats.memory.used = RawMemory.get().length
 
         // Collect CPU stats
-       stats.cpu.bucket = Game.cpu.bucket
-       stats.cpu.limit = Game.cpu.limit
-       stats.cpu.used = Game.cpu.getUsed()
-       stats.cpu.tickLimit = Game.cpu.tickLimit
+        stats.cpu.bucket = Game.cpu.bucket
+        stats.cpu.limit = Game.cpu.limit
+        stats.cpu.used = Game.cpu.getUsed()
+        stats.cpu.tickLimit = Game.cpu.tickLimit
 
-       Memory.stats = stats
+        Memory.stats = stats
     }
 }

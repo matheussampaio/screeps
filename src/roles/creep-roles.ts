@@ -1,6 +1,12 @@
-import { Builder, Courier, DieInPeace, HarvesterEnergy, Hauler, Upgrader, WithdrawFromLink } from '../actions'
+import {
+    Builder,
+    Courier,
+    DieInPeace,
+    HarvesterEnergy,
+    Hauler,
+    Upgrader,
+    WithdrawFromLink } from '../actions'
 import { ICreepRole } from '../interfaces'
-import { getBody } from '../utils'
 
 const roles: { [key: string]: ICreepRole } = {
     HarvesterEnergy: {
@@ -24,12 +30,17 @@ export const CreepRoles = {
     get(role: string): ICreepRole | null {
         return roles[role] || null
     },
+
     [Symbol.iterator]() {
         const keys = _.keys(roles)
         let i = 0
 
         return {
-            next: () => ({ value: keys[i++], done: i > keys.length })
+            next: () => ({
+                // tslint:disable-next-line:no-increment-decrement
+                value: keys[i++],
+                done: i > keys.length
+            })
         }
     }
 }
