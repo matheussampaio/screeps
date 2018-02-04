@@ -5,9 +5,8 @@
   "private": true,
   "scripts": {
     "build": "rollup --config",
-    "debug": "rollup --config --watch",
     "publish": "gulp publish",
-    "debug2": "nodemon -e ts -w src -d 1 -x \"npm run build && npm run publish\""
+    "debug": "nodemon -e ts -w src -d 1 -x \"npm run build && npm run publish\""
   },
   "repository": {
     "type": "git",

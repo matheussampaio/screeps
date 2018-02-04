@@ -6,15 +6,18 @@
     "forin": false,
     "interface-name": [false],
     "linebreak-style": [true, "LF"],
+    "max-line-length": [true, 140],
     "member-ordering": false,
     "no-console": [false],
     "no-parameter-reassignment": false,
+    "no-increment-decrement": false,
     "object-literal-sort-keys": [false],
     "quotemark": [true, "single", "avoid-escape"],
     "semicolon": [true, "never"],
     "ter-indent": [true, 4],
     "trailing-comma": [true, "never"],
     "variable-name": [true, "ban-keywords", "check-format", "allow-pascal-case", "allow-leading-underscore"]
+
   },
   "exclude": [
     "**/*.d.ts"
