@@ -1,6 +1,6 @@
-import { TravelToCreepAction } from "../travel"
-import { Action, ActionRegistry } from "../../../engine"
-import { FindEnergyToGrabCreepAction } from "./find-energy-to-grab-creep-action"
+import { TravelToCreepAction } from '../travel'
+import { Action, ActionRegistry } from '../../../engine'
+import { FindEnergyToGrabCreepAction } from './find-energy-to-grab-creep-action'
 
 @ActionRegistry.register
 export class GetEnergyCreepAction extends Action {

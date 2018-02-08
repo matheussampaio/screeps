@@ -24,7 +24,7 @@ export function installCreepPrototype() {
             prop?: string
         }
     ) {
-        const property = (opts && opts.prop) || "target"
+        const property = (opts && opts.prop) || 'target'
 
         // if we have a previous target, try to use it
         if (this.memory[property] != null) {
@@ -62,7 +62,7 @@ export function installCreepPrototype() {
             return this.__serializeBody
         }
 
-        this.__serializeBody = ""
+        this.__serializeBody = ''
 
         for (const part of this.body) {
             this.__serializeBody += part.type === CLAIM ? part.type[1] : part.type[0]
@@ -106,12 +106,12 @@ export function installCreepPrototype() {
 
                 return compressed + part[0]
             },
-            ""
+            ''
         )
     }
 
     Creep.energyNeededFromCompressedBody = function energyNeededFromCompressedBody(body: string): number {
-        return _.sum(body.split(""), part => {
+        return _.sum(body.split(''), part => {
             switch (part) {
                 case MOVE[0]:
                     return BODYPART_COST[MOVE]

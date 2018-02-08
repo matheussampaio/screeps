@@ -1,5 +1,5 @@
-import { Action, ActionRegistry } from "../../../engine"
-import { RecycleCreepAction } from "./recycle-creep-action"
+import { Action, ActionRegistry } from '../../../engine'
+import { RecycleCreepAction } from './recycle-creep-action'
 
 @ActionRegistry.register
 export class ReplaceCreepAction extends Action {

@@ -1,4 +1,4 @@
-import { Action, ActionRegistry } from "../../../engine"
+import { Action, ActionRegistry } from '../../../engine'
 
 @ActionRegistry.register
 export class FindSource extends Action {
@@ -17,7 +17,7 @@ export class FindSource extends Action {
 
         for (const source of sources) {
             const harvester = source.pos.findInRange(FIND_MY_CREEPS, 1).find((c: Creep) => {
-                return c.memory.role === "HarvesterEnergy"
+                return c.memory.role === 'HarvesterEnergy'
             })
 
             if (harvester == null) {

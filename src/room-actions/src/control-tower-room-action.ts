@@ -1,5 +1,5 @@
-import { Action, ActionRegistry, CreepRoleRegistry } from "../../engine"
-import { HarvesterEnergyCreepRole, HaulerEnergyCreepRole } from "../../creep-roles"
+import { Action, ActionRegistry, CreepRoleRegistry } from '../../engine'
+import { HarvesterEnergyCreepRole, HaulerEnergyCreepRole } from '../../creep-roles'
 
 @ActionRegistry.register
 export class ControlTowerRoomAction extends Action {

@@ -1,6 +1,6 @@
-import { Action } from "../model"
-import { ActionRegistry } from "../registry"
-import { ActionReturn, getCpuLimit, Stats } from "../util"
+import { Action } from '../model'
+import { ActionRegistry } from '../registry'
+import { ActionReturn, getCpuLimit, Stats } from '../util'
 
 const SAFE_ACTIONS_INTERATIONS = 10
 const DEBUG = false
@@ -48,7 +48,7 @@ export class ActionRunner {
         let times = 0
 
         if (agent.memory.DEBUG) {
-            console.log("running group:", JSON.stringify(group))
+            console.log('running group:', JSON.stringify(group))
         }
 
         // for each action in the group
@@ -58,23 +58,23 @@ export class ActionRunner {
             const action: Action = ActionRegistry.fetch(group[0])
 
             if (times >= SAFE_ACTIONS_INTERATIONS) {
-                console.log("Too many interations, stoppping...", group[0])
+                console.log('Too many interations, stoppping...', group[0])
                 break
             }
 
             if (Game.cpu.getUsed() >= getCpuLimit()) {
-                console.log("Too much CPU used, stopping...")
+                console.log('Too much CPU used, stopping...')
                 break
             }
 
             // check if actions exists
             if (action == null) {
-                console.log("action missing", group[0])
+                console.log('action missing', group[0])
                 break
             }
 
             if (agent.memory.DEBUG) {
-                console.log("\trunning action:", group[0])
+                console.log('\trunning action:', group[0])
             }
 
             let actionsResult: (ActionReturn | string)[]
@@ -82,7 +82,7 @@ export class ActionRunner {
             try {
                 actionsResult = action.run(agent)
             } catch (error) {
-                console.log("ERROR:", group[0], error.stack)
+                console.log('ERROR:', group[0], error.stack)
                 break
             }
 
@@ -149,8 +149,8 @@ export class ActionRunner {
 
     public static run(agent: Creep | Room, defaults: (string)[][]): void {
         if (agent.memory.DEBUG) {
-            console.log("============\nRunning agent:", agent.name)
-            console.log("actions:", JSON.stringify(agent.memory.actions))
+            console.log('============\nRunning agent:', agent.name)
+            console.log('actions:', JSON.stringify(agent.memory.actions))
         }
 
         ActionRunner.setDefaultAction(agent, defaults)

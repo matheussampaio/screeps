@@ -1,4 +1,4 @@
-import { RoomRole, RoomRoleRegistry } from "../../engine"
+import { RoomRole, RoomRoleRegistry } from '../../engine'
 import {
     CityControlRoomAction,
     CreateBuildersRoomAction,
@@ -7,7 +7,7 @@ import {
     CreateUpgradersRoomAction,
     RoomPlannerRoomAction,
     SpawnCreepRoomAction
-} from "../../room-actions"
+} from '../../room-actions'
 
 @RoomRoleRegistry.register
 export class CityRoomRole extends RoomRole {

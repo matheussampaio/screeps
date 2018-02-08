@@ -1,4 +1,4 @@
-import { ActionReturn } from "../util"
+import { ActionReturn } from '../util'
 
 export class Action {
     // get name(): string {
@@ -6,7 +6,7 @@ export class Action {
     // }
 
     run(agent: Creep | Room): (ActionReturn | string)[] {
-        console.log("Missing run method")
+        console.log('Missing run method')
 
         return this.waitNextTick()
     }

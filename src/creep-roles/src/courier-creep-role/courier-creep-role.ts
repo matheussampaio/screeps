@@ -1,9 +1,9 @@
-import { CreateBody, CreepRole, CreepRoleRegistry, Priority } from "../../../engine"
+import { CreateBody, CreepRole, CreepRoleRegistry, Priority } from '../../../engine'
 import {
     DieInPeaceCreepAction,
     EmptyStorageLinkCreepAction,
     FillCourierTargetCreepAction
-} from "../../../creep-actions"
+} from '../../../creep-actions'
 
 @CreepRoleRegistry.register
 export class CourierCreepRole extends CreepRole {

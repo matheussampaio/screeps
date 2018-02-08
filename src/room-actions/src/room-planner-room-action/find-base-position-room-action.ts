@@ -1,4 +1,4 @@
-import { Action, ActionRegistry, CreepRoleRegistry } from "../../../engine"
+import { Action, ActionRegistry, CreepRoleRegistry } from '../../../engine'
 
 @ActionRegistry.register
 export class FindBasePositionRoomAction extends Action {
@@ -22,7 +22,7 @@ export class FindBasePositionRoomAction extends Action {
                 node.size = 0
                 node.terrain = Game.map.getTerrainAt(x, y, room.name)
 
-                if (node.terrain === "wall") {
+                if (node.terrain === 'wall') {
                     node.size = 0
                 } else if (x === 0 || y === 0) {
                     node.size = 1
@@ -53,7 +53,7 @@ export class FindBasePositionRoomAction extends Action {
 
                     for (let _y = y - MAP_WIDTH_HEIGHT + 1; _y <= y; _y++) {
                         for (let _x = x - MAP_WIDTH_HEIGHT + 1; _x <= x; _x++) {
-                            if (data.get(_x, _y).terrain === "swamp") {
+                            if (data.get(_x, _y).terrain === 'swamp') {
                                 swamps += 1
                             }
                         }

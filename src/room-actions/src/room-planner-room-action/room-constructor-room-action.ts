@@ -1,4 +1,4 @@
-import { Action, ActionRegistry, CreepRoleRegistry } from "../../../engine"
+import { Action, ActionRegistry, CreepRoleRegistry } from '../../../engine'
 
 export const TEMPLATE_SIZE_11: any = {
     0: {

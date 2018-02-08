@@ -1,5 +1,5 @@
-import { Priority } from "../util"
-import { CreepRequest } from "../interfaces"
+import { Priority } from '../util'
+import { CreepRequest } from '../interfaces'
 
 declare global {
     interface Room {
@@ -27,7 +27,7 @@ declare global {
 }
 
 export function installRoomPrototype() {
-    Object.defineProperty(Room.prototype, "creeps", {
+    Object.defineProperty(Room.prototype, 'creeps', {
         get() {
             if (this.__creeps != null) {
                 return this.__creeps
@@ -47,7 +47,7 @@ export function installRoomPrototype() {
         }
     })
 
-    Object.defineProperty(Room.prototype, "queue", {
+    Object.defineProperty(Room.prototype, 'queue', {
         get: function() {
             if (this.memory.queue == null) {
                 this.memory.queue = []
@@ -60,7 +60,7 @@ export function installRoomPrototype() {
         }
     })
 
-    Object.defineProperty(Room.prototype, "spawns", {
+    Object.defineProperty(Room.prototype, 'spawns', {
         get() {
             if (this.__spawns != null) {
                 return this.__spawns

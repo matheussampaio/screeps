@@ -1,4 +1,4 @@
-import { Priority } from "../util"
+import { Priority } from '../util'
 
 export interface CreepRequest {
     body: string

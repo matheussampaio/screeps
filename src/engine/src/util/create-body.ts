@@ -76,6 +76,6 @@ export class CreateBody {
     value(): string {
         return _.keys(this.body)
             .map(part => _.repeat(part[0], this.body[part]))
-            .join("")
+            .join('')
     }
 }

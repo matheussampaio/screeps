@@ -1,5 +1,5 @@
-import { Action, ActionRegistry } from "../../../engine"
-import { BuilderCreepAction } from "../builder"
+import { Action, ActionRegistry } from '../../../engine'
+import { BuilderCreepAction } from '../builder'
 
 @ActionRegistry.register
 export class FindTransferTargetCreepAction extends Action {

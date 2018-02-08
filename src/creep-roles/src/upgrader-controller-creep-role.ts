@@ -1,5 +1,5 @@
-import { CreateBody, CreepRole, CreepRoleRegistry, Priority } from "../../engine"
-import { DieInPeaceCreepAction, UpgradeControllerCreepAction } from "../../creep-actions"
+import { CreateBody, CreepRole, CreepRoleRegistry, Priority } from '../../engine'
+import { DieInPeaceCreepAction, UpgradeControllerCreepAction } from '../../creep-actions'
 
 @CreepRoleRegistry.register
 export class UpgraderControllerCreepRole extends CreepRole {
