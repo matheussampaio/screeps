@@ -1,6 +1,6 @@
-import { Action } from '../model'
-import { ActionRegistry } from '../registry'
-import { ActionReturn, getCpuLimit, Stats } from '../util'
+import { Action } from "../model"
+import { ActionRegistry } from "../registry"
+import { ActionReturn, getCpuLimit, Stats } from "../util"
 
 const SAFE_ACTIONS_INTERATIONS = 10
 const DEBUG = false
@@ -18,7 +18,6 @@ export class ActionRunner {
                 }
 
                 agent.memory.actions[i] = _.cloneDeep(defaults[i])
-
             } else if (agent.memory.actions[i].length >= SAFE_ACTIONS_INTERATIONS) {
                 console.log(`WARN: to much actions (${agent.memory.actions[i].length}), reseting...`)
 
@@ -49,33 +48,33 @@ export class ActionRunner {
         let times = 0
 
         if (agent.memory.DEBUG) {
-            console.log('running group:', JSON.stringify(group))
+            console.log("running group:", JSON.stringify(group))
         }
 
-         // for each action in the group
+        // for each action in the group
         while (group.length) {
             times += 1
 
             const action: Action = ActionRegistry.fetch(group[0])
 
             if (times >= SAFE_ACTIONS_INTERATIONS) {
-                console.log('Too many interations, stoppping...', group[0])
+                console.log("Too many interations, stoppping...", group[0])
                 break
             }
 
             if (Game.cpu.getUsed() >= getCpuLimit()) {
-                console.log('Too much CPU used, stopping...')
+                console.log("Too much CPU used, stopping...")
                 break
             }
 
             // check if actions exists
             if (action == null) {
-                console.log('action missing', group[0])
+                console.log("action missing", group[0])
                 break
             }
 
             if (agent.memory.DEBUG) {
-                console.log('\trunning action:', group[0])
+                console.log("\trunning action:", group[0])
             }
 
             let actionsResult: (ActionReturn | string)[]
@@ -83,7 +82,7 @@ export class ActionRunner {
             try {
                 actionsResult = action.run(agent)
             } catch (error) {
-                console.log('ERROR:', group[0], error.stack)
+                console.log("ERROR:", group[0], error.stack)
                 break
             }
 
@@ -94,38 +93,38 @@ export class ActionRunner {
                 group.shift()
                 continue
 
-            // delete this action and continue with the next group
+                // delete this action and continue with the next group
             } else if (result === ActionReturn.SHIFT_AND_STOP) {
                 group.shift()
                 break
 
-            // continue with the next group
+                // continue with the next group
             } else if (result === ActionReturn.WAIT_NEXT_TICK) {
                 break
 
-            // unshift more actions and continue with the first action
+                // unshift more actions and continue with the first action
             } else if (result === ActionReturn.UNSHIFT_AND_CONTINUE) {
                 group.unshift(...actions)
                 continue
 
-            // unshift more action and continue with the next group
+                // unshift more action and continue with the next group
             } else if (result === ActionReturn.UNSHIFT_AND_STOP) {
                 group.unshift(...actions)
                 break
 
-            // delete this action, unshift more actions and continue with the first action
+                // delete this action, unshift more actions and continue with the first action
             } else if (result === ActionReturn.SHIFT_UNSHIFT_AND_CONTINUE) {
                 group.shift()
                 group.unshift(...actions)
                 continue
 
-            // delete this action, unshift more actions and continue with the next group
+                // delete this action, unshift more actions and continue with the next group
             } else if (result === ActionReturn.SHIFT_UNSHIFT_AND_STOP) {
                 group.shift()
                 group.unshift(...actions)
                 break
 
-            // continue with the next group
+                // continue with the next group
             } else {
                 break
             }
@@ -150,8 +149,8 @@ export class ActionRunner {
 
     public static run(agent: Creep | Room, defaults: (string)[][]): void {
         if (agent.memory.DEBUG) {
-            console.log('============\nRunning agent:', agent.name)
-            console.log('actions:', JSON.stringify(agent.memory.actions))
+            console.log("============\nRunning agent:", agent.name)
+            console.log("actions:", JSON.stringify(agent.memory.actions))
         }
 
         ActionRunner.setDefaultAction(agent, defaults)

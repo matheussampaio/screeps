@@ -1,21 +1,17 @@
-import { Action, ActionRegistry } from '../../../engine'
-import { BuilderCreepAction } from '../builder'
-
+import { Action, ActionRegistry } from "../../../engine"
+import { BuilderCreepAction } from "../builder"
 
 @ActionRegistry.register
 export class FindTransferTargetCreepAction extends Action {
     run(creep: Creep) {
         let target = creep.getTarget(FIND_MY_STRUCTURES, {
-            filter: (s: StructureTower) => (
-                s.structureType === STRUCTURE_TOWER && s.energy < s.energyCapacity - 250
-            )
+            filter: (s: StructureTower) => s.structureType === STRUCTURE_TOWER && s.energy < s.energyCapacity - 250
         })
 
         if (target == null) {
             target = creep.getTarget(FIND_MY_STRUCTURES, {
-                filter: (s: StructureExtension) => (
+                filter: (s: StructureExtension) =>
                     (s.structureType === STRUCTURE_EXTENSION || s.structureType === STRUCTURE_SPAWN) && !s.isFull()
-                )
             })
         }
 

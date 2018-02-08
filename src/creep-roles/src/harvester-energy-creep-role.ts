@@ -1,6 +1,5 @@
-import { CreateBody, CreepRole, CreepRoleRegistry, Priority } from '../../engine'
-import { DieInPeaceCreepAction, HarvesterEnergy } from '../../creep-actions'
-
+import { CreateBody, CreepRole, CreepRoleRegistry, Priority } from "../../engine"
+import { DieInPeaceCreepAction, HarvesterEnergy } from "../../creep-actions"
 
 @CreepRoleRegistry.register
 export class HarvesterEnergyCreepRole extends CreepRole {
@@ -14,10 +13,7 @@ export class HarvesterEnergyCreepRole extends CreepRole {
     }
 
     defaults(): string[][] {
-        return [
-            [HarvesterEnergy.name],
-            [DieInPeaceCreepAction.name]
-        ]
+        return [[HarvesterEnergy.name], [DieInPeaceCreepAction.name]]
     }
 
     priority(harvesterAlive: number): Priority {

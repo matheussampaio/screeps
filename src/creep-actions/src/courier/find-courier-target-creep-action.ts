@@ -1,16 +1,16 @@
-import { Action, ActionRegistry } from '../../../engine'
-import { GetEnergyFromStorageCreepAction } from '../get-energy'
-
+import { Action, ActionRegistry } from "../../../engine"
+import { GetEnergyFromStorageCreepAction } from "../get-energy"
 
 @ActionRegistry.register
 export class FindCourierTargetCreepAction extends Action {
     run(creep: Creep) {
         let target: StructureSpawn | StructureExtension | StructureTower | StructureTerminal
 
-        const towers: StructureTower[] = creep.room.find(FIND_MY_STRUCTURES, {
-            filter: (s: StructureTower) => s.structureType === STRUCTURE_TOWER && s.energy < s.energyCapacity - 250
-        })
-        .sort((a: StructureTower, b: StructureTower) => a.energy - b.energy) as StructureTower[]
+        const towers: StructureTower[] = creep.room
+            .find(FIND_MY_STRUCTURES, {
+                filter: (s: StructureTower) => s.structureType === STRUCTURE_TOWER && s.energy < s.energyCapacity - 250
+            })
+            .sort((a: StructureTower, b: StructureTower) => a.energy - b.energy) as StructureTower[]
 
         if (towers.length) {
             target = towers[0]
@@ -19,9 +19,8 @@ export class FindCourierTargetCreepAction extends Action {
 
         if (target == null) {
             target = creep.getTarget(FIND_MY_STRUCTURES, {
-                filter: (s: StructureExtension) => (
+                filter: (s: StructureExtension) =>
                     (s.structureType === STRUCTURE_EXTENSION || s.structureType === STRUCTURE_SPAWN) && !s.isFull()
-                )
             }) as StructureExtension
         }
 

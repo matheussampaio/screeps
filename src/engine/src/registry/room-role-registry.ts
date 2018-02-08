@@ -1,4 +1,4 @@
-import { RoomRole } from '../model'
+import { RoomRole } from "../model"
 
 export class RoomRoleRegistry {
     private static readonly registry: { [s: string]: RoomRole } = {}

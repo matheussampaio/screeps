@@ -1,4 +1,4 @@
-import { Action } from '../model'
+import { Action } from "../model"
 
 export class ActionRegistry {
     private static readonly registry: { [s: string]: Action } = {}

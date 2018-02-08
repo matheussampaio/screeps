@@ -1,6 +1,5 @@
-import { Action, ActionRegistry } from '../../../engine'
-import { GetEnergyFromStorageCreepAction } from '../get-energy'
-
+import { Action, ActionRegistry } from "../../../engine"
+import { GetEnergyFromStorageCreepAction } from "../get-energy"
 
 @ActionRegistry.register
 export class EmptyStorageLinkCreepAction extends Action {

@@ -1,7 +1,6 @@
-import { Action, ActionRegistry } from '../../../engine'
-import { GetEnergyFromStorageCreepAction } from '../get-energy'
-import { FindCourierTargetCreepAction } from './find-courier-target-creep-action'
-
+import { Action, ActionRegistry } from "../../../engine"
+import { GetEnergyFromStorageCreepAction } from "../get-energy"
+import { FindCourierTargetCreepAction } from "./find-courier-target-creep-action"
 
 @ActionRegistry.register
 export class FillCourierTargetCreepAction extends Action {
@@ -10,7 +9,9 @@ export class FillCourierTargetCreepAction extends Action {
             return this.unshiftAndContinue(GetEnergyFromStorageCreepAction.name)
         }
 
-        let target: StructureSpawn | StructureExtension | StructureTower | StructureTerminal = Game.getObjectById(creep.memory.target)
+        let target: StructureSpawn | StructureExtension | StructureTower | StructureTerminal = Game.getObjectById(
+            creep.memory.target
+        )
 
         // TODO: Find transfer target should be an action
         if (target == null || target.isFull()) {

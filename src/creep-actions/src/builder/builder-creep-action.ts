@@ -1,8 +1,7 @@
-import { Action, ActionRegistry } from '../../../engine'
-import { GetEnergyFromStorageCreepAction } from '../get-energy'
-import { TravelToCreepAction } from '../travel'
-import { UpgradeControllerCreepAction } from '../upgrade-controller'
-
+import { Action, ActionRegistry } from "../../../engine"
+import { GetEnergyFromStorageCreepAction } from "../get-energy"
+import { TravelToCreepAction } from "../travel"
+import { UpgradeControllerCreepAction } from "../upgrade-controller"
 
 @ActionRegistry.register
 export class BuilderCreepAction extends Action {
@@ -12,7 +11,9 @@ export class BuilderCreepAction extends Action {
         }
 
         // search for construction site
-        const construction: ConstructionSite = creep.getTarget(FIND_CONSTRUCTION_SITES, { prop: 'construction' }) as ConstructionSite
+        const construction: ConstructionSite = creep.getTarget(FIND_CONSTRUCTION_SITES, {
+            prop: "construction"
+        }) as ConstructionSite
 
         // TODO: if nothing to construct, recycle creep.
         if (construction == null) {

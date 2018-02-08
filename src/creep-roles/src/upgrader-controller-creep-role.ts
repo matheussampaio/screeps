@@ -1,6 +1,5 @@
-import { CreateBody, CreepRole, CreepRoleRegistry, Priority } from '../../engine'
-import { DieInPeaceCreepAction, UpgradeControllerCreepAction } from '../../creep-actions'
-
+import { CreateBody, CreepRole, CreepRoleRegistry, Priority } from "../../engine"
+import { DieInPeaceCreepAction, UpgradeControllerCreepAction } from "../../creep-actions"
 
 @CreepRoleRegistry.register
 export class UpgraderControllerCreepRole extends CreepRole {
@@ -12,9 +11,6 @@ export class UpgraderControllerCreepRole extends CreepRole {
     }
 
     defaults(): string[][] {
-        return [
-            [UpgradeControllerCreepAction.name],
-            [DieInPeaceCreepAction.name]
-        ]
+        return [[UpgradeControllerCreepAction.name], [DieInPeaceCreepAction.name]]
     }
 }

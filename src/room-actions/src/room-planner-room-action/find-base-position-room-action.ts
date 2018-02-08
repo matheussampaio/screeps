@@ -1,5 +1,4 @@
-import { Action, ActionRegistry, CreepRoleRegistry } from '../../../engine'
-
+import { Action, ActionRegistry, CreepRoleRegistry } from "../../../engine"
 
 @ActionRegistry.register
 export class FindBasePositionRoomAction extends Action {
@@ -23,12 +22,10 @@ export class FindBasePositionRoomAction extends Action {
                 node.size = 0
                 node.terrain = Game.map.getTerrainAt(x, y, room.name)
 
-                if (node.terrain === 'wall') {
+                if (node.terrain === "wall") {
                     node.size = 0
-
                 } else if (x === 0 || y === 0) {
                     node.size = 1
-
                 } else {
                     const west = data.get(x - 1, y)
                     const north = data.get(x, y - 1)
@@ -36,7 +33,6 @@ export class FindBasePositionRoomAction extends Action {
 
                     if (west.size === north.size && north.size === northwest.size) {
                         node.size = Math.min(MAP_WIDTH_HEIGHT, north.size + 1)
-
                     } else {
                         node.size = _.min([west.size, north.size, northwest.size]) + 1
                     }
@@ -57,7 +53,7 @@ export class FindBasePositionRoomAction extends Action {
 
                     for (let _y = y - MAP_WIDTH_HEIGHT + 1; _y <= y; _y++) {
                         for (let _x = x - MAP_WIDTH_HEIGHT + 1; _x <= x; _x++) {
-                            if (data.get(_x, _y).terrain === 'swamp') {
+                            if (data.get(_x, _y).terrain === "swamp") {
                                 swamps += 1
                             }
                         }
@@ -69,10 +65,7 @@ export class FindBasePositionRoomAction extends Action {
         }
 
         // room's center position
-        const centers = [
-            [24, 24], [25, 24],
-            [24, 25], [25, 25]
-        ]
+        const centers = [[24, 24], [25, 24], [24, 25], [25, 25]]
 
         // translate positions and calculate distance to the center of the room
         for (const key in data) {

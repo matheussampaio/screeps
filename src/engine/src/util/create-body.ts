@@ -5,10 +5,10 @@ export class CreateBody {
 
     static MAX_CREEP_SIZE = 50
 
-    constructor({ minimumEnergy, energy }: { minimumEnergy: number, energy: number }) {
+    constructor({ minimumEnergy, energy }: { minimumEnergy: number; energy: number }) {
         this.energy = Math.max(minimumEnergy, energy)
 
-        BODYPARTS_ALL.forEach(part => this.body[part] = 0)
+        BODYPARTS_ALL.forEach(part => (this.body[part] = 0))
     }
 
     add(parts: BodyPartConstant | BodyPartConstant[], maximum: any = {}) {
@@ -66,14 +66,16 @@ export class CreateBody {
     }
 
     canAddMoreParts(parts: BodyPartConstant[], maximum: any, minimumCost: number, movesPart = 0) {
-        return this.size + movesPart < CreateBody.MAX_CREEP_SIZE
-            && this.energy >= minimumCost
-            && parts.some(part => this.body[part] < (maximum[part] || 1))
+        return (
+            this.size + movesPart < CreateBody.MAX_CREEP_SIZE &&
+            this.energy >= minimumCost &&
+            parts.some(part => this.body[part] < (maximum[part] || 1))
+        )
     }
 
     value(): string {
         return _.keys(this.body)
             .map(part => _.repeat(part[0], this.body[part]))
-            .join('')
+            .join("")
     }
 }

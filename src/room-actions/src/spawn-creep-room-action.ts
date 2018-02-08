@@ -1,5 +1,4 @@
-import { Action, ActionRegistry, CreepRequest, CreepRoleRegistry } from '../../engine'
-
+import { Action, ActionRegistry, CreepRequest, CreepRoleRegistry } from "../../engine"
 
 @ActionRegistry.register
 export class SpawnCreepRoomAction extends Action {

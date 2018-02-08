@@ -1,5 +1,4 @@
-import { Action, ActionRegistry } from '../../../engine'
-
+import { Action, ActionRegistry } from "../../../engine"
 
 @ActionRegistry.register
 export class FindMovementTarget extends Action {

@@ -1,32 +1,16 @@
-import { Action, ActionRegistry, CreepRoleRegistry } from '../../../engine'
-
+import { Action, ActionRegistry, CreepRoleRegistry } from "../../../engine"
 
 export const TEMPLATE_SIZE_11: any = {
     0: {
-        spawn: [
-            { x: 0, y: -4 }
-        ]
+        spawn: [{ x: 0, y: -4 }]
     },
     1: {},
     2: {
-        extension: [
-            { x: -5, y: -5 },
-            { x: -4, y: -5 },
-            { x: -3, y: -5 },
-            { x: -2, y: -5 },
-            { x: -1, y: -5 }
-        ]
+        extension: [{ x: -5, y: -5 }, { x: -4, y: -5 }, { x: -3, y: -5 }, { x: -2, y: -5 }, { x: -1, y: -5 }]
     },
     3: {
-        extension: [
-            { x: 1, y: -5 },
-            { x: 2, y: -5 },
-            { x: 3, y: -5 },
-            { x: 4, y: -5 },
-            { x: 5, y: -5 }],
-        tower: [
-            { x: -1, y: -2 }
-        ]
+        extension: [{ x: 1, y: -5 }, { x: 2, y: -5 }, { x: 3, y: -5 }, { x: 4, y: -5 }, { x: 5, y: -5 }],
+        tower: [{ x: -1, y: -2 }]
     },
     4: {
         extension: [
@@ -41,9 +25,7 @@ export const TEMPLATE_SIZE_11: any = {
             { x: -2, y: -3 },
             { x: -1, y: -3 }
         ],
-        storage: [
-            { x: 0, y: 0 }
-        ],
+        storage: [{ x: 0, y: 0 }],
         road: [
             { x: 0, y: -5 },
             { x: -4, y: -4 },
@@ -80,8 +62,9 @@ export const TEMPLATE_SIZE_11: any = {
             { x: -1, y: 4 },
             { x: 1, y: 4 },
             { x: 4, y: 4 },
-            { x: 0, y: 5 }],
-            rampart: []
+            { x: 0, y: 5 }
+        ],
+        rampart: []
     },
     5: {
         extension: [
@@ -96,12 +79,8 @@ export const TEMPLATE_SIZE_11: any = {
             { x: 4, y: -2 },
             { x: 5, y: -2 }
         ],
-        tower: [
-            { x: 1, y: -2 }
-        ],
-        link: [
-            { x: 0, y: -1 }
-        ]
+        tower: [{ x: 1, y: -2 }],
+        link: [{ x: 0, y: -1 }]
     },
     6: {
         extension: [
@@ -116,14 +95,8 @@ export const TEMPLATE_SIZE_11: any = {
             { x: 3, y: 2 },
             { x: 4, y: 2 }
         ],
-        terminal: [
-            { x: 0, y: 1 }
-        ],
-        lab: [
-            { x: -3, y: 1 },
-            { x: -2, y: 1 },
-            { x: -4, y: 2 }
-        ]
+        terminal: [{ x: 0, y: 1 }],
+        lab: [{ x: -3, y: 1 }, { x: -2, y: 1 }, { x: -4, y: 2 }]
     },
     7: {
         extension: [
@@ -136,18 +109,11 @@ export const TEMPLATE_SIZE_11: any = {
             { x: -5, y: 4 },
             { x: 2, y: 4 },
             { x: 3, y: 4 },
-            { x: 5, y: 4 }],
-        tower: [
-            { x: -2, y: -1 }
+            { x: 5, y: 4 }
         ],
-        spawn: [
-            { x: -4, y: 0 }
-        ],
-        lab: [
-            { x: -3, y: 2 },
-            { x: -1, y: 2 },
-            { x: -4, y: 3 }
-        ]
+        tower: [{ x: -2, y: -1 }],
+        spawn: [{ x: -4, y: 0 }],
+        lab: [{ x: -3, y: 2 }, { x: -1, y: 2 }, { x: -4, y: 3 }]
     },
     8: {
         extension: [
@@ -162,27 +128,12 @@ export const TEMPLATE_SIZE_11: any = {
             { x: 4, y: 5 },
             { x: 5, y: 5 }
         ],
-        spawn: [
-            { x: 4, y: 0 }
-        ],
-        tower: [
-            { x: 2, y: -1 },
-            { x: 2, y: 1 }
-        ],
-        powerSpawn: [
-            { x: 0, y: 4 }
-        ],
-        nuker: [
-            { x: -1, y: 0 }
-        ],
-        observer: [
-            { x: 1, y: 0 }
-        ], lab: [
-            { x: -2, y: 3 },
-            { x: -1, y: 3 },
-            { x: -3, y: 4 },
-            { x: -2, y: 4 }
-        ]
+        spawn: [{ x: 4, y: 0 }],
+        tower: [{ x: 2, y: -1 }, { x: 2, y: 1 }],
+        powerSpawn: [{ x: 0, y: 4 }],
+        nuker: [{ x: -1, y: 0 }],
+        observer: [{ x: 1, y: 0 }],
+        lab: [{ x: -2, y: 3 }, { x: -1, y: 3 }, { x: -3, y: 4 }, { x: -2, y: 4 }]
     }
 }
 
@@ -195,7 +146,6 @@ export class RoomConstructorRoomAction extends Action {
             return this.shiftAndStop()
         }
 
-
         for (let i = 2; i <= room.controller!.level; i++) {
             const templateLevel = TEMPLATE_SIZE_11[i]
 
@@ -207,7 +157,11 @@ export class RoomConstructorRoomAction extends Action {
                         continue
                     }
 
-                    const constructions = room.lookForAt(LOOK_CONSTRUCTION_SITES, center.x + position.x, center.y + position.y)
+                    const constructions = room.lookForAt(
+                        LOOK_CONSTRUCTION_SITES,
+                        center.x + position.x,
+                        center.y + position.y
+                    )
 
                     if (constructions.length) {
                         return this.shiftAndStop()
@@ -222,7 +176,6 @@ export class RoomConstructorRoomAction extends Action {
                     if (result === OK) {
                         return this.shiftAndStop()
                     }
-
                 }
             }
         }

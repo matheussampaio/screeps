@@ -3,23 +3,28 @@ declare global {
         __serializeBody: string
 
         dieInPeace(substitue: Creep): void
-        getTarget(type: number, opts?: FindPathOpts & {
-            filter?: any | string;
-            algorithm?: string;
-            prop?: string;
-        }): RoomObject | null
+        getTarget(
+            type: number,
+            opts?: FindPathOpts & {
+                filter?: any | string
+                algorithm?: string
+                prop?: string
+            }
+        ): RoomObject | null
         serializeBody(): string
     }
 }
 
 export function installCreepPrototype() {
-    Creep.prototype.getTarget = function getTarget(type: number, opts?: FindPathOpts & {
-            filter?: any | string;
-            algorithm?: string;
-            prop?: string;
-        }) {
-
-        const property = (opts && opts.prop) || 'target'
+    Creep.prototype.getTarget = function getTarget(
+        type: number,
+        opts?: FindPathOpts & {
+            filter?: any | string
+            algorithm?: string
+            prop?: string
+        }
+    ) {
+        const property = (opts && opts.prop) || "target"
 
         // if we have a previous target, try to use it
         if (this.memory[property] != null) {
@@ -57,7 +62,7 @@ export function installCreepPrototype() {
             return this.__serializeBody
         }
 
-        this.__serializeBody = ''
+        this.__serializeBody = ""
 
         for (const part of this.body) {
             this.__serializeBody += part.type === CLAIM ? part.type[1] : part.type[0]
@@ -67,7 +72,7 @@ export function installCreepPrototype() {
     }
 
     Creep.uncompressBody = function parseBodyString(compactBody: string): string[] {
-        return _.map(compactBody, (p) => {
+        return _.map(compactBody, p => {
             switch (p) {
                 case MOVE[0]:
                     return MOVE
@@ -92,17 +97,21 @@ export function installCreepPrototype() {
     }
 
     Creep.compressBody = function compressBody(body: string[]): string {
-        return _.reduce(body, (compressed, part) => {
-            if (part === CLAIM) {
-                return compressed + part[1]
-            }
+        return _.reduce(
+            body,
+            (compressed, part) => {
+                if (part === CLAIM) {
+                    return compressed + part[1]
+                }
 
-            return compressed + part[0]
-        }, '')
+                return compressed + part[0]
+            },
+            ""
+        )
     }
 
     Creep.energyNeededFromCompressedBody = function energyNeededFromCompressedBody(body: string): number {
-        return _.sum(body.split(''), (part) => {
+        return _.sum(body.split(""), part => {
             switch (part) {
                 case MOVE[0]:
                     return BODYPART_COST[MOVE]

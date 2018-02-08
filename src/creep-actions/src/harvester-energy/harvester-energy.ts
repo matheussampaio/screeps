@@ -1,8 +1,7 @@
-import { FindSource } from './find-source'
-import { BuildContainer } from './build-container'
-import { Action, ActionRegistry } from '../../../engine'
-import { FindMovementTarget } from './find-movement-target'
-
+import { FindSource } from "./find-source"
+import { BuildContainer } from "./build-container"
+import { Action, ActionRegistry } from "../../../engine"
+import { FindMovementTarget } from "./find-movement-target"
 
 @ActionRegistry.register
 export class HarvesterEnergy extends Action {
@@ -34,7 +33,12 @@ export class HarvesterEnergy extends Action {
         }
 
         // create container
-        if (creep.memory.working && creep.getActiveBodyparts(WORK) && creep.getActiveBodyparts(CARRY) && Game.time % 10 === 0) {
+        if (
+            creep.memory.working &&
+            creep.getActiveBodyparts(WORK) &&
+            creep.getActiveBodyparts(CARRY) &&
+            Game.time % 10 === 0
+        ) {
             return this.unshiftAndContinue(BuildContainer.name)
         }
 
@@ -58,7 +62,7 @@ export class HarvesterEnergy extends Action {
                     creep.travelTo(link)
                 }
             } else if (link.cooldown === 0) {
-                const linkStorageId: string = _.get(creep, 'room.memory.links.storage')
+                const linkStorageId: string = _.get(creep, "room.memory.links.storage")
 
                 if (linkStorageId) {
                     const linkStorage: StructureLink = Game.getObjectById(linkStorageId)
@@ -66,7 +70,7 @@ export class HarvesterEnergy extends Action {
                     if (linkStorage.energy === 0) {
                         link.transferEnergy(linkStorage)
                     } else {
-                        const linkControllerId: string = _.get(creep, 'room.memory.links.controller')
+                        const linkControllerId: string = _.get(creep, "room.memory.links.controller")
 
                         if (linkControllerId) {
                             const linkController: StructureLink = Game.getObjectById(linkControllerId)

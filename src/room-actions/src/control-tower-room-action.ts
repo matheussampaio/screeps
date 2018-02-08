@@ -1,6 +1,5 @@
-import { Action, ActionRegistry, CreepRoleRegistry } from '../../engine'
-import { HarvesterEnergyCreepRole, HaulerEnergyCreepRole } from '../../creep-roles'
-
+import { Action, ActionRegistry, CreepRoleRegistry } from "../../engine"
+import { HarvesterEnergyCreepRole, HaulerEnergyCreepRole } from "../../creep-roles"
 
 @ActionRegistry.register
 export class ControlTowerRoomAction extends Action {
@@ -24,7 +23,7 @@ export class ControlTowerRoomAction extends Action {
             5: 5000,
             6: 25000,
             7: 75000,
-            8: 200000,
+            8: 200000
         }
 
         const ramparts: Structure[] = room.find(FIND_MY_STRUCTURES, {

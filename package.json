@@ -6,6 +6,7 @@
   "scripts": {
     "build": "rollup --config",
     "publish": "gulp publish",
+    "prettier": "prettier --write \"src/**/*.ts\"",
     "debug": "nodemon -e ts -w src -d 1 -x \"npm run build && npm run publish\""
   },
   "repository": {

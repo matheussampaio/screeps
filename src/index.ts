@@ -1,4 +1,4 @@
-import '../Traveler/Traveler'
+import "../Traveler/Traveler"
 // import * as Actions from './actions'
 // import { ActionsRegistry, Agent } from './agent'
 // import { IAction, ICreepRole, IRoomRole } from './interfaces'
@@ -6,12 +6,12 @@ import '../Traveler/Traveler'
 // import { Stats } from './utils'
 
 // _.values(Actions).forEach((action: IAction) => ActionsRegistry.register(action))
-import { ActionRunner, CreepRoleRegistry, CreepRole, installPrototypes, RoomRole, RoomRoleRegistry } from './engine'
+import { ActionRunner, CreepRoleRegistry, CreepRole, installPrototypes, RoomRole, RoomRoleRegistry } from "./engine"
 
-import { HarvesterEnergyCreepRole } from './creep-roles'
-import * as CreepActions from './creep-actions'
+import { HarvesterEnergyCreepRole } from "./creep-roles"
+import * as CreepActions from "./creep-actions"
 
-import { CityRoomRole } from './room-roles'
+import { CityRoomRole } from "./room-roles"
 
 installPrototypes()
 
@@ -29,7 +29,7 @@ export function loop() {
         const room: Room = Game.rooms[roomName]
 
         if (room.controller && room.controller.my) {
-            const roomRoleName = _.get(room, 'memory.role', CityRoomRole.name)
+            const roomRoleName = _.get(room, "memory.role", CityRoomRole.name)
             const role: RoomRole | null = RoomRoleRegistry.fetch(roomRoleName)
 
             if (role != null) {

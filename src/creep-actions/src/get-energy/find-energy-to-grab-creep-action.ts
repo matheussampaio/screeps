@@ -1,5 +1,4 @@
-import { Action, ActionRegistry } from '../../../engine'
-
+import { Action, ActionRegistry } from "../../../engine"
 
 @ActionRegistry.register
 export class FindEnergyToGrabCreepAction extends Action {
@@ -15,7 +14,7 @@ export class FindEnergyToGrabCreepAction extends Action {
 
         // try to find a container
         const containers: StructureContainer[] = creep.room.find(FIND_STRUCTURES, {
-            filter: (s: StructureContainer) => s.structureType === STRUCTURE_CONTAINER && s.store.energy > 0,
+            filter: (s: StructureContainer) => s.structureType === STRUCTURE_CONTAINER && s.store.energy > 0
         }) as StructureContainer[]
 
         // get the container with more energy

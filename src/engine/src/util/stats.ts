@@ -29,13 +29,13 @@ export class Stats {
         // Collect room stats
         for (const roomName in Game.rooms) {
             const room = Game.rooms[roomName]
-            const isMyRoom = (room.controller ? room.controller.my : false)
+            const isMyRoom = room.controller ? room.controller.my : false
 
             if (isMyRoom) {
-                const roomStats: any = stats.roomSummary[roomName] = {}
+                const roomStats: any = (stats.roomSummary[roomName] = {})
 
-                roomStats.storageEnergy = (room.storage ? room.storage.store.energy : 0)
-                roomStats.terminalEnergy = (room.terminal ? room.terminal.store.energy : 0)
+                roomStats.storageEnergy = room.storage ? room.storage.store.energy : 0
+                roomStats.terminalEnergy = room.terminal ? room.terminal.store.energy : 0
                 roomStats.energyAvailable = room.energyAvailable
                 roomStats.energyCapacityAvailable = room.energyCapacityAvailable
                 roomStats.controllerProgress = room.controller!.progress

@@ -1,5 +1,4 @@
-import { CreateBody, Priority } from '../util'
-
+import { CreateBody, Priority } from "../util"
 
 export class CreepRole {
     defaults(): string[][] {
@@ -11,7 +10,7 @@ export class CreepRole {
     }
 
     body(energy: number): string {
-        return 'mwc'
+        return "mwc"
     }
 
     role() {
@@ -24,15 +23,18 @@ export class CreepRole {
         }
     }
 
-    queue(room: Room, { name, body, memory = {}, priority }: { name?: string, body?: string, memory?: any, priority?: Priority } = {}) {
+    queue(
+        room: Room,
+        { name, body, memory = {}, priority }: { name?: string; body?: string; memory?: any; priority?: Priority } = {}
+    ) {
         // TODO: Move basic prototypes to engine project
-        const simillarCreepsAlive = _.get(room, ['creeps', this.role(), 'length'], 0)
+        const simillarCreepsAlive = _.get(room, ["creeps", this.role(), "length"], 0)
 
         return room.queueCreep({
             name,
             body: body || this.body(room.energyAvailable),
             memory: Object.assign(this.memory(), memory),
-            priority: priority || this.priority(simillarCreepsAlive),
+            priority: priority || this.priority(simillarCreepsAlive)
         })
     }
 }

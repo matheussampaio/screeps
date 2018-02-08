@@ -1,4 +1,4 @@
-import { CreepRole } from '../model'
+import { CreepRole } from "../model"
 
 export class CreepRoleRegistry {
     private static readonly registry: { [s: string]: CreepRole } = {}

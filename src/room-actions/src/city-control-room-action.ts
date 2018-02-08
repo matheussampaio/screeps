@@ -1,5 +1,4 @@
-import { Action, ActionRegistry, CreepRoleRegistry } from '../../engine'
-
+import { Action, ActionRegistry, CreepRoleRegistry } from "../../engine"
 
 @ActionRegistry.register
 export class CityControlRoomAction extends Action {
@@ -16,8 +15,8 @@ export class CityControlRoomAction extends Action {
             _.defaultsDeep(room.memory, {
                 links: {
                     sources: {},
-                    storage: '',
-                    controller: ''
+                    storage: "",
+                    controller: ""
                 }
             })
 

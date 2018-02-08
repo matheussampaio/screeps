@@ -1,14 +1,11 @@
-import { Action, ActionRegistry } from '../../../engine'
-
+import { Action, ActionRegistry } from "../../../engine"
 
 @ActionRegistry.register
 export class RecycleCreepAction extends Action {
     run(creep: Creep) {
         if (creep.memory.spawn == null) {
             const spawn: StructureSpawn = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-                filter: (s: StructureSpawn) => (
-                    s.structureType === STRUCTURE_SPAWN
-                )
+                filter: (s: StructureSpawn) => s.structureType === STRUCTURE_SPAWN
             }) as StructureSpawn
 
             creep.memory.spawn = spawn.id

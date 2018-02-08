@@ -1,7 +1,6 @@
-import { ReplacerCreepRole } from '../../../creep-roles'
-import { ReplaceCreepAction } from './replace-creep-action'
-import { Action, ActionRegistry, CreepRoleRegistry, CreepRole } from '../../../engine'
-
+import { ReplacerCreepRole } from "../../../creep-roles"
+import { ReplaceCreepAction } from "./replace-creep-action"
+import { Action, ActionRegistry, CreepRoleRegistry, CreepRole } from "../../../engine"
 
 @ActionRegistry.register
 export class DieInPeaceCreepAction extends Action {
@@ -12,7 +11,7 @@ export class DieInPeaceCreepAction extends Action {
 
         const room: Room = creep.memory.room ? Game.rooms[creep.memory.room] : creep.room
 
-        const isRoomQueueEmpty = _.get(room, 'memory.queue.length', 0) === 0
+        const isRoomQueueEmpty = _.get(room, "memory.queue.length", 0) === 0
         const isCreepAlmostDying = creep.ticksToLive < creep.body.length * CREEP_SPAWN_TIME + 25
 
         if (isRoomQueueEmpty && isCreepAlmostDying) {

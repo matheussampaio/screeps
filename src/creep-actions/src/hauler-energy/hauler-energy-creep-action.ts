@@ -1,6 +1,6 @@
-import { GetEnergyCreepAction } from '../get-energy'
-import { Action, ActionRegistry } from '../../../engine'
-import { FindTransferTargetCreepAction } from './find-transfer-target-creep-action'
+import { GetEnergyCreepAction } from "../get-energy"
+import { Action, ActionRegistry } from "../../../engine"
+import { FindTransferTargetCreepAction } from "./find-transfer-target-creep-action"
 
 @ActionRegistry.register
 export class HaulerEnergyCreepAction extends Action {

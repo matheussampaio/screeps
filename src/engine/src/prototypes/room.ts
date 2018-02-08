@@ -1,10 +1,19 @@
-import { Priority } from '../util'
-import { CreepRequest } from '../interfaces'
-
+import { Priority } from "../util"
+import { CreepRequest } from "../interfaces"
 
 declare global {
     interface Room {
-        queueCreep({ name, body, priority, memory }: { name?: string, body: string, priority: Priority, memory: any }): void
+        queueCreep({
+            name,
+            body,
+            priority,
+            memory
+        }: {
+            name?: string
+            body: string
+            priority: Priority
+            memory: any
+        }): void
         hasFreeEnergy(): boolean
         canSubstitueForABetterCreep(body: string, role: string): Creep | null
 
@@ -18,7 +27,7 @@ declare global {
 }
 
 export function installRoomPrototype() {
-    Object.defineProperty(Room.prototype, 'creeps', {
+    Object.defineProperty(Room.prototype, "creeps", {
         get() {
             if (this.__creeps != null) {
                 return this.__creeps
@@ -26,7 +35,7 @@ export function installRoomPrototype() {
 
             this.__creeps = _.chain(Game.creeps)
                 .filter((creep: Creep) => creep.my && creep.memory.role && creep.memory.room === this.name)
-                .tap((array) => {
+                .tap(array => {
                     this.queue.forEach((req: any) => {
                         array.push(Object.assign({ request: true }, req))
                     })
@@ -38,7 +47,7 @@ export function installRoomPrototype() {
         }
     })
 
-    Object.defineProperty(Room.prototype, 'queue', {
+    Object.defineProperty(Room.prototype, "queue", {
         get: function() {
             if (this.memory.queue == null) {
                 this.memory.queue = []
@@ -51,7 +60,7 @@ export function installRoomPrototype() {
         }
     })
 
-    Object.defineProperty(Room.prototype, 'spawns', {
+    Object.defineProperty(Room.prototype, "spawns", {
         get() {
             if (this.__spawns != null) {
                 return this.__spawns
@@ -93,11 +102,13 @@ export function installRoomPrototype() {
         return this.energyAvailable === this.energyCapacityAvailable && this.memory.queue.length === 0
     }
 
-    Room.prototype.canSubstitueForABetterCreep = function canSubstitueForABetterCreep(body: string, role: string): Creep | null {
+    Room.prototype.canSubstitueForABetterCreep = function canSubstitueForABetterCreep(
+        body: string,
+        role: string
+    ): Creep | null {
         const creeps: Creep[] = _.filter(Game.creeps, (creep: Creep) => {
             return creep.my && creep.room.name === this.name && creep.memory.role === role
-        })
-        .sort((c1: Creep, c2: Creep) => {
+        }).sort((c1: Creep, c2: Creep) => {
             if (c1.body.length !== c2.body.length) {
                 return c1.body.length - c2.body.length
             }
@@ -111,5 +122,4 @@ export function installRoomPrototype() {
 
         return null
     }
-
 }

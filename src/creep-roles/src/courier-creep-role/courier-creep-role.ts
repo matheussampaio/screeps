@@ -1,6 +1,9 @@
-import { CreateBody, CreepRole, CreepRoleRegistry, Priority } from '../../../engine'
-import { DieInPeaceCreepAction, EmptyStorageLinkCreepAction, FillCourierTargetCreepAction } from '../../../creep-actions'
-
+import { CreateBody, CreepRole, CreepRoleRegistry, Priority } from "../../../engine"
+import {
+    DieInPeaceCreepAction,
+    EmptyStorageLinkCreepAction,
+    FillCourierTargetCreepAction
+} from "../../../creep-actions"
 
 @CreepRoleRegistry.register
 export class CourierCreepRole extends CreepRole {
@@ -13,9 +16,6 @@ export class CourierCreepRole extends CreepRole {
     }
 
     defaults(): string[][] {
-        return [
-            [EmptyStorageLinkCreepAction.name, FillCourierTargetCreepAction.name],
-            [DieInPeaceCreepAction.name]
-        ]
+        return [[EmptyStorageLinkCreepAction.name, FillCourierTargetCreepAction.name], [DieInPeaceCreepAction.name]]
     }
 }
