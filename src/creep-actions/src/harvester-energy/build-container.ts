@@ -19,7 +19,9 @@ export class BuildContainer extends Action {
         }) as StructureContainer
 
         if (container != null) {
-            console.log('repair result', creep.repair(container))
+            if (container.hits < container.hitsMax) {
+                creep.repair(container)
+            }
 
             return this.shiftAndStop()
         }

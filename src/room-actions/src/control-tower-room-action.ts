@@ -16,9 +16,20 @@ export class ControlTowerRoomAction extends Action {
             return this.waitNextTick()
         }
 
+        const rampartHP: { [k: number]: number } = {
+            1: 250,
+            2: 500,
+            3: 750,
+            4: 1000,
+            5: 5000,
+            6: 25000,
+            7: 75000,
+            8: 200000,
+        }
+
         const ramparts: Structure[] = room.find(FIND_MY_STRUCTURES, {
             filter: (r: StructureRampart) => {
-                return r.structureType === STRUCTURE_RAMPART && r.hits < 200000
+                return r.structureType === STRUCTURE_RAMPART && r.hits < rampartHP[room.controller.level]
             }
         })
 

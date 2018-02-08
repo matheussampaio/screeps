@@ -18,7 +18,9 @@ export class CreateHarvestersRoomAction extends Action {
             CreepRoleRegistry.fetch(HaulerEnergyCreepRole.name).queue(room)
         }
 
-        if (room.storage && room.creeps.Courier == null) {
+        const couriers = _.get(room, ['creeps', CourierCreepRole.name, 'length'], 0)
+
+        if (room.storage && couriers === 0) {
             CreepRoleRegistry.fetch(CourierCreepRole.name).queue(room)
         }
 

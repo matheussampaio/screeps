@@ -1,4 +1,5 @@
 import { Action, ActionRegistry } from '../../../engine'
+import { RecycleCreepAction } from './recycle-creep-action'
 
 
 @ActionRegistry.register
@@ -11,7 +12,7 @@ export class ReplaceCreepAction extends Action {
         const target: Creep = Game.getObjectById(creep.memory.subTarget)
 
         if (target == null) {
-            return this.shiftAndContinue()
+            return this.shiftUnshitAndContinue(RecycleCreepAction.name)
         }
 
         creep.travelTo(target)
