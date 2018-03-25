@@ -13,7 +13,7 @@ export class CreateHarvestersRoomAction extends Action {
         const haulers = _.get(room, ['creeps', HaulerEnergyCreepRole.name, 'length'], 0)
         const links = _.size(_.get(room, 'memory.links.sources', {}))
 
-        if (haulers < _.size(room.memory.sources) - links) {
+        if (haulers < (_.size(room.memory.sources) - links) * 2) {
             CreepRoleRegistry.fetch(HaulerEnergyCreepRole.name).queue(room)
         }
 
