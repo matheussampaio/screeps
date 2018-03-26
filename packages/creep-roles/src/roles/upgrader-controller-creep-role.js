@@ -3,14 +3,14 @@ import { DieInPeaceCreepAction, UpgradeControllerCreepAction } from '@sae/creep-
 
 @CreepRoleRegistry.register
 export class UpgraderControllerCreepRole extends CreepRole {
-    body(energy) {
-        return new CreateBody({ energy, minimumEnergy: 250 })
-            .add([MOVE, WORK, CARRY, MOVE], { move: 2 })
-            .addWithMove([WORK, CARRY], { work: 13, carry: 12 })
-            .value()
-    }
+  body(energy) {
+    return new CreateBody({ energy, minimumEnergy: 250 })
+      .add([MOVE, WORK, CARRY, MOVE], { move: 2 })
+      .addWithMove([WORK, CARRY], { work: 13, carry: 12 })
+      .value()
+  }
 
-    defaults() {
-        return [[UpgradeControllerCreepAction.name], [DieInPeaceCreepAction.name]]
-    }
+  defaults() {
+    return [[UpgradeControllerCreepAction.name], [DieInPeaceCreepAction.name]]
+  }
 }

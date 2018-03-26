@@ -3,7 +3,7 @@ import { DieInPeaceCreepAction, ReplaceCreepAction } from '@sae/creep-actions'
 
 @CreepRoleRegistry.register
 export class ReplacerCreepRole extends CreepRole {
-    defaults() {
-        return [[ReplaceCreepAction.name]]
-    }
+  defaults() {
+    return [[ReplaceCreepAction.name]]
+  }
 }

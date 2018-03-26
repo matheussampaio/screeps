@@ -3,7 +3,7 @@ import { installRoomPrototype } from './room'
 import { installStructurePrototype } from './structure'
 
 export function installPrototypes() {
-    installCreepPrototype()
-    installRoomPrototype()
-    installStructurePrototype()
+  installCreepPrototype()
+  installRoomPrototype()
+  installStructurePrototype()
 }

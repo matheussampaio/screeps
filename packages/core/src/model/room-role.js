@@ -1,9 +1,9 @@
 export class RoomRole {
-    defaults() {
-        return []
-    }
+  defaults() {
+    return []
+  }
 
-    role() {
-        return this.constructor.name
-    }
+  role() {
+    return this.constructor.name
+  }
 }

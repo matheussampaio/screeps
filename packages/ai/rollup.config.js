@@ -7,8 +7,5 @@ export default {
     file: './dist/main.js',
     format: 'cjs'
   },
-  plugins: [
-    resolve(),
-    babel(),
-  ]
+  plugins: [resolve(), babel()]
 }

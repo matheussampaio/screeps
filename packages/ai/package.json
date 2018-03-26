@@ -37,7 +37,6 @@
     "gulp-screeps": "^1.0.3",
     "mermaid": "^7.1.2",
     "nodemon": "^1.11.0",
-    "prettier": "^1.10.2",
     "rollup": "^0.55.3",
     "rollup-plugin-babel": "^3.0.3",
     "rollup-plugin-node-resolve": "^3.3.0"

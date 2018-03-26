@@ -6,7 +6,7 @@
   "scripts": {
     "build": "lerna exec \"npm run build\" --scope=@sae/ai",
     "debug": "lerna exec \"npm run debug\" --scope=@sae/ai",
-    "prettier": "prettier --write \"src/**/*.js\"",
+    "prettier": "prettier --write \"packages/**/src/**/*.js\"",
     "publish": "lerna exec \"npm run publish\" --scope=@sae/ai"
   },
   "repository": {
@@ -21,6 +21,8 @@
   "typings": "typings/index.d.ts",
   "homepage": "https://github.com/matheussampaio/screeps#readme",
   "devDependencies": {
-    "lerna": "^2.9.0"
+    "lerna": "^2.9.0",
+    "prettier": "^1.10.2",
+    "mermaid": "^7.1.2"
   }
 }

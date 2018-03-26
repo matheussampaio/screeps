@@ -7,8 +7,5 @@ export default {
     file: './dist/index.js',
     format: 'es'
   },
-  plugins: [
-    resolve(),
-    babel(),
-  ]
+  plugins: [resolve(), babel()]
 }
