@@ -1,7 +1,6 @@
 import { Action, ActionRegistry } from '@sae/core'
 // import { ReplacerCreepRole } from '@sae/creep-roles'
 
-
 @ActionRegistry.register
 export class DieInPeaceCreepAction extends Action {
   run() {

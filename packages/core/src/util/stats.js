@@ -46,7 +46,7 @@ export class Stats {
         const lastProgress = _.get(
           Memory,
           `stats.roomSummary.${roomName}.controllerProgress`,
-          roomStats.controllerProgress,
+          roomStats.controllerProgress
         )
 
         roomStats.controllerDiff = roomStats.controllerProgress - lastProgress

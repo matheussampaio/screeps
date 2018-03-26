@@ -9,8 +9,8 @@ export function installRoomPrototype() {
 
       this.__creeps = _.chain(Game.creeps)
         .filter(creep => creep.my && creep.memory.role && creep.memory.room === this.name)
-        .tap((array) => {
-          this.queue.forEach((req) => {
+        .tap(array => {
+          this.queue.forEach(req => {
             array.push(Object.assign({ request: true }, req))
           })
         })
@@ -46,9 +46,7 @@ export function installRoomPrototype() {
     }
   })
 
-  Room.prototype.queueCreep = function queueCreep({
-    name, body, priority, memory = {}
-  } = {}) {
+  Room.prototype.queueCreep = function queueCreep({ name, body, priority, memory = {} } = {}) {
     const creepRequest = {
       body,
       name,
@@ -79,16 +77,16 @@ export function installRoomPrototype() {
   }
 
   Room.prototype.canSubstitueForABetterCreep = function canSubstitueForABetterCreep(body, role) {
-    const creeps = _.filter(Game.creeps, creep => (
-      creep.my && creep.room.name === this.name && creep.memory.role === role
-    ))
-      .sort((c1, c2) => {
-        if (c1.body.length !== c2.body.length) {
-          return c1.body.length - c2.body.length
-        }
+    const creeps = _.filter(
+      Game.creeps,
+      creep => creep.my && creep.room.name === this.name && creep.memory.role === role
+    ).sort((c1, c2) => {
+      if (c1.body.length !== c2.body.length) {
+        return c1.body.length - c2.body.length
+      }
 
-        return c1.ticksToLive - c2.ticksToLive
-      })
+      return c1.ticksToLive - c2.ticksToLive
+    })
 
     if (creeps.length && body.length > creeps[0].body.length) {
       return creeps[0]

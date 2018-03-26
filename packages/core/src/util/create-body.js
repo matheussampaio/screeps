@@ -4,7 +4,9 @@ export class CreateBody {
     this.size = 0
     this.body = {}
 
-    BODYPARTS_ALL.forEach((part) => { this.body[part] = 0 })
+    BODYPARTS_ALL.forEach(part => {
+      this.body[part] = 0
+    })
   }
 
   add(parts, maximum = {}) {

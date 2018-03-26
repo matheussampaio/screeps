@@ -6,7 +6,7 @@ export class CityControlRoomAction extends Action {
     if (room.memory.sources == null) {
       room.memory.sources = {}
 
-      room.find(FIND_SOURCES).forEach((source) => {
+      room.find(FIND_SOURCES).forEach(source => {
         room.memory.sources[source.id] = null
       })
     }
@@ -20,7 +20,7 @@ export class CityControlRoomAction extends Action {
         }
       })
 
-      Object.keys(room.memory.sources).forEach((source) => {
+      Object.keys(room.memory.sources).forEach(source => {
         if (room.memory.links.sources[source] == null) {
           const links = Game.getObjectById(source).pos.findInRange(FIND_MY_STRUCTURES, 2, {
             filter: s => s.structureType === STRUCTURE_LINK

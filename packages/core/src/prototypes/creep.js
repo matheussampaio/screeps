@@ -50,7 +50,7 @@ export function installCreepPrototype() {
   }
 
   Creep.uncompressBody = function parseBodyString(compactBody) {
-    return _.map(compactBody, (p) => {
+    return _.map(compactBody, p => {
       switch (p) {
         case MOVE[0]:
           return MOVE
@@ -84,12 +84,12 @@ export function installCreepPrototype() {
 
         return compressed + part[0]
       },
-      '',
+      ''
     )
   }
 
   Creep.energyNeededFromCompressedBody = function energyNeededFromCompressedBody(body) {
-    return _.sum(body.split(''), (part) => {
+    return _.sum(body.split(''), part => {
       switch (part) {
         case MOVE[0]:
           return BODYPART_COST[MOVE]

@@ -37,7 +37,7 @@ export class ControlTowerRoomAction extends Action {
 
     roads.sort((r1, r2) => r1.hits - r2.hits)
 
-    towers.forEach((tower) => {
+    towers.forEach(tower => {
       const enemy = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS)
 
       if (enemy != null) {
