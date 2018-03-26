@@ -1,1 +1,7 @@
-export * from './roles'
+export {
+  BuilderCreepRole,
+  CourierCreepRole,
+  HarvesterEnergyCreepRole,
+  HaulerEnergyCreepRole,
+  UpgraderControllerCreepRole
+} from './roles'

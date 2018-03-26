@@ -1,1 +1,1 @@
-export * from './city-room-role'
+export { CityRoomRole } from './city-room-role'

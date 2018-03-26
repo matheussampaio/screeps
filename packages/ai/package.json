@@ -6,7 +6,6 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "rollup --config rollup.config.js",
-    "debug": "nodemon -e ts -w src -d 1 -x \"npm run build && npm run publish\"",
     "publish": "gulp publish"
   },
   "repository": {

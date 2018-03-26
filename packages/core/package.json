@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "build": "rollup --config rollup.config.js",
-    "install": "napa bonzaiferroni/traveler"
+    "prepare": "napa bonzaiferroni/traveler"
   },
   "repository": {
     "type": "git",

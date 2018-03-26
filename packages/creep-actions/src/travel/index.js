@@ -1,1 +1,1 @@
-export * from './travel-to-creep-action'
+export { TravelToCreepAction } from './travel-to-creep-action'

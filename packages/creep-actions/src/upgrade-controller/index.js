@@ -1,1 +1,1 @@
-export * from './upgrade-controller-creep-action'
+export { UpgradeControllerCreepAction } from './upgrade-controller-creep-action'

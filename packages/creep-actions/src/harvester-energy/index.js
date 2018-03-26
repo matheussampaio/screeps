@@ -1,1 +1,1 @@
-export * from './harvester-energy'
+export { HarvesterEnergy } from './harvester-energy'

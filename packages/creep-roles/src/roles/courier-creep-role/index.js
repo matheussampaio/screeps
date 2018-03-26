@@ -1,1 +1,1 @@
-export * from './courier-creep-role'
+export { CourierCreepRole } from './courier-creep-role'
