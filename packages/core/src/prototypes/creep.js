@@ -1,3 +1,5 @@
+import 'traveler/Traveler'
+
 export function installCreepPrototype() {
   Creep.prototype.getTarget = function getTarget(type, opts) {
     const property = (opts && opts.prop) || 'target'
