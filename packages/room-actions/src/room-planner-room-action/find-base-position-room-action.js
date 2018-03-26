@@ -1,4 +1,4 @@
-import { Action, ActionRegistry, CreepRoleRegistry } from '@sae/core'
+import { Action, ActionRegistry } from '@sae/core'
 
 @ActionRegistry.register
 export class FindBasePositionRoomAction extends Action {
@@ -9,7 +9,11 @@ export class FindBasePositionRoomAction extends Action {
       get(x, y) {
         const key = `${x},${y}`
 
-        return this[key] || (this[key] = { x, y })
+        if (this[key] == null) {
+          this[key] = { x, y }
+        }
+
+        return this[key]
       }
     }
 
@@ -68,13 +72,13 @@ export class FindBasePositionRoomAction extends Action {
     const centers = [[24, 24], [25, 24], [24, 25], [25, 25]]
 
     // translate positions and calculate distance to the center of the room
-    for (const key in data) {
-      if (data[key].size >= MAP_WIDTH_HEIGHT) {
-        data[key].x -= Math.floor(MAP_WIDTH_HEIGHT / 2)
-        data[key].y -= Math.floor(MAP_WIDTH_HEIGHT / 2)
-        data[key].dist = _.min(centers.map(pos => Math.hypot(pos[0] - data[key].x, pos[1] - data[key].y)))
+    Object.values(data).forEach((position) => {
+      if (position.size >= MAP_WIDTH_HEIGHT) {
+        position.x -= Math.floor(MAP_WIDTH_HEIGHT / 2)
+        position.y -= Math.floor(MAP_WIDTH_HEIGHT / 2)
+        position.dist = _.min(centers.map(pos => Math.hypot(pos[0] - position.x, pos[1] - position.y)))
       }
-    }
+    })
 
     // get best candidate
     const best = _.values(data)

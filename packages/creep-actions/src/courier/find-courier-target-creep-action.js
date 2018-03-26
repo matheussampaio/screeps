@@ -1,5 +1,4 @@
 import { Action, ActionRegistry } from '@sae/core'
-import { GetEnergyFromStorageCreepAction } from '../get-energy'
 
 @ActionRegistry.register
 export class FindCourierTargetCreepAction extends Action {

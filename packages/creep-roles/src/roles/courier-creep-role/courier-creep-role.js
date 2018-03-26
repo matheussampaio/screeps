@@ -1,5 +1,5 @@
-import { CreateBody, CreepRole, CreepRoleRegistry, Priority } from '@sae/core'
-import { EmptyStorageLinkCreepAction, FillCourierTargetCreepAction } from '@sae/creep-actions'
+import { CreateBody, CreepRole, CreepRoleRegistry } from '@sae/core'
+import { EmptyStorageLinkCreepAction, FillCourierTargetCreepAction, DieInPeaceCreepAction } from '@sae/creep-actions'
 
 @CreepRoleRegistry.register
 export class CourierCreepRole extends CreepRole {

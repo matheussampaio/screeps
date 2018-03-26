@@ -32,7 +32,8 @@ export class Stats {
       const isMyRoom = room.controller ? room.controller.my : false
 
       if (isMyRoom) {
-        const roomStats = (stats.roomSummary[roomName] = {})
+        stats.roomSummary[roomName] = {}
+        const roomStats = stats.roomSummary[roomName]
 
         roomStats.storageEnergy = room.storage ? room.storage.store.energy : 0
         roomStats.terminalEnergy = room.terminal ? room.terminal.store.energy : 0
@@ -45,7 +46,7 @@ export class Stats {
         const lastProgress = _.get(
           Memory,
           `stats.roomSummary.${roomName}.controllerProgress`,
-          roomStats.controllerProgress
+          roomStats.controllerProgress,
         )
 
         roomStats.controllerDiff = roomStats.controllerProgress - lastProgress

@@ -20,7 +20,7 @@ export class RecycleCreepAction extends Action {
     }
 
     if (creep.pos.isNearTo(spawn)) {
-      const result = spawn.recycleCreep(creep)
+      spawn.recycleCreep(creep)
     } else {
       creep.travelTo(spawn)
     }

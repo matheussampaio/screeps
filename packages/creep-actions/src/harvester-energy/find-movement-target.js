@@ -12,9 +12,7 @@ export class FindMovementTarget extends Action {
 
     // if not working yet
     const containers = source.pos.findInRange(FIND_STRUCTURES, 1, {
-      filter: s => {
-        return s.structureType === STRUCTURE_CONTAINER
-      }
+      filter: s => s.structureType === STRUCTURE_CONTAINER
     })
 
     if (containers && containers.length) {

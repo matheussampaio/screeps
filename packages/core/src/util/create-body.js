@@ -4,7 +4,7 @@ export class CreateBody {
     this.size = 0
     this.body = {}
 
-    BODYPARTS_ALL.forEach(part => (this.body[part] = 0))
+    BODYPARTS_ALL.forEach((part) => { this.body[part] = 0 })
   }
 
   add(parts, maximum = {}) {
@@ -17,7 +17,9 @@ export class CreateBody {
     const minimumCost = _.min(parts.map(part => BODYPART_COST[part]))
 
     while (this.canAddMoreParts(parts, maximum, minimumCost)) {
-      const part = parts[i++ % parts.length]
+      i += 1
+
+      const part = parts[i % parts.length]
 
       if (this.energy >= BODYPART_COST[part] && this.body[part] < (maximum[part] || 1)) {
         this.body[part] += 1
@@ -39,7 +41,8 @@ export class CreateBody {
     const minimumCost = _.min(parts.map(part => BODYPART_COST[part] + BODYPART_COST[MOVE]))
 
     while (this.canAddMoreParts(parts, maximum, minimumCost, 1)) {
-      const part = parts[i++ % parts.length]
+      i += 1
+      const part = parts[i % parts.length]
 
       const energyNeeded = BODYPART_COST[part] + BODYPART_COST[MOVE]
 

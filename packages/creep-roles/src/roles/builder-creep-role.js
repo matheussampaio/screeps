@@ -1,4 +1,4 @@
-import { CreateBody, CreepRole, CreepRoleRegistry, Priority } from '@sae/core'
+import { CreateBody, CreepRole, CreepRoleRegistry } from '@sae/core'
 import { BuilderCreepAction, DieInPeaceCreepAction } from '@sae/creep-actions'
 
 @CreepRoleRegistry.register

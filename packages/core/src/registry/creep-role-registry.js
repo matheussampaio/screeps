@@ -1,5 +1,3 @@
-import { CreepRole } from '../model'
-
 export class CreepRoleRegistry {
   static register(constructor) {
     CreepRoleRegistry.registry[constructor.name] = new constructor()

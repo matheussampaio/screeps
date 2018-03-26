@@ -1,11 +1,9 @@
 import { Action, ActionRegistry } from '@sae/core'
 
-import { GetEnergyFromStorageCreepAction } from '../get-energy'
-
 @ActionRegistry.register
 export class EmptyStorageLinkCreepAction extends Action {
   run(creep) {
-    const linkId = _.get(creep, `room.memory.links.storage`)
+    const linkId = _.get(creep, 'room.memory.links.storage')
 
     if (linkId == null) {
       return this.shiftAndContinue()

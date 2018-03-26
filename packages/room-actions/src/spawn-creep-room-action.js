@@ -1,4 +1,4 @@
-import { Action, ActionRegistry, CreepRoleRegistry } from '@sae/core'
+import { Action, ActionRegistry } from '@sae/core'
 
 @ActionRegistry.register
 export class SpawnCreepRoomAction extends Action {

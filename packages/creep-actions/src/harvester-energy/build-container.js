@@ -13,9 +13,7 @@ export class BuildContainer extends Action {
       creep.pickup(energy[0])
     }
 
-    const container = creep.pos.lookFor(LOOK_STRUCTURES).find(s => {
-      return s.structureType === STRUCTURE_CONTAINER
-    })
+    const container = creep.pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_CONTAINER)
 
     if (container != null) {
       if (container.hits < container.hitsMax) {

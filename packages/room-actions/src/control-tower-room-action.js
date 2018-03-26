@@ -1,5 +1,4 @@
-import { Action, ActionRegistry, CreepRoleRegistry } from '@sae/core'
-import { HarvesterEnergyCreepRole, HaulerEnergyCreepRole } from '@sae/creep-roles'
+import { Action, ActionRegistry } from '@sae/core'
 
 @ActionRegistry.register
 export class ControlTowerRoomAction extends Action {
@@ -27,22 +26,18 @@ export class ControlTowerRoomAction extends Action {
     }
 
     const ramparts = room.find(FIND_MY_STRUCTURES, {
-      filter: r => {
-        return r.structureType === STRUCTURE_RAMPART && r.hits < rampartHP[room.controller.level]
-      }
+      filter: r => r.structureType === STRUCTURE_RAMPART && r.hits < rampartHP[room.controller.level]
     })
 
     ramparts.sort((r1, r2) => r1.hits - r2.hits)
 
     const roads = room.find(FIND_STRUCTURES, {
-      filter: r => {
-        return r.structureType === STRUCTURE_ROAD && r.hitsMax - r.hits >= 800
-      }
+      filter: r => r.structureType === STRUCTURE_ROAD && r.hitsMax - r.hits >= 800
     })
 
     roads.sort((r1, r2) => r1.hits - r2.hits)
 
-    for (const tower of towers) {
+    towers.forEach((tower) => {
       const enemy = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS)
 
       if (enemy != null) {
@@ -52,7 +47,7 @@ export class ControlTowerRoomAction extends Action {
       } else if (roads.length) {
         tower.repair(roads.shift())
       }
-    }
+    })
 
     return this.waitNextTick()
   }

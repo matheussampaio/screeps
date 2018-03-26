@@ -1,9 +1,7 @@
 import { ActionReturn } from '../util'
 
 export class Action {
-  run(agent) {
-    console.log('Missing run method')
-
+  run() {
     return this.waitNextTick()
   }
 

@@ -1,4 +1,4 @@
-import { Action, ActionRegistry, CreepRoleRegistry } from '@sae/core'
+import { Action, ActionRegistry } from '@sae/core'
 import { FindBasePositionRoomAction } from './find-base-position-room-action'
 import { RoomConstructorRoomAction } from './room-constructor-room-action'
 

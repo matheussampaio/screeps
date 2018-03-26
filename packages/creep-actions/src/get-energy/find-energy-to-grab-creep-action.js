@@ -18,9 +18,7 @@ export class FindEnergyToGrabCreepAction extends Action {
     })
 
     // get the container with more energy
-    const container = _.max(containers, container => {
-      return container.store.energy
-    })
+    const container = _.max(containers, c => c.store.energy)
 
     if (container instanceof StructureContainer && container != null) {
       creep.memory.energy = container.id

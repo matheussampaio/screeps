@@ -6,6 +6,7 @@
   "scripts": {
     "build": "lerna exec \"npm run build\" --scope=@sae/ai",
     "debug": "lerna exec \"npm run debug\" --scope=@sae/ai",
+    "lint": "eslint packages/*/src/**/*.js",
     "prettier": "prettier --write \"packages/**/src/**/*.js\"",
     "publish": "lerna exec \"npm run publish\" --scope=@sae/ai"
   },
@@ -21,8 +22,13 @@
   "typings": "typings/index.d.ts",
   "homepage": "https://github.com/matheussampaio/screeps#readme",
   "devDependencies": {
+    "babel-eslint": "^8.2.2",
+    "eslint": "^4.9.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.7.0",
+    "eslint-plugin-screeps": "^1.3.0",
     "lerna": "^2.9.0",
-    "prettier": "^1.10.2",
-    "mermaid": "^7.1.2"
+    "mermaid": "^7.1.2",
+    "prettier": "^1.10.2"
   }
 }

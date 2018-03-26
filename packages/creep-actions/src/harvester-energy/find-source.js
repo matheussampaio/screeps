@@ -7,7 +7,7 @@ export class FindSource extends Action {
       sources: {}
     })
 
-    const sources = creep.room.find(FIND_SOURCES).filter(source => {
+    const sources = creep.room.find(FIND_SOURCES).filter((source) => {
       const creepName = creep.room.memory.sources[source.id]
 
       return Game.creeps[creepName] == null
@@ -16,9 +16,7 @@ export class FindSource extends Action {
     // TODO: if more than one source, sort them by distance
 
     for (const source of sources) {
-      const harvester = source.pos.findInRange(FIND_MY_CREEPS, 1).find(c => {
-        return c.memory.role === 'HarvesterEnergy'
-      })
+      const harvester = source.pos.findInRange(FIND_MY_CREEPS, 1).find(c => c.memory.role === 'HarvesterEnergy')
 
       if (harvester == null) {
         creep.memory.source = source.id

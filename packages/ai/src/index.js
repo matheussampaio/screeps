@@ -1,6 +1,4 @@
 import { ActionRunner, CreepRoleRegistry, installPrototypes, RoomRoleRegistry } from '@sae/core'
-import { HarvesterEnergyCreepRole } from '@sae/creep-roles'
-import * as CreepActions from '@sae/creep-actions'
 import { CityRoomRole } from '@sae/room-roles'
 
 installPrototypes()

@@ -1,4 +1,4 @@
-import { Action, ActionRegistry, CreepRoleRegistry } from '@sae/core'
+import { Action, ActionRegistry } from '@sae/core'
 
 export const TEMPLATE_SIZE_11 = {
   0: {
@@ -140,7 +140,7 @@ export const TEMPLATE_SIZE_11 = {
 @ActionRegistry.register
 export class RoomConstructorRoomAction extends Action {
   run(room) {
-    const center = room.memory.center
+    const { center } = room.memory
 
     if (center == null) {
       return this.shiftAndStop()

@@ -1,11 +1,10 @@
-import { Action, ActionRegistry, CreepRoleRegistry, CreepRole } from '@sae/core'
+import { Action, ActionRegistry } from '@sae/core'
 // import { ReplacerCreepRole } from '@sae/creep-roles'
 
-import { ReplaceCreepAction } from './replace-creep-action'
 
 @ActionRegistry.register
 export class DieInPeaceCreepAction extends Action {
-  run(creep) {
+  run() {
     // if (creep.memory.substitute) {
     //     return this.waitNextTick()
     // }

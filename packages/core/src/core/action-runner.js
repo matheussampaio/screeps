@@ -1,9 +1,7 @@
-import { Action } from '../model'
 import { ActionRegistry } from '../registry'
-import { ActionReturn, getCpuLimit, Stats } from '../util'
+import { ActionReturn, getCpuLimit } from '../util'
 
 const SAFE_ACTIONS_INTERATIONS = 10
-const DEBUG = false
 
 export class ActionRunner {
   static setDefaultAction(agent, defaults) {
@@ -140,7 +138,10 @@ export class ActionRunner {
         if (agent.memory.DEBUG) {
           console.log(`String group found (${i}), changing to array:`, group)
         }
-        group = agent.memory.actions[i] = [group]
+
+        agent.memory.actions[i] = [group]
+
+        group = agent.memory.actions[i]
       }
 
       ActionRunner.runGroup(agent, group)
