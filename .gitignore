@@ -6,3 +6,6 @@ dist/
 .tags1
 .credentials.js
 .sync
+yarn.lock
+
+lerna-debug.log
