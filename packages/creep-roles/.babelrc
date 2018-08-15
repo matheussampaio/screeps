@@ -1,0 +1,14 @@
+{
+  "presets": [
+    [
+      "env",
+      {
+        "modules": false,
+        "targets": {
+          "node": "8.10.0"
+        }
+      }
+    ]
+  ],
+  "plugins": ["transform-decorators-legacy", "external-helpers"]
+}
