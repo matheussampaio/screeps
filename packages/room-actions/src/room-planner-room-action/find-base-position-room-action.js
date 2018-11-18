@@ -72,7 +72,7 @@ export class FindBasePositionRoomAction extends Action {
     const centers = [[24, 24], [25, 24], [24, 25], [25, 25]]
 
     // translate positions and calculate distance to the center of the room
-    Object.values(data).forEach(position => {
+    Object.values(data).forEach((position) => {
       if (position.size >= MAP_WIDTH_HEIGHT) {
         position.x -= Math.floor(MAP_WIDTH_HEIGHT / 2)
         position.y -= Math.floor(MAP_WIDTH_HEIGHT / 2)

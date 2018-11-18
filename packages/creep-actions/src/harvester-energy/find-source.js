@@ -7,7 +7,7 @@ export class FindSource extends Action {
       sources: {}
     })
 
-    const sources = creep.room.find(FIND_SOURCES).filter(source => {
+    const sources = creep.room.find(FIND_SOURCES).filter((source) => {
       const creepName = creep.room.memory.sources[source.id]
 
       return Game.creeps[creepName] == null

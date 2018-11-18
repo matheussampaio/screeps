@@ -23,7 +23,9 @@ export class CreepRole {
     }
   }
 
-  queue(room, { name, body, memory = {}, priority } = {}) {
+  queue(room, {
+    name, body, memory = {}, priority
+  } = {}) {
     // TODO: Move basic prototypes to engine project
     const simillarCreepsAlive = _.get(room, ['creeps', this.role(), 'length'], 0)
 

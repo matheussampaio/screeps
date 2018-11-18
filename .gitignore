@@ -3,9 +3,5 @@ dist/
 .idea/
 
 .DS_Store
-.tags1
-.credentials.js
-.sync
-yarn.lock
-
-lerna-debug.log
+.env
+*.log

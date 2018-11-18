@@ -1,54 +1,21 @@
-Matheus Sampaios' Screeps Code
+Screeps Code
 =============================
 
-This is my code for the game [Screeps](https://screeps.com/).
+## Requirements
+- Docker
 
-```
-src/
-|---engine/
-|   |---analytics/
-|   |   |---stats.ts
-|   |---core/
-|   |   |---action-runner.ts
-|   |---models/
-|   |   |---action.ts
-|   |   |---creep-role.ts
-|   |   |---room-role.ts
-|   |---prototypes/
-|   |   |---creep.ts
-|   |   |---room.ts
-|   |   |---structure.ts
-|   |---registry/
-|   |   |---action-registry.ts
-|   |   |---creep-role-registry.ts
-|   |   |---room-role-registry.ts
-|   |---utils/
-|   |   |---create-body.ts
-|   |   |---priority.ts
-|---creep-actions/
-|---creep-roles/
-|---room-actions/
-|---room-roles/
-|
-|---index.ts
-```
 
-# Install
-```bash
-$ git submodule init
-$ git submodule update # install Traveler
-$ npm install
-```
+## Usage
+1. `docker-compose run app bash`
 
-# Compile
-```bash
-$ npm run build
-```
+## Build and Upload code
+1. Copy `.env.example` to `.env`
+1. Set your Screep's `email`, `token`, and code branch.
+1. Run `docker-compose up run bash`
+1. Run `cd packages/ai/`
+1. Run `npm run build`
+1. Run `npm run upload-code`
 
-# Develop
-```bash
-$ npm run debug
-```
 
-# License
+## License
 MIT

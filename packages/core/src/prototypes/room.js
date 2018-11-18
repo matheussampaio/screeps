@@ -9,8 +9,8 @@ export function installRoomPrototype() {
 
       this.__creeps = _.chain(Game.creeps)
         .filter(creep => creep.my && creep.memory.role && creep.memory.room === this.name)
-        .tap(array => {
-          this.queue.forEach(req => {
+        .tap((array) => {
+          this.queue.forEach((req) => {
             array.push(Object.assign({ request: true }, req))
           })
         })
@@ -46,7 +46,9 @@ export function installRoomPrototype() {
     }
   })
 
-  Room.prototype.queueCreep = function queueCreep({ name, body, priority, memory = {} } = {}) {
+  Room.prototype.queueCreep = function queueCreep({
+    name, body, priority, memory = {}
+  } = {}) {
     const creepRequest = {
       body,
       name,

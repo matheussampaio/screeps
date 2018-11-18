@@ -1,0 +1,7 @@
+packages/**/node_modules/
+node_modules/
+.git/
+
+
+.DS_Store
+.env

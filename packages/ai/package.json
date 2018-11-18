@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "rollup --config rollup.config.js",
-    "publish": "gulp publish"
+    "upload-code": "gulp publish"
   },
   "repository": {
     "type": "git",
