@@ -4,10 +4,6 @@
   "description": "",
   "private": true,
   "main": "dist/index.js",
-  "scripts": {
-    "build": "rollup --config rollup.config.js",
-    "upload-code": "gulp publish"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/matheussampaio/sae.git"
@@ -19,25 +15,32 @@
   },
   "typings": "typings/index.d.ts",
   "homepage": "https://github.com/matheussampaio/sae#readme",
+  "scripts": {
+    "lint": "tslint -p tsconfig.json \"src/**/*.ts\"",
+    "build": "rollup -c",
+    "push-main": "rollup -c --environment DEST:main",
+    "push-pserver": "rollup -c --environment DEST:pserver",
+    "push-sim": "rollup -c --environment DEST:sim",
+    "watch-main": "rollup -cw --environment DEST:main",
+    "watch-pserver": "rollup -cw --environment DEST:pserver",
+    "watch-sim": "rollup -cw --environment DEST:sim"
+  },
   "dependencies": {
-    "@sae/core": "^1.0.0",
-    "@sae/creep-actions": "^1.0.0",
-    "@sae/creep-roles": "^1.0.0",
-    "@sae/room-actions": "^1.0.0",
-    "@sae/room-roles": "^1.0.0"
+    "lodash": "^4.17.11"
   },
   "devDependencies": {
-    "babel-core": "^6.26.0",
-    "babel-plugin-external-helpers": "^6.22.0",
-    "babel-plugin-transform-decorators": "^6.24.1",
-    "babel-plugin-transform-decorators-legacy": "^1.3.4",
-    "babel-preset-env": "^1.6.1",
-    "gulp": "^3.9.1",
-    "gulp-screeps": "^1.0.3",
-    "mermaid": "^7.1.2",
-    "nodemon": "^1.11.0",
-    "rollup": "^0.55.3",
-    "rollup-plugin-babel": "^3.0.3",
-    "rollup-plugin-node-resolve": "^3.3.0"
+    "@types/lodash": "^4.14.120",
+    "@types/screeps": "^2.5.3",
+    "prettier": "^1.16.3",
+    "rollup": "^1.1.2",
+    "rollup-plugin-clear": "^2.0.7",
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-node-resolve": "^4.0.0",
+    "rollup-plugin-screeps": "^0.1.2",
+    "rollup-plugin-typescript2": "^0.19.2",
+    "tslint": "^5.12.1",
+    "tslint-config-prettier": "^1.17.0",
+    "tslint-plugin-prettier": "^2.0.1",
+    "typescript": "^3.3.1"
   }
 }

@@ -1,7 +1,12 @@
 node_modules/
 dist/
 .idea/
+.vscode/
+.rpt2_cache
 
 .DS_Store
 .env
 *.log
+
+# Server configurations
+screeps.json
