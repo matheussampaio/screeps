@@ -1,0 +1,21 @@
+{
+  "name": "screeps-server",
+  "version": "1.0.0",
+  "description": "Runs my Screeps Private Server",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "init": "screeps init",
+    "start": "screeps start",
+    "cli": "screeps cli"
+  },
+  "keywords": [
+    "screeps"
+  ],
+  "author": "Matheus Sampaio <matheus@sampaio.us>",
+  "license": "ISC",
+  "dependencies": {
+    "screeps": "^3.2.1",
+    "screepsmod-admin-utils": "^1.0.2",
+    "screepsmod-tickrate": "^1.0.6"
+  }
+}

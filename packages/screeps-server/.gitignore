@@ -1,0 +1,9 @@
+assets/
+logs/
+node_modules/
+
+*.log
+
+.env
+.screepsrc
+db.json

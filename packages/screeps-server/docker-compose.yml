@@ -1,0 +1,17 @@
+version: '3.7'
+
+services:
+  screeps:
+    build:
+      context: .
+    env_file: .env
+    tty: true
+    ports:
+      - '21025:21025'
+      - '21026:21026'
+    volumes:
+      - ./:/screeps
+      - notused:/screeps/node_modules
+
+volumes:
+  notused:

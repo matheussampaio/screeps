@@ -1,0 +1,8 @@
+{
+  "mods": [
+    "node_modules/screepsmod-tickrate/index.js",
+    "node_modules/screepsmod-admin-utils/index.js"
+  ],
+  "bots": {
+  }
+}
