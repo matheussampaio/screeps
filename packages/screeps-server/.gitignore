@@ -1,9 +1,13 @@
 assets/
-logs/
+data/
+example-mods/
 node_modules/
 
 *.log
 
-.env
-.screepsrc
+
+mods.example.json
+steam_appid.txt
 db.json
+.screepsrc
+.env
