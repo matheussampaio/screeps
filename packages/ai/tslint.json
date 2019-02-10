@@ -1,11 +1,11 @@
 {
-  "rulesDirectory": "tslint-plugin-prettier",
   "extends" : [
     "tslint:recommended",
+    "tslint-plugin-prettier",
     "tslint-config-prettier"
   ],
   "rules": {
-    "prettier": true,
+    "prettier": [true, ".prettierrc"],
     "forin": false,
     "member-ordering": [false],
     "no-console": [false],

@@ -1,26 +1,67 @@
-import { PRIORITY, PROCESS_STATE } from "./constants";
-import { Process } from "./process";
+import { PRIORITY, PROCESS_STATE } from './constants'
+import { Process } from './process'
 
-export interface IProcessControlBlockConstructor {
-  accountingInformation: any;
-  memoryInformation: any;
-  parentProcessId: number;
-  processId: number;
-  processState: PROCESS_STATE;
-  programCounter: string;
-  schedulingInformation: PRIORITY;
+export interface ISerializedProcessControlBlock {
+  processName: string
+  parentProcessId: number
+  programCounter: string
+  processId: number
+  processState: PROCESS_STATE
+  priority: PRIORITY
+  memory: any
+}
+
+export interface IProcessControlBlockConstructorParams {
+  memory: any
+  parentProcessId: number
+  programCounter: string
+  processId: number
+  processState: PROCESS_STATE
+  priority: number
 }
 
 export class ProcessControlBlock {
-  constructor(pcb: IProcessControlBlock) {
+  public readonly memory: any
+  public processState: PROCESS_STATE
+  public programCounter: string
+  public priority: number
+  public readonly parentProcessId: number
+  public readonly processId: number
 
+  constructor({
+    memory,
+    parentProcessId,
+    programCounter = 'run',
+    processId = -1,
+    processState = PROCESS_STATE.READY,
+    priority = PRIORITY.NORMAL
+  }: IProcessControlBlockConstructorParams) {
+    if (this.memory == null) {
+      throw new Error('Undefined memory received')
+    }
+
+    this.memory = memory
+    this.parentProcessId = parentProcessId
+    this.processId = processId
+    this.processState = processState
+    this.programCounter = programCounter
+    this.priority = priority
   }
 
-  static public unserialize(serializedPCB) {
-    return new ProcessControlBlock(...serializedPCB)
+  public static unserialize(serializedPCB: ISerializedProcessControlBlock): ProcessControlBlock {
+    return new ProcessControlBlock(serializedPCB)
   }
 
-  static public serialize(pcb: ProcessControlBlock) {
+  public static serialize(processName: string, pcb: ProcessControlBlock): ISerializedProcessControlBlock {
+    return {
+      processName,
 
+      memory: pcb.memory,
+      parentProcessId: pcb.parentProcessId,
+      priority: pcb.priority,
+      processId: pcb.processId,
+      processState: pcb.processState,
+      programCounter: pcb.programCounter
+    }
   }
 }

@@ -1,1 +1,1 @@
-export * from "./Boot"
+export * from './Boot'
