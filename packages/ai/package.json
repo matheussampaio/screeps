@@ -23,7 +23,7 @@
     "push-sim": "rollup -c --environment DEST:sim",
     "watch-main": "rollup -cw --environment DEST:main",
     "watch-pserver": "rollup -cw --environment DEST:pserver",
-    "watch-sim": "rollup -cw --environment DEST:sim"
+    "watch-sim": "nodemon -e ts -w src -d 1 -x 'rollup -c --environment DEST:sim'"
   },
   "dependencies": {
     "lodash": "^4.17.11"
@@ -31,6 +31,7 @@
   "devDependencies": {
     "@types/lodash": "^4.14.120",
     "@types/screeps": "^2.5.3",
+    "nodemon": "^1.18.10",
     "prettier": "^1.16.3",
     "rollup": "^1.1.2",
     "rollup-plugin-clear": "^2.0.7",
