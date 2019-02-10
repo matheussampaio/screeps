@@ -1,11 +1,17 @@
-export class ProcessRegistry {
-  private static readonly registry: { [processName: string]: any } = {}
+import { TProcessConstructor } from './process'
 
-  public static register(constructor: any) {
+export function RegisterProcess(constructor: TProcessConstructor) {
+  ProcessRegistry.register(constructor)
+}
+
+export class ProcessRegistry {
+  private static readonly registry: { [processName: string]: TProcessConstructor } = {}
+
+  public static register(constructor: TProcessConstructor) {
     ProcessRegistry.registry[constructor.name] = constructor
   }
 
-  public static getProcessConstructorFromName(processName: string) {
+  public static fetch(processName: string): TProcessConstructor {
     return ProcessRegistry.registry[processName]
   }
 }

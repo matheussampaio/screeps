@@ -1,14 +1,14 @@
 import { CODES, PRIORITY, PROCESS_STATE } from './constants'
 import { Kernel } from './kernel'
-import { ProcessControlBlock } from './process-control-block'
+import { ISerializedProcessControlBlock, ProcessControlBlock } from './process-control-block'
 
 export type TProcessConstructor = new (pcb: ProcessControlBlock) => Process
 
 export class Process {
-  constructor(private readonly pcb: ProcessControlBlock) {}
+  constructor(public readonly pcb: ProcessControlBlock) {}
 
   public get parentProcess() {
-    return Kernel.getProcessByPID(this.pcb.parentProcessId)
+    return Kernel.getProcessByPID(this.pcb.parentPID)
   }
 
   public isDead(): boolean {
@@ -53,5 +53,9 @@ export class Process {
 
   public run(): void {
     console.log('Running!', this.constructor.name)
+  }
+
+  public serialize(): ISerializedProcessControlBlock {
+    return ProcessControlBlock.serialize(this.constructor.name, this.pcb)
   }
 }

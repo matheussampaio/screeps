@@ -3,19 +3,19 @@ import { Process } from './process'
 
 export interface ISerializedProcessControlBlock {
   processName: string
-  parentProcessId: number
+  parentPID: number
   programCounter: string
-  processId: number
+  PID: number
   processState: PROCESS_STATE
-  priority: PRIORITY
+  priority: number
   memory: any
 }
 
 export interface IProcessControlBlockConstructorParams {
   memory: any
-  parentProcessId: number
+  parentPID: number
   programCounter: string
-  processId: number
+  PID: number
   processState: PROCESS_STATE
   priority: number
 }
@@ -25,14 +25,14 @@ export class ProcessControlBlock {
   public processState: PROCESS_STATE
   public programCounter: string
   public priority: number
-  public readonly parentProcessId: number
-  public readonly processId: number
+  public readonly parentPID: number
+  public readonly PID: number
 
   constructor({
     memory,
-    parentProcessId,
+    parentPID,
     programCounter = 'run',
-    processId = -1,
+    PID = -1,
     processState = PROCESS_STATE.READY,
     priority = PRIORITY.NORMAL
   }: IProcessControlBlockConstructorParams) {
@@ -41,25 +41,30 @@ export class ProcessControlBlock {
     }
 
     this.memory = memory
-    this.parentProcessId = parentProcessId
-    this.processId = processId
+    this.parentPID = parentPID
+    this.PID = PID
     this.processState = processState
     this.programCounter = programCounter
     this.priority = priority
   }
 
-  public static unserialize(serializedPCB: ISerializedProcessControlBlock): ProcessControlBlock {
+  public static unserialize(
+    serializedPCB: ISerializedProcessControlBlock
+  ): ProcessControlBlock {
     return new ProcessControlBlock(serializedPCB)
   }
 
-  public static serialize(processName: string, pcb: ProcessControlBlock): ISerializedProcessControlBlock {
+  public static serialize(
+    processName: string,
+    pcb: ProcessControlBlock
+  ): ISerializedProcessControlBlock {
     return {
       processName,
 
+      PID: pcb.PID,
       memory: pcb.memory,
-      parentProcessId: pcb.parentProcessId,
+      parentPID: pcb.parentPID,
       priority: pcb.priority,
-      processId: pcb.processId,
       processState: pcb.processState,
       programCounter: pcb.programCounter
     }
