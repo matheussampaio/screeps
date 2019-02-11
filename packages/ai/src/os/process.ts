@@ -1,11 +1,32 @@
 import { CODES, PRIORITY, PROCESS_STATE } from './constants'
 import { Kernel } from './kernel'
-import { ISerializedProcessControlBlock, ProcessControlBlock } from './process-control-block'
+import {
+  IProcessControlBlockConstructorParams,
+  ISerializedProcessControlBlock,
+  ProcessControlBlock
+} from './process-control-block'
 
 export type TProcessConstructor = new (pcb: ProcessControlBlock) => Process
 
 export class Process {
+  public fork(ProcessContructor: TProcessConstructor, params: IProcessControlBlockConstructorParams) {
+    params.parentPID = this.pcb.parentPID
+
+    const pcb = new ProcessControlBlock(params)
+    const process = new ProcessContructor(pcb)
+
+    Kernel.queueProcess(process)
+
+    this.children.push(process.pcb.PID)
+  }
+
   constructor(public readonly pcb: ProcessControlBlock) {}
+
+  public get children(): number[] {
+    this.pcb.memory.children = this.pcb.memory.children || []
+
+    return this.pcb.memory.children
+  }
 
   public get parentProcess() {
     return Kernel.getProcessByPID(this.pcb.parentPID)

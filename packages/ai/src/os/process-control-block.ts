@@ -1,4 +1,6 @@
+import _ from 'lodash'
 import { PRIORITY, PROCESS_STATE } from './constants'
+import { Kernel } from './kernel'
 import { Process } from './process'
 
 export interface ISerializedProcessControlBlock {
@@ -8,16 +10,15 @@ export interface ISerializedProcessControlBlock {
   PID: number
   processState: PROCESS_STATE
   priority: number
-  memory: any
 }
 
 export interface IProcessControlBlockConstructorParams {
-  memory: any
+  memory?: any
   parentPID: number
-  programCounter: string
-  PID: number
-  processState: PROCESS_STATE
-  priority: number
+  programCounter?: string
+  PID?: number
+  processState?: PROCESS_STATE
+  priority?: number
 }
 
 export class ProcessControlBlock {
@@ -29,18 +30,14 @@ export class ProcessControlBlock {
   public readonly PID: number
 
   constructor({
-    memory,
     parentPID,
+    memory = {},
     programCounter = 'run',
-    PID = -1,
+    PID = Kernel.getNextPID(),
     processState = PROCESS_STATE.READY,
     priority = PRIORITY.NORMAL
   }: IProcessControlBlockConstructorParams) {
-    if (this.memory == null) {
-      throw new Error('Undefined memory received')
-    }
-
-    this.memory = memory
+    this.memory = _.merge(Kernel.getProcessMemory(PID), memory)
     this.parentPID = parentPID
     this.PID = PID
     this.processState = processState
@@ -48,21 +45,15 @@ export class ProcessControlBlock {
     this.priority = priority
   }
 
-  public static unserialize(
-    serializedPCB: ISerializedProcessControlBlock
-  ): ProcessControlBlock {
+  public static unserialize(serializedPCB: ISerializedProcessControlBlock): ProcessControlBlock {
     return new ProcessControlBlock(serializedPCB)
   }
 
-  public static serialize(
-    processName: string,
-    pcb: ProcessControlBlock
-  ): ISerializedProcessControlBlock {
+  public static serialize(processName: string, pcb: ProcessControlBlock): ISerializedProcessControlBlock {
     return {
       processName,
 
       PID: pcb.PID,
-      memory: pcb.memory,
       parentPID: pcb.parentPID,
       priority: pcb.priority,
       processState: pcb.processState,

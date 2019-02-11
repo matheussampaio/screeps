@@ -1,5 +1,7 @@
 import { Kernel } from './os'
-// import { Boot } from "./programs";
+import { Boot } from "./programs";
+
+Kernel.BootProcess = Boot
 
 export function loop() {
   console.log(`Tick #${Game.time}`)

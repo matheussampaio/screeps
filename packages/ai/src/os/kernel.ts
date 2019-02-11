@@ -1,15 +1,13 @@
 import _ from 'lodash'
 
 import { Process, TProcessConstructor } from './process'
-import {
-  ISerializedProcessControlBlock,
-  ProcessControlBlock
-} from './process-control-block'
+import { ISerializedProcessControlBlock, ProcessControlBlock } from './process-control-block'
 import { ProcessRegistry } from './process-registry'
 
 export class Kernel {
   private static queue: Process[] = []
   private static processes: { [pid: string]: Process } = {}
+  public static BootProcess: TProcessConstructor
 
   static get memory(): any {
     Memory.kernel = Memory.kernel || {}
@@ -44,32 +42,27 @@ export class Kernel {
   public static start() {
     this.load()
 
+    this.boot()
+
     this.run()
 
     this.save()
   }
 
   private static load() {
-    this.serializedPCBs.forEach(
-      (serializedPCB: ISerializedProcessControlBlock) => {
-        const ProcessConstructor = ProcessRegistry.fetch(
-          serializedPCB.processName
-        )
+    this.serializedPCBs.forEach((serializedPCB: ISerializedProcessControlBlock) => {
+      const ProcessConstructor = ProcessRegistry.fetch(serializedPCB.processName)
 
-        if (ProcessConstructor == null) {
-          return console.warn(
-            "Can't find ProcessConstrutor:",
-            serializedPCB.processName
-          )
-        }
-
-        const pcb = ProcessControlBlock.unserialize(serializedPCB)
-        const process = new ProcessConstructor(pcb)
-
-        this.processes[process.pcb.PID] = process
-        this.queue.push(process)
+      if (ProcessConstructor == null) {
+        return console.error("Can't find ProcessConstrutor:", serializedPCB.processName)
       }
-    )
+
+      const pcb = ProcessControlBlock.unserialize(serializedPCB)
+      const process = new ProcessConstructor(pcb)
+
+      this.processes[process.pcb.PID] = process
+      this.queue.push(process)
+    })
   }
 
   private static run(): void {
@@ -96,17 +89,12 @@ export class Kernel {
 
   private static killOrphanProcesses(): void {
     this.queue
-    .filter(
-      process =>
-      process.parentProcess == null || process.parentProcess.isDead()
-    )
-    .forEach(process => process.kill())
+      .filter(process => process.parentProcess == null || process.parentProcess.isDead())
+      .forEach(process => process.kill())
   }
 
   private static wakeUpProcesses(): void {
-    this.queue
-    .filter(process => process.isSleeping() && process.shouldWakeUp())
-    .forEach(process => process.wakeUp())
+    this.queue.filter(process => process.isSleeping() && process.shouldWakeUp()).forEach(process => process.wakeUp())
   }
 
   private static sortQueueByPriority(): void {
@@ -118,14 +106,12 @@ export class Kernel {
   }
 
   private static save() {
-    this.serializedPCBs = _.filter(this.processes, (p: Process) => p.isAlive())
-      .map((p: Process) => p.serialize())
+    this.serializedPCBs = _.filter(this.processes, (p: Process) => p.isAlive()).map((p: Process) => p.serialize())
   }
 
   public static getProcessByPID(pid: number): Process {
     return this.processes[pid]
   }
-
 
   public static getNextPID(): number {
     while (this.getProcessByPID(this.pidCounter)) {
@@ -137,5 +123,30 @@ export class Kernel {
     }
 
     return this.pidCounter
+  }
+
+  public static queueProcess(process: Process): void {
+    this.processes[process.pcb.PID] = process
+    this.queue.push(process)
+  }
+
+  public static getProcessMemory(PID: number) {
+    this.memory.processMemory = this.memory.processMemory || {}
+    this.memory.processMemory[PID] = this.memory.processMemory[PID] || {}
+
+    return this.memory.processMemory[PID]
+  }
+
+  private static boot() {
+    if (this.getProcessByPID(0) == null && this.BootProcess) {
+      const pcb = new ProcessControlBlock({
+        PID: 0,
+        parentPID: 0,
+      })
+
+      const process = new this.BootProcess(pcb)
+
+      this.queueProcess(process)
+    }
   }
 }
