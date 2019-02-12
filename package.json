@@ -18,10 +18,8 @@
   "bugs": {
     "url": "https://github.com/matheussampaio/screeps/issues"
   },
-  "typings": "typings/index.d.ts",
   "homepage": "https://github.com/matheussampaio/screeps#readme",
   "devDependencies": {
-    "lerna": "^3.11.0",
-    "mermaid": "^7.1.2"
+    "lerna": "^3.11.0"
   }
 }
