@@ -1,0 +1,40 @@
+{
+  "name": "@sae/os",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "main": "src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matheussampaio/sae.git"
+  },
+  "author": "Matheus Sampaio <matheus@sampaio.us>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/matheussampaio/sae/issues"
+  },
+  "typings": "typings/index.d.ts",
+  "homepage": "https://github.com/matheussampaio/sae#readme",
+  "scripts": {
+    "lint": "tslint -p tsconfig.json \"src/**/*.ts\"",
+    "build": "rollup -c"
+  },
+  "dependencies": {
+    "lodash": "^4.17.11"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.120",
+    "@types/screeps": "^2.5.3",
+    "prettier": "^1.16.3",
+    "rollup": "^1.1.2",
+    "rollup-plugin-clear": "^2.0.7",
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-node-resolve": "^4.0.0",
+    "rollup-plugin-screeps": "^0.1.2",
+    "rollup-plugin-typescript2": "^0.19.2",
+    "tslint": "^5.12.1",
+    "tslint-config-prettier": "^1.17.0",
+    "tslint-plugin-prettier": "^2.0.1",
+    "typescript": "^3.3.1"
+  }
+}
