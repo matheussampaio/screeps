@@ -1,5 +1,6 @@
-import { Kernel } from './os'
-import { Boot } from "./programs";
+import { Kernel } from '@sae/os'
+
+import { Boot } from './programs';
 
 Kernel.BootProcess = Boot
 

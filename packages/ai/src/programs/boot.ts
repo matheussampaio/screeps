@@ -1,5 +1,4 @@
-import { RegisterProcess } from '../os'
-import { Process } from '../os'
+import { Process, RegisterProcess } from '@sae/os'
 
 @RegisterProcess
 export class Boot extends Process {

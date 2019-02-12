@@ -26,6 +26,7 @@
     "watch-sim": "nodemon -e ts -w src -d 1 -x 'rollup -c --environment DEST:sim'"
   },
   "dependencies": {
+    "@sae/os": "^1.0.0",
     "lodash": "^4.17.11"
   },
   "devDependencies": {
