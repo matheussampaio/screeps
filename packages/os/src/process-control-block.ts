@@ -1,7 +1,4 @@
-import _ from 'lodash'
 import { PRIORITY, PROCESS_STATE } from './constants'
-import { Kernel } from './kernel'
-import { Process } from './process'
 
 export interface ISerializedProcessControlBlock {
   processName: string
@@ -22,22 +19,22 @@ export interface IProcessControlBlockConstructorParams {
 }
 
 export class ProcessControlBlock {
-  public readonly memory: any
+  public memory: any
   public processState: PROCESS_STATE
   public programCounter: string
   public priority: number
-  public readonly parentPID: number
-  public readonly PID: number
+  public parentPID: number
+  public PID: number
 
   constructor({
     parentPID,
     memory = {},
     programCounter = 'run',
-    PID = Kernel.getNextPID(),
+    PID = -1,
     processState = PROCESS_STATE.READY,
     priority = PRIORITY.NORMAL
   }: IProcessControlBlockConstructorParams) {
-    this.memory = _.merge(Kernel.getProcessMemory(PID), memory)
+    this.memory = memory
     this.parentPID = parentPID
     this.PID = PID
     this.processState = processState

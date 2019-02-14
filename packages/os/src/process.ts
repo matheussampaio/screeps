@@ -1,3 +1,5 @@
+import _ from 'lodash'
+
 import { CODES, PRIORITY, PROCESS_STATE } from './constants'
 import { Kernel } from './kernel'
 import {
@@ -6,21 +8,32 @@ import {
   ProcessControlBlock
 } from './process-control-block'
 
-export type TProcessConstructor = new (pcb: ProcessControlBlock) => Process
+export type TProcessConstructor = new (kernel: Kernel, pcb: ProcessControlBlock) => Process
 
-export class Process {
+export abstract class Process {
+  public readonly kernel: Kernel
+  public readonly pcb: ProcessControlBlock
+
+  constructor(kernel: Kernel, pcb: ProcessControlBlock) {
+    this.kernel = kernel
+    this.pcb = pcb
+  }
+
   public fork(ProcessContructor: TProcessConstructor, params: IProcessControlBlockConstructorParams) {
     params.parentPID = this.pcb.parentPID
+    params.PID = this.kernel.getNextPID()
+    params.memory = _.merge(
+      this.kernel.getProcessMemory(params.PID),
+      params.memory
+    )
 
     const pcb = new ProcessControlBlock(params)
-    const process = new ProcessContructor(pcb)
+    const process = new ProcessContructor(this.kernel, pcb)
 
-    Kernel.queueProcess(process)
+    this.kernel.addProcess(process)
 
     this.children.push(process.pcb.PID)
   }
-
-  constructor(public readonly pcb: ProcessControlBlock) {}
 
   public get children(): number[] {
     this.pcb.memory.children = this.pcb.memory.children || []
@@ -29,7 +42,7 @@ export class Process {
   }
 
   public get parentProcess() {
-    return Kernel.getProcessByPID(this.pcb.parentPID)
+    return this.kernel.getProcessByPID(this.pcb.parentPID)
   }
 
   public isDead(): boolean {
@@ -72,9 +85,7 @@ export class Process {
     // TODO: kill children
   }
 
-  public run(): void {
-    console.log('Running!', this.constructor.name)
-  }
+  public abstract run(): void
 
   public serialize(): ISerializedProcessControlBlock {
     return ProcessControlBlock.serialize(this.constructor.name, this.pcb)

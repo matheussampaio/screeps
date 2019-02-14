@@ -2,10 +2,10 @@ import { Kernel } from '@sae/os'
 
 import { Boot } from './programs';
 
-Kernel.BootProcess = Boot
+const kernel = new Kernel(Boot)
 
 export function loop() {
   console.log(`Tick #${Game.time}`)
 
-  Kernel.start()
+  kernel.start()
 }

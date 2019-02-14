@@ -21,9 +21,18 @@
     "push-main": "rollup -c --environment DEST:main",
     "push-pserver": "rollup -c --environment DEST:pserver",
     "push-sim": "rollup -c --environment DEST:sim",
-    "watch-main": "rollup -cw --environment DEST:main",
-    "watch-pserver": "rollup -cw --environment DEST:pserver",
-    "watch-sim": "nodemon -e ts -w src -d 1 -x 'rollup -c --environment DEST:sim'"
+    "watch-build": "nodemon -x 'npm run build'",
+    "watch-main": "nodemon -x 'npm run push-main'",
+    "watch-pserver": "nodemon -x 'npm run push-pserver'",
+    "watch-sim": "nodemon -x 'npm run push-sim'"
+  },
+  "nodemonConfig": {
+    "ext": "ts,js,json",
+    "watch": [
+      "src",
+      "../os/dist"
+    ],
+    "delay": "500"
   },
   "dependencies": {
     "@sae/os": "^1.0.0",
