@@ -73,6 +73,11 @@ export abstract class Process {
     return this.pcb.memory.wakeAt == null || this.pcb.memory.wakeAt <= Game.time
   }
 
+  public sleep(ticks: number = 1) {
+    this.pcb.memory.wakeAt = Game.time + ticks
+    this.pcb.processState = PROCESS_STATE.SLEEPING
+  }
+
   public wakeUp(): void {
     delete this.pcb.memory.wakeAt
 

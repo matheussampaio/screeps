@@ -1,18 +1,28 @@
 import _ from 'lodash'
 
+import { IAnalytics } from './analytics'
 import { Process, TProcessConstructor } from './process'
 import { ISerializedProcessControlBlock, ProcessControlBlock } from './process-control-block'
 import { ProcessRegistry } from './process-registry'
+
+export interface IKernelOptions {
+  cpuMinimum?: number
+  analytics?: IAnalytics
+}
 
 export class Kernel {
   private queue: Process[]
   private processes: { [pid: string]: Process }
   private BootProcess: TProcessConstructor
+  private cpu: number
+  public analytics: IAnalytics | undefined
 
-  constructor(BootProcess: TProcessConstructor) {
+  constructor(BootProcess: TProcessConstructor, options: IKernelOptions = {}) {
     this.BootProcess = BootProcess
     this.queue = []
     this.processes = {}
+    this.cpu = options.cpuMinimum || 500
+    this.analytics = options.analytics
   }
 
   get memory(): any {
@@ -46,6 +56,10 @@ export class Kernel {
   }
 
   public start() {
+    if (Game.cpu.bucket < this.cpu) {
+      return console.log('Extremely low bucket - aborting kernel start')
+    }
+
     this.load()
 
     this.boot()
@@ -85,7 +99,15 @@ export class Kernel {
       const process = this.queue.shift()
 
       if (process && process.isReady()) {
+        if (this.analytics) {
+          this.analytics.processPreRun(process)
+        }
+
         process.run()
+
+        if (this.analytics) {
+          this.analytics.processPostRun(process)
+        }
       }
     }
 
