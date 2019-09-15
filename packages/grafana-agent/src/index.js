@@ -1,7 +1,7 @@
+const ScreepsAPI = require('@sae/screeps-api')
 const axios = require('axios')
 const dotenv = require('dotenv')
 
-const Screeps = require('./screeps')
 const utils = require('./utils')
 
 main()
@@ -9,7 +9,7 @@ main()
 async function main() {
   dotenv.config()
 
-  const screeps = new Screeps({ token: process.env.SCREEPS_TOKEN })
+  const screeps = new ScreepsAPI({ token: process.env.SCREEPS_TOKEN })
 
   const shards = (process.env.SCREEPS_SHARDS || 'shard0').split(',')
 

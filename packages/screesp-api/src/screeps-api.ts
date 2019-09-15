@@ -1,9 +1,11 @@
-const axios = require('axios')
+import axios, { AxiosInstance } from 'axios'
 
-const utils = require('./utils')
+import * as utils from './utils'
 
 class Screeps {
-  constructor({ token } = {}) {
+  private axios: AxiosInstance
+
+  constructor({ token = '' } = {}) {
     this.axios = axios.create({
       baseURL: 'https://screeps.com/api',
       headers: {
@@ -19,7 +21,7 @@ class Screeps {
     })
   }
 
-  async getMemory({ path, shard = 'shard0' }) {
+  async getMemory({ path, shard = 'shard0' }: { path: string, shard: string }) {
     const response = await this.axios.get('/user/memory', {
       params: { path, shard }
     })
