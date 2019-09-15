@@ -19,11 +19,11 @@
     "lint": "tslint -p tsconfig.json \"src/**/*.ts\"",
     "build": "rollup -c",
     "build:watch": "nodemon -x 'npm run build'",
-    "release": "gulp release",
-    "release:watch": "nodemon -x 'npm run release'",
-    "build:release": "npm run build && npm run release",
-    "build:release:watch": "nodemon -x 'npm run build:release'",
-    "dev": "nodemon -x 'npm run build:release'"
+    "upload": "gulp upload",
+    "upload:watch": "nodemon -x 'npm run upload'",
+    "build:upload": "npm run build && npm run upload",
+    "build:upload:watch": "nodemon -x 'npm run build:upload'",
+    "dev": "nodemon -x 'npm run build:upload'"
   },
   "nodemonConfig": {
     "ext": "ts,js,json",
@@ -35,27 +35,26 @@
     "delay": "500"
   },
   "dependencies": {
-    "@sae/os": "^1.0.0",
-    "@sae/utils": "^1.0.0",
-    "lodash": "^4.17.11"
+    "@sae/os": "1.0.0",
+    "@sae/utils": "1.0.0",
+    "lodash": "4.17.15"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.120",
-    "@types/screeps": "^2.5.3",
-    "dotenv": "^6.2.0",
-    "gulp": "^4.0.0",
-    "gulp-screeps": "^1.0.8",
-    "nodemon": "^1.18.10",
-    "prettier": "^1.16.3",
-    "rollup": "^1.1.2",
-    "rollup-plugin-clear": "^2.0.7",
-    "rollup-plugin-commonjs": "^9.2.0",
-    "rollup-plugin-node-resolve": "^4.0.0",
-    "rollup-plugin-screeps": "^0.1.2",
-    "rollup-plugin-typescript2": "^0.19.2",
-    "tslint": "^5.12.1",
-    "tslint-config-prettier": "^1.17.0",
-    "tslint-plugin-prettier": "^2.0.1",
-    "typescript": "^3.3.1"
+    "@types/lodash": "4.14.138",
+    "@types/screeps": "2.5.4",
+    "dotenv": "8.1.0",
+    "gulp": "4.0.2",
+    "gulp-screeps": "1.0.8",
+    "nodemon": "1.19.2",
+    "prettier": "1.18.2",
+    "rollup": "1.21.3",
+    "rollup-plugin-clear": "2.0.7",
+    "rollup-plugin-commonjs": "10.1.0",
+    "rollup-plugin-node-resolve": "5.2.0",
+    "rollup-plugin-typescript2": "0.24.2",
+    "tslint": "5.20.0",
+    "tslint-config-prettier": "1.18.0",
+    "tslint-plugin-prettier": "2.0.1",
+    "typescript": "3.6.3"
   }
 }

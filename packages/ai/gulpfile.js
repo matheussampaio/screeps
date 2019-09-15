@@ -9,7 +9,7 @@ const credentials = {
   branch: process.env.SCREEPS_BRANCH || 'default'
 }
 
-gulp.task('release', () => {
+gulp.task('upload', () => {
   return gulp.src('main.js', { cwd: 'dist' })
     .pipe(screeps(credentials))
 })

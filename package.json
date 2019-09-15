@@ -4,10 +4,11 @@
   "description": "",
   "private": true,
   "scripts": {
-    "build": "lerna exec \"npm run build\" --scope=@sae/ai",
-    "debug": "nodemon -V -w \"packages/*/src/**/*\" -x \"npm run build && npm run publish\"",
-    "lint": "eslint packages/*/src/**/*.js",
-    "publish": "lerna exec \"npm run publish\" --scope=@sae/ai"
+    "build": "lerna run build",
+    "build:upload": "npm run build && npm run upload",
+    "lint": "lerna run lint",
+    "upload": "lerna run upload",
+    "watch:build:upload": "nodemon -V -w \"packages/*/src/**/*.ts\" -x \"npm run build:upload\""
   },
   "repository": {
     "type": "git",
@@ -20,12 +21,6 @@
   },
   "homepage": "https://github.com/matheussampaio/screeps#readme",
   "devDependencies": {
-    "lerna": "^3.11.0",
-    "nodemon": "1.19.2",
-    "prettier": "1.18.2",
-    "tslint": "5.20.0",
-    "tslint-config-prettier": "1.18.0",
-    "tslint-plugin-prettier": "2.0.1",
-    "typescript": "3.6.3"
+    "lerna": "^3.11.0"
   }
 }
