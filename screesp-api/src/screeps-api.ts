@@ -11,17 +11,20 @@ class Screeps {
       headers: {
         'X-Token': token
       },
-      transformResponse: [JSON.parse, data => {
-        if (data.data && utils.isCompressed(data.data)) {
-          data.data = utils.inflate(data.data)
-        }
+      transformResponse: [
+        JSON.parse,
+        data => {
+          if (data.data && utils.isCompressed(data.data)) {
+            data.data = utils.inflate(data.data)
+          }
 
-        return data
-      }]
+          return data
+        }
+      ]
     })
   }
 
-  async getMemory({ path, shard = 'shard0' }: { path: string, shard: string }) {
+  public async getMemory({ path, shard = 'shard0' }: { path: string; shard: string }) {
     const response = await this.axios.get('/user/memory', {
       params: { path, shard }
     })

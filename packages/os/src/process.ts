@@ -22,10 +22,7 @@ export abstract class Process {
   public fork(ProcessContructor: TProcessConstructor, params: IProcessControlBlockConstructorParams): number {
     params.parentPID = this.pcb.parentPID
     params.PID = this.kernel.getNextPID()
-    params.memory = _.merge(
-      this.kernel.getProcessMemory(params.PID),
-      params.memory
-    )
+    params.memory = _.merge(this.kernel.getProcessMemory(params.PID), params.memory)
 
     const pcb = new ProcessControlBlock(params)
     const process = new ProcessContructor(this.kernel, pcb)
@@ -89,7 +86,7 @@ export abstract class Process {
   public kill(): void {
     this.pcb.processState = PROCESS_STATE.DEAD
 
-    this.children.forEach((PID) => {
+    this.children.forEach(PID => {
       const child = this.kernel.getProcessByPID(PID)
 
       child.kill()

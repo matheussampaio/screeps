@@ -169,7 +169,7 @@ export class Kernel {
     if (this.getProcessByPID(0) == null && this.BootProcess) {
       const pcb = new ProcessControlBlock({
         PID: 0,
-        parentPID: 0,
+        parentPID: 0
       })
 
       const process = new this.BootProcess(this, pcb)

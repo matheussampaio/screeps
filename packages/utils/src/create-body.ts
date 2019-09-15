@@ -10,12 +10,12 @@ export class CreateBody {
   private body: any
   private static readonly MAX_CREEP_SIZE = 50
 
-  constructor({ minimumEnergy, energy }: { minimumEnergy: number, energy: number }) {
+  constructor({ minimumEnergy, energy }: { minimumEnergy: number; energy: number }) {
     this.energy = Math.max(minimumEnergy, energy)
     this.size = 0
     this.body = {}
 
-    BODYPARTS_ALL.forEach((part) => {
+    BODYPARTS_ALL.forEach(part => {
       this.body[part] = 0
     })
   }
@@ -37,7 +37,7 @@ export class CreateBody {
       if (this.energy >= this.getPartCost(part) && this.body[part] < (maximum[part] || 1)) {
         this.body[part] += 1
         this.size += 1
-        this.energy -=  this.getPartCost(part)
+        this.energy -= this.getPartCost(part)
       }
     }
 
@@ -51,7 +51,7 @@ export class CreateBody {
 
     let i = 0
 
-    const minimumCost = _.min(parts.map(part =>  this.getPartCost(part) + BODYPART_COST[MOVE]))
+    const minimumCost = _.min(parts.map(part => this.getPartCost(part) + BODYPART_COST[MOVE]))
 
     while (this.canAddMoreParts(parts, maximum, minimumCost, 1)) {
       i += 1
@@ -81,7 +81,12 @@ export class CreateBody {
     return hasEnoughEnergy && !limitForThisPartReached
   }
 
-  private canAddMoreParts(parts: BodyPartConstant[], maximum: IMaximumParts, minimumCost: number = 0, movesPart: number = 0): boolean {
+  private canAddMoreParts(
+    parts: BodyPartConstant[],
+    maximum: IMaximumParts,
+    minimumCost: number = 0,
+    movesPart: number = 0
+  ): boolean {
     return (
       this.size + movesPart < CreateBody.MAX_CREEP_SIZE &&
       this.energy >= minimumCost &&

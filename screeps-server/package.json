@@ -1,6 +1,7 @@
 {
   "name": "screeps-server",
   "version": "1.0.0",
+  "private": true,
   "description": "Runs my Screeps Private Server",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
