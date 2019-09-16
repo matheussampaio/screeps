@@ -1,26 +1,60 @@
 {
-  "name": "screeps",
+  "name": "@sae/ai",
   "version": "1.0.0",
   "description": "",
   "private": true,
-  "scripts": {
-    "build": "lerna run build",
-    "build:upload": "npm run build && npm run upload",
-    "lint": "lerna run lint",
-    "upload": "lerna run upload",
-    "watch:build:upload": "nodemon -V -w \"packages/*/src/**/*.ts\" -x \"npm run build:upload\""
-  },
+  "main": "dist/index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/matheussampaio/screeps.git"
+    "url": "git+https://github.com/matheussampaio/sae.git"
   },
   "author": "Matheus Sampaio <matheus@sampaio.us>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/matheussampaio/screeps/issues"
+    "url": "https://github.com/matheussampaio/sae/issues"
   },
-  "homepage": "https://github.com/matheussampaio/screeps#readme",
+  "typings": "typings/index.d.ts",
+  "homepage": "https://github.com/matheussampaio/sae#readme",
+  "scripts": {
+    "lint": "tslint -p tsconfig.json \"src/**/*.ts\"",
+    "build": "rollup -c",
+    "build:watch": "nodemon -x 'npm run build'",
+    "upload": "gulp upload",
+    "upload:watch": "nodemon -x 'npm run upload'",
+    "build:upload": "npm run build && npm run upload",
+    "build:upload:watch": "nodemon -w src -d 2 -x 'npm run build:upload'",
+    "dev": "nodemon -x 'npm run build:upload'"
+  },
+  "nodemonConfig": {
+    "ext": "ts,js,json",
+    "watch": [
+      "src",
+      "../os/dist",
+      "../utils/dist"
+    ],
+    "delay": "500"
+  },
   "devDependencies": {
-    "lerna": "^3.11.0"
+    "@types/lodash": "4.14.138",
+    "@types/screeps": "2.5.4",
+    "dotenv": "8.1.0",
+    "gulp-screeps": "1.0.8",
+    "gulp": "4.0.2",
+    "lodash": "4.17.15",
+    "nodemon": "1.19.2",
+    "prettier": "1.18.2",
+    "rollup-plugin-clear": "2.0.7",
+    "rollup-plugin-commonjs": "10.1.0",
+    "rollup-plugin-typescript2": "0.24.2",
+    "rollup": "1.21.3",
+    "tslint-config-prettier": "1.18.0",
+    "tslint-plugin-prettier": "2.0.1",
+    "tslint": "5.20.0",
+    "typescript": "3.6.3"
+  },
+  "prettier": {
+    "tabWidth": 2,
+    "semi": false,
+    "singleQuote": true
   }
 }
