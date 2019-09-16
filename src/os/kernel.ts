@@ -6,7 +6,9 @@ import { ISerializedProcessControlBlock, ProcessControlBlock } from './process-c
 import { ProcessRegistry } from './process-registry'
 
 declare global {
-  interface Memory { kernel: object }
+  interface Memory {
+    kernel: object
+  }
 }
 
 export interface IKernelOptions {

@@ -1,7 +1,9 @@
 import { Process } from './process'
 
 declare global {
-  interface Memory { analytics: object }
+  interface Memory {
+    analytics: object
+  }
 }
 
 export interface IAnalytics {
