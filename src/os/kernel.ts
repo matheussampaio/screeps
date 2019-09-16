@@ -51,17 +51,17 @@ export class Kernel {
     this.memory.serializedPCBs = value
   }
 
-  public get pidCounter(): number {
-    this.memory.pidCounter = this.memory.pidCounter || 0
+  private get pidCounter(): number {
+    this.memory.pidCounter = this.memory.pidCounter || 1
 
     return this.memory.pidCounter
   }
 
-  public set pidCounter(value: number) {
+  private set pidCounter(value: number) {
     this.memory.pidCounter = value
   }
 
-  public start() {
+  public tick() {
     if (Game.cpu.bucket < this.cpu) {
       return console.log('Extremely low bucket - aborting kernel start')
     }
@@ -70,7 +70,17 @@ export class Kernel {
 
     this.boot()
 
+    this.killOrphanProcesses()
+
+    this.wakeUpProcesses()
+
+    // we should start with high priority processes
+    this.sortQueueByPriority()
+
     this.run()
+
+    // raise priority to avoid estarvation
+    this.raisePriorityOfUnrunnedProcesses()
 
     this.save()
   }
@@ -92,13 +102,6 @@ export class Kernel {
   }
 
   private run(): void {
-    this.killOrphanProcesses()
-
-    this.wakeUpProcesses()
-
-    // we should start with high priority processes
-    this.sortQueueByPriority()
-
     while (this.queue.length) {
       // TODO: if CPU not available, stop
 
@@ -116,9 +119,6 @@ export class Kernel {
         }
       }
     }
-
-    // raise priority to avoid estarvation
-    this.raisePriorityOfUnrunnedProcesses()
   }
 
   private killOrphanProcesses(): void {
@@ -175,6 +175,7 @@ export class Kernel {
     if (this.getProcessByPID(0) == null && this.BootProcess) {
       const pcb = new ProcessControlBlock({
         PID: 0,
+        memory: this.getProcessMemory(0),
         parentPID: 0
       })
 

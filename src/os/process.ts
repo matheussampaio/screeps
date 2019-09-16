@@ -17,12 +17,13 @@ export abstract class Process {
   constructor(kernel: Kernel, pcb: ProcessControlBlock) {
     this.kernel = kernel
     this.pcb = pcb
+
+    this.pcb.memory = _.merge(this.kernel.getProcessMemory(this.pcb.PID), this.pcb.memory)
   }
 
   public fork(ProcessContructor: TProcessConstructor, params: IProcessControlBlockConstructorParams): number {
     params.parentPID = this.pcb.parentPID
     params.PID = this.kernel.getNextPID()
-    params.memory = _.merge(this.kernel.getProcessMemory(params.PID), params.memory)
 
     const pcb = new ProcessControlBlock(params)
     const process = new ProcessContructor(this.kernel, pcb)
