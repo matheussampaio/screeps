@@ -21,6 +21,10 @@ export abstract class Process {
     this.pcb.memory = _.merge(this.kernel.getProcessMemory(this.pcb.PID), this.pcb.memory)
   }
 
+  public get log() {
+    return this.kernel.log
+  }
+
   public fork(ProcessContructor: TProcessConstructor, params: IProcessControlBlockConstructorParams): number {
     params.parentPID = this.pcb.parentPID
     params.PID = this.kernel.getNextPID()

@@ -1,6 +1,7 @@
 import * as _ from 'lodash'
 
 import { IAnalytics } from './analytics'
+import { LOG_LEVEL, Logger } from './logger'
 import { Process, TProcessConstructor } from './process'
 import { ISerializedProcessControlBlock, ProcessControlBlock } from './process-control-block'
 import { ProcessRegistry } from './process-registry'
@@ -14,6 +15,7 @@ declare global {
 export interface IKernelOptions {
   cpuMinimum?: number
   analytics?: IAnalytics
+  logLevel?: LOG_LEVEL
 }
 
 export class Kernel {
@@ -22,6 +24,7 @@ export class Kernel {
   private BootProcess: TProcessConstructor
   private cpu: number
   public analytics: IAnalytics | undefined
+  public log: Logger
 
   constructor(BootProcess: TProcessConstructor, options: IKernelOptions = {}) {
     this.BootProcess = BootProcess
@@ -29,6 +32,7 @@ export class Kernel {
     this.processes = {}
     this.cpu = options.cpuMinimum || 500
     this.analytics = options.analytics
+    this.log = new Logger(options.logLevel || LOG_LEVEL.info)
   }
 
   get memory(): any {
