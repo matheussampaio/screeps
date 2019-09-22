@@ -1,5 +1,6 @@
 import clear from 'rollup-plugin-clear';
 import commonjs from 'rollup-plugin-commonjs';
+import rollupGitVersion from 'rollup-plugin-git-version';
 import typescript from 'rollup-plugin-typescript2';
 import Typescript from 'typescript';
 
@@ -13,7 +14,8 @@ export default {
   plugins: [
     clear({ targets: ['dist'] }),
     commonjs(),
-    typescript({ typescript: Typescript })
+    typescript({ typescript: Typescript }),
+    rollupGitVersion()
   ],
 
   external: ['lodash']
