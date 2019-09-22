@@ -2,13 +2,16 @@
   "compilerOptions": {
     "baseUrl": "src/",
     "experimentalDecorators": true,
-    "lib": ["esnext"],
+    "lib": [
+      "esnext"
+    ],
     "module": "esnext",
     "moduleResolution": "Node",
     "noImplicitReturns": true,
     "outDir": "dist",
+    "resolveJsonModule": true,
     "sourceMap": false,
-    "target": "es2017",
-    "suppressExcessPropertyErrors": true
+    "suppressExcessPropertyErrors": true,
+    "target": "es2017"
   }
 }
