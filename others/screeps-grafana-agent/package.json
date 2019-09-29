@@ -11,7 +11,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@sae/screeps-api": "^1.0.0",
     "dotenv": "^6.2.0"
   }
 }

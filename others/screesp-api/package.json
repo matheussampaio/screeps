@@ -1,5 +1,5 @@
 {
-  "name": "@sae/screeps-api",
+  "name": "screeps-api",
   "version": "1.0.0",
   "description": "",
   "private": true,
@@ -7,14 +7,14 @@
   "typings": "dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/matheussampaio/sae.git"
+    "url": "git+https://github.com/matheussampaio/screeps.git"
   },
   "author": "Matheus Sampaio <matheus@sampaio.us>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/matheussampaio/sae/issues"
+    "url": "https://github.com/matheussampaio/screeps/issues"
   },
-  "homepage": "https://github.com/matheussampaio/sae#readme",
+  "homepage": "https://github.com/matheussampaio/screeps#readme",
   "scripts": {
     "lint": "tslint -p tsconfig.json \"src/**/*.ts\"",
     "build": "rollup -c",

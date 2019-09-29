@@ -1,8 +1,8 @@
-const ScreepsAPI = require('@sae/screeps-api')
 const axios = require('axios')
 const dotenv = require('dotenv')
 
 const utils = require('./utils')
+const ScreepsAPI = require('../../screesp-api/src/screeps-api')
 
 main()
 
