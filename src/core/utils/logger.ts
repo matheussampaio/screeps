@@ -1,6 +1,8 @@
 declare global {
   interface Memory {
-    logLevel?: number
+    configs?: {
+      logLevel: number
+    }
   }
 }
 
@@ -40,7 +42,7 @@ export class Logger {
   }
 
   private log(level: LOG_LEVEL, msg: string, data: any[]) {
-    const loglevel = Memory.logLevel || this.level
+    const loglevel = Memory.configs.logLevel || this.level
 
     if (loglevel >= level) {
       console.log(`date=${Date.now()},level=${level},msg="${msg}"`, ...data)

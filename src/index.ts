@@ -1,11 +1,15 @@
-import { Analytics, Kernel, LOG_LEVEL } from './os'
-import { Boot } from './programs'
-import getVersion from './utils/version'
+import * as _ from 'lodash'
+import { ActionTreeRunner, ActionsRegistry, IActionConstructor } from './core'
+import * as Actions from './actions'
+import { BootTree } from './trees'
 
-const kernel = new Kernel(Boot, { analytics: new Analytics() })
+_.values(Actions)
+  .forEach((Action: IActionConstructor) => ActionsRegistry.register(Action))
+
+console.log('running global', Game.time)
 
 export function loop() {
-  kernel.log.info(`[${getVersion()}] Tick #${Game.time}`)
+  console.log(`Tick: ${Game.time}`)
 
-  kernel.tick()
+  ActionTreeRunner.tick(BootTree)
 }
