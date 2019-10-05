@@ -42,8 +42,6 @@ export class ActionTreeRunner {
       let iterations = 0
 
       while (subtree.length && iterations++ < ActionTreeRunner.MAX_ITERATIONS && Game.cpu.getUsed() < getCPULimit()) {
-        console.log(`tree=${tree.name},action=${subtree[0]}`)
-
         const action: Action = ActionsRegistry.fetch(subtree[0])
 
         const [result, ...actions] = action.run(tree.memory)

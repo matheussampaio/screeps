@@ -6,10 +6,6 @@ import { BootTree } from './trees'
 _.values(Actions)
   .forEach((Action: IActionConstructor) => ActionsRegistry.register(Action))
 
-console.log('running global', Game.time)
-
 export function loop() {
-  console.log(`Tick: ${Game.time}`)
-
   ActionTreeRunner.tick(BootTree)
 }
