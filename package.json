@@ -20,7 +20,7 @@
     "build": "rollup -c",
     "upload": "gulp upload",
     "build:upload": "rollup -c && gulp upload",
-    "dev": "nodemon -w src -d 2 -x npm run build:upload"
+    "dev": "nodemon -w src -x npm run build:upload"
   },
   "nodemonConfig": {
     "ext": "ts,js,json",
