@@ -8,5 +8,6 @@ _.values(Actions)
 
 export function loop() {
   console.log(`time=${Game.time}`)
+
   ActionTreeRunner.tick([[Actions.Country.name]])
 }

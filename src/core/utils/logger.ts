@@ -1,3 +1,5 @@
+import * as _ from 'lodash'
+
 declare global {
   interface Memory {
     configs?: {
@@ -14,13 +16,11 @@ export enum LOG_LEVEL {
   trace = 50
 }
 
+Memory.configs = {
+  logLevel: LOG_LEVEL.trace
+}
+
 export class Logger {
-  private readonly level: LOG_LEVEL
-
-  constructor(level: LOG_LEVEL) {
-    this.level = level
-  }
-
   public error(msg: string, ...data: any[]) {
     return this.log(LOG_LEVEL.error, msg, data)
   }
@@ -42,7 +42,7 @@ export class Logger {
   }
 
   private log(level: LOG_LEVEL, msg: string, data: any[]) {
-    const loglevel = Memory.configs.logLevel || this.level
+    const loglevel = _.get(Memory, 'configs.logLevel', LOG_LEVEL.info)
 
     if (loglevel >= level) {
       console.log(`date=${Date.now()},level=${level},msg="${msg}"`, ...data)

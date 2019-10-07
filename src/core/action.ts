@@ -1,5 +1,6 @@
 import { ACTIONS_RESULT, PRIORITY } from './constants'
 import { ActionTreeRunner, ForkOptions } from './action-runner'
+import { Logger } from './utils/logger'
 
 export interface IActionConstructor {
   new(): Action
@@ -15,5 +16,8 @@ export class Action {
   public fork(options: ForkOptions): number {
     return ActionTreeRunner.fork(options)
   }
-}
 
+  public get logger(): Logger {
+    return ActionTreeRunner.logger
+  }
+}

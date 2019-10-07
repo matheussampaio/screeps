@@ -12,6 +12,7 @@
     "resolveJsonModule": true,
     "sourceMap": false,
     "suppressExcessPropertyErrors": true,
-    "target": "es2017"
+    "target": "es2017",
+    "strict": true
   }
 }

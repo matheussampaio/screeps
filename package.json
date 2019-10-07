@@ -20,7 +20,8 @@
     "build": "rollup -c",
     "upload": "gulp upload",
     "build:upload": "rollup -c && gulp upload",
-    "dev": "nodemon -w src -x npm run build:upload"
+    "dev": "nodemon -w src -x npm run build:upload",
+    "release": "NODE_ENV=production rollup -c && SCREEPS_BRANCH=default gulp upload"
   },
   "nodemonConfig": {
     "ext": "ts,js,json",
