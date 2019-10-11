@@ -150,6 +150,10 @@ export class ActionTreeRunner {
       let iterations = 0
 
       while (subtree.length && iterations++ < ActionTreeRunner.MAX_ITERATIONS && Game.cpu.getUsed() < getCPULimit()) {
+        ActionTreeRunner.transitionDeprecatedActions(subtree)
+
+        ActionTreeRunner.logger.debug('ActionTreeRunner::execute::action::', subtree[0])
+
         const action: Action = ActionsRegistry.fetch(subtree[0])
 
         const [result, ...actions] = action.run(process.memory)
@@ -200,5 +204,17 @@ export class ActionTreeRunner {
 
     process.state = PROCESS_STATE.WAITING
     ActionTreeRunner.logger.debug('ActionTreeRunner::execute::end', process.name)
+  }
+
+  private static transitionDeprecatedActions(subtree: string[]): void {
+    subtree[0] = ActionTreeRunner.deprecatedActions(subtree[0])
+  }
+
+  private static deprecatedActions(action: string): string {
+    const deprecatedActions: { [name: string]: string } = {
+      CreepAction: 'CreepGeneric'
+    }
+
+    return deprecatedActions[action] || action
   }
 }

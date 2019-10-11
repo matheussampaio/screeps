@@ -7,7 +7,7 @@ interface IMaximumParts {
 export class CreateBody {
   private energy: number
   private size: number
-  private body: any
+  private body: { [p: string] : number }
   private static readonly MAX_CREEP_SIZE = 50
 
   constructor({ minimumEnergy, energy }: { minimumEnergy: number; energy: number }) {
@@ -94,9 +94,15 @@ export class CreateBody {
     )
   }
 
-  public value(): string {
-    return _.keys(this.body)
-      .map(part => _.repeat(part[0], this.body[part]))
-      .join('')
+  public value(): BodyPartConstant[] {
+    const body: BodyPartConstant[] = []
+
+    for (let [part, counter] of Object.entries(this.body)) {
+      for (let i = 0; i < counter; i++) {
+        body.push(part as BodyPartConstant)
+      }
+    }
+
+    return body
   }
 }
