@@ -8,6 +8,14 @@ interface CityContext {
   roomName: string
 }
 
+declare global {
+  interface Memory {
+    counters?: {
+      creepCounter?: number
+    }
+  }
+}
+
 export class City extends Action {
   run(context: CityContext): [ACTIONS_RESULT, ...string[]] {
     // @TODO: spawn creeps whenever something is ready
@@ -51,12 +59,20 @@ export class City extends Action {
   }
 
   getUniqueName(): string {
-    let counter = 0
+    const counters = Memory.counters || (Memory.counters = {})
 
-    while (Game.creeps[`creep-${counter}`]) {
-      counter++
+    if (counters.creepCounter == null) {
+      counters.creepCounter = 1
     }
 
-    return `creep-${counter}`
+    while (Game.creeps[`creep-${counters.creepCounter}`]) {
+      counters.creepCounter++
+
+      if (counters.creepCounter >= Number.MAX_SAFE_INTEGER) {
+        counters.creepCounter = 1
+      }
+    }
+
+    return `creep-${counters.creepCounter}`
   }
 }
