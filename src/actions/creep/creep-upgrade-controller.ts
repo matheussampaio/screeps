@@ -24,6 +24,16 @@ export class CreepUpgradeController extends Action {
       return [ACTIONS_RESULT.WAIT_NEXT_TICK]
     }
 
+    if (controller.sign == null) {
+      const sign = '¯\_(ツ)_/¯'
+
+      if (creep.signController(controller, sign) == ERR_NOT_IN_RANGE) {
+        creep.moveTo(controller);
+      }
+
+      return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+    }
+
     if (creep.pos.inRangeTo(controller, 3)) {
       creep.upgradeController(controller)
     } else {
