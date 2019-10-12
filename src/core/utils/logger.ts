@@ -3,7 +3,7 @@ import * as _ from 'lodash'
 declare global {
   interface Memory {
     configs?: {
-      logLevel: number
+      logLevel?: number
     }
   }
 }
