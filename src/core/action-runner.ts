@@ -123,6 +123,8 @@ export class ActionTreeRunner {
         priority: PRIORITY.HIGH,
         actions: bootActions
       })
+    } else {
+      _.defaultsDeep(Memory.processes[0].actions, bootActions)
     }
 
     ActionTreeRunner.logger.debug('ActionTreeRunner::boot::end')
@@ -145,8 +147,6 @@ export class ActionTreeRunner {
   }
 
   private static execute(process: Process): void {
-    ActionTreeRunner.logger.debug('ActionTreeRunner::execute::start', process.name)
-
     process.state = PROCESS_STATE.RUNNING
 
     for (let subtree of process.actions) {
@@ -159,7 +159,7 @@ export class ActionTreeRunner {
 
         const action: Action = ActionsRegistry.fetch(subtree[0])
 
-        const [result, ...actions] = action.run(process.memory)
+        const [result, ...actions] = action.run(process.memory, process)
 
         // delete this action and continue with the next
         if (result === ACTIONS_RESULT.SHIFT_AND_CONTINUE) {
@@ -206,7 +206,6 @@ export class ActionTreeRunner {
     }
 
     process.state = PROCESS_STATE.WAITING
-    ActionTreeRunner.logger.debug('ActionTreeRunner::execute::end', process.name)
   }
 
   private static transitionDeprecatedActions(subtree: string[]): void {
