@@ -17,6 +17,22 @@ export class CreepGetEnergy extends Action {
       return [ACTIONS_RESULT.SHIFT_AND_CONTINUE]
     }
 
+    // @TODO: Select the closest resource
+    // @TODO: Mark the resource so no other creep go for it at the same time
+    const resource = _.sample(creep.room.find(FIND_DROPPED_RESOURCES, {
+      filter: r => r.resourceType === RESOURCE_ENERGY
+    }))
+
+    if (resource) {
+      if (creep.pos.isNearTo(resource)) {
+        creep.pickup(resource)
+      } else {
+        creep.moveTo(resource)
+      }
+
+      return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+    }
+
     if (context.source == null) {
       const closestSource: Source | null = creep.pos.findClosestByPath(FIND_SOURCES)
 
