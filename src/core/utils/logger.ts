@@ -17,7 +17,7 @@ export enum LOG_LEVEL {
 }
 
 Memory.configs = {
-  logLevel: LOG_LEVEL.trace
+  logLevel: LOG_LEVEL.info
 }
 
 export class Logger {
