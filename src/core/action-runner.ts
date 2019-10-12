@@ -4,6 +4,7 @@ import { ACTIONS_RESULT, PRIORITY, PROCESS_STATE } from './constants'
 import { ActionsRegistry } from './actions-registry'
 import { Action } from './action'
 import { Logger } from './utils/logger'
+import { Analytics } from './utils/analytics'
 
 export interface Process {
   PID: number
@@ -46,6 +47,8 @@ export class ActionTreeRunner {
     ActionTreeRunner.run()
 
     ActionTreeRunner.save()
+
+    ActionTreeRunner.analytics()
   }
 
   private static run() {
@@ -216,5 +219,49 @@ export class ActionTreeRunner {
     }
 
     return deprecatedActions[action] || action
+  }
+
+  private static analytics() {
+    Memory.analytics = {
+      rooms: {},
+      time: Game.time,
+      totalCreepCount: _.size(Game.creeps)
+    }
+
+    // Collect room stats
+    for (const roomName in Game.rooms) {
+      const room: Room = Game.rooms[roomName]
+      const isMyRoom: boolean = (room.controller ? room.controller.my : false)
+
+      if (isMyRoom) {
+        const roomStats: any = Memory.analytics.rooms[roomName] = {}
+        roomStats.storageEnergy = (room.storage ? room.storage.store.energy : 0)
+        roomStats.terminalEnergy = (room.terminal ? room.terminal.store.energy : 0)
+        roomStats.energyAvailable = room.energyAvailable
+        roomStats.energyCapacityAvailable = room.energyCapacityAvailable
+        roomStats.controllerProgress = room.controller!.progress
+        roomStats.controllerProgressTotal = room.controller!.progressTotal
+        roomStats.controllerLevel = room.controller!.level
+      }
+    }
+
+    // Collect GCL Analytics
+    Memory.analytics.gcl = {
+      progress: Game.gcl.progress,
+      progressTotal: Game.gcl.progressTotal,
+      level: Game.gcl.level
+    }
+
+    // Collect Memory analytics
+    Memory.analytics.memory = {
+      used: RawMemory.get().length
+    }
+
+    // Collect CPU analytics
+    Memory.analytics.cpu = {
+      bucket: Game.cpu.bucket,
+      limit: Game.cpu.limit,
+      used: Game.cpu.getUsed()
+    }
   }
 }
