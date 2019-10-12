@@ -34,14 +34,18 @@ export class CreepGetEnergy extends Action {
     }
 
     if (context.source == null) {
-      const closestSource: Source | null = creep.pos.findClosestByPath(FIND_SOURCES)
+      const sources: Source[] = creep.room.find(FIND_SOURCES_ACTIVE, {
+        filter: s => s.energy
+      })
 
-      if (closestSource == null) {
-        this.logger.debug(`Can't find a source to get energy from.`, context.creepName)
+      const source = _.sample(sources)
+
+      if (source == null) {
+        this.logger.debug('No source available. waiting...', context.creepName)
         return [ACTIONS_RESULT.WAIT_NEXT_TICK]
       }
 
-      context.source = closestSource.id
+      context.source = source.id
     }
 
     const source: Source | null = Game.getObjectById(context.source)
