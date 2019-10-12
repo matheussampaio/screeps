@@ -17,6 +17,6 @@ export class GarbageCollector extends Action {
 
     context.sleepFor = 50
 
-    return [ACTIONS_RESULT.UNSHIFT_AND_STOP, Sleep.name]
+    return [ACTIONS_RESULT.UNSHIFT_AND_CONTINUE, Sleep.name]
   }
 }
