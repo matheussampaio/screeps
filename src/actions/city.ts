@@ -36,7 +36,7 @@ export class City extends Action {
     }
 
     const creepNumberInThisRoom = _.filter(Game.creeps, creep => creep.memory.roomName === room.name).length
-    const isEmergency = creepNumberInThisRoom === 0
+    const isEmergency = creepNumberInThisRoom < 5
     const minimumEnergy = isEmergency ? SPAWN_ENERGY_CAPACITY : room.energyCapacityAvailable
     const MAX_CREEP_PER_ROOM = 10
 
