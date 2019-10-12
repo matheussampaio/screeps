@@ -1,21 +1,30 @@
 Screeps Code
-=============================
+============
+
+This repository contains the code to my AI for playing [Screeps](https://screeps.com)
 
 ## Requirements
-- Docker
+- Node.js
 
+## How to install
+```
+$ npm install
+```
 
-## Usage
-1. `docker-compose run app bash`
+## Environemnt Variables
+Create a `.env` file from `.env.example` and fill all the details.
 
-## Build and Upload code
-1. Copy `.env.example` to `.env`
-1. Set your Screep's `email`, `token`, and code branch.
-1. Run `docker-compose up run bash`
-1. Run `cd packages/ai/`
-1. Run `npm run build`
-1. Run `npm run upload-code`
+## How to compile your code
+```
+$ npm run build
+```
 
+## How to upload code to Screeps
+```
+$ npm run upload
+```
 
-## License
-MIT
+## Build & Upload on file changes
+```
+$ npm run dev
+```
