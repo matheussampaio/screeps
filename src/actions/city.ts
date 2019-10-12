@@ -1,11 +1,18 @@
 import * as _ from 'lodash'
 
-import { Action, ACTIONS_RESULT } from '../core'
+import { Action, Process, ACTIONS_RESULT } from '../core'
 import { CreepGeneric } from './creep'
 import { CreateBody } from '../utils/create-body'
 
 interface CityContext {
   roomName: string
+}
+
+declare global {
+  interface CreepMemory {
+    roomName: string
+    PID: number
+  }
 }
 
 declare global {
@@ -17,42 +24,65 @@ declare global {
 }
 
 export class City extends Action {
-  run(context: CityContext): [ACTIONS_RESULT, ...string[]] {
-    // @TODO: spawn creeps whenever something is ready
-    // sort the spawn creeps by priority
-
+  run(context: CityContext, process: Process): [ACTIONS_RESULT, ...string[]] {
     const room = Game.rooms[context.roomName]
 
-    // @TODO count how many creeps this room owns, instead of the whole Game.creeps
-    const isEmergency = _.values(Game.creeps).length === 0
+    if (room == null) {
+      return [ACTIONS_RESULT.HALT]
+    }
+
+    if (room.memory.PID !== process.PID) {
+      return [ACTIONS_RESULT.HALT]
+    }
+
+    const creepNumberInThisRoom = _.filter(Game.creeps, creep => creep.memory.roomName === room.name).length
+    const isEmergency = creepNumberInThisRoom === 0
     const minimumEnergy = isEmergency ? SPAWN_ENERGY_CAPACITY : room.energyCapacityAvailable
+    const MAX_CREEP_PER_ROOM = 10
 
-    if (room.energyAvailable >= minimumEnergy && _.keys(Game.creeps).length < 10) {
-      const spawns: StructureSpawn[] | null = room.find(FIND_MY_SPAWNS, {
-        filter: (spawn: StructureSpawn) => !spawn.spawning
-      })
+    if (creepNumberInThisRoom >= MAX_CREEP_PER_ROOM) {
+      return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+    }
 
-      if (spawns == null || !spawns.length) {
-        return [ACTIONS_RESULT.WAIT_NEXT_TICK]
-      }
+    if (room.energyAvailable < minimumEnergy) {
+      return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+    }
 
-      const spawn: StructureSpawn = spawns[0]
+    const spawns: StructureSpawn[] | null = room.find(FIND_MY_SPAWNS, {
+      filter: (spawn: StructureSpawn) => !spawn.spawning
+    })
 
-      const creepName: string = this.getUniqueName()
+    const isEverySpawnerBusy = spawns.length === 0
 
-      const body = new CreateBody({ minimumEnergy, energy: room.energyAvailable })
-        .addWithMove([WORK, CARRY])
+    if (isEverySpawnerBusy) {
+      return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+    }
 
-      const result: ScreepsReturnCode = spawn.spawnCreep(body.value(), creepName)
+    const spawn: StructureSpawn = spawns[0]
 
-      this.logger.debug(`result=${result}`)
+    const creepName: string = this.getUniqueName()
 
-      if (result === OK) {
-        this.fork({
-          actions: [[CreepGeneric.name]],
-          memory: { creepName }
-        })
-      }
+    const body = new CreateBody({ minimumEnergy, energyAvailable: room.energyAvailable })
+      .add([WORK, CARRY], { repeat: true, withMove: true })
+
+    const result: ScreepsReturnCode = spawn.spawnCreep(body.value(), creepName)
+
+    if (result !== OK) {
+      this.logger.error(`Error spawning creep`, result, room.name)
+
+      return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+    }
+
+    const PID = this.fork({
+      actions: [[CreepGeneric.name]],
+      memory: { creepName }
+    })
+
+    const creep: Creep = Game.creeps[creepName]
+
+    creep.memory = {
+      PID,
+      roomName: room.name
     }
 
     return [ACTIONS_RESULT.WAIT_NEXT_TICK]
