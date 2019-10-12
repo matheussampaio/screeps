@@ -25,8 +25,6 @@ export class CreepBuilder extends Action {
       return [ACTIONS_RESULT.SHIFT_UNSHIFT_AND_CONTINUE, CreepUpgradeController.name]
     }
 
-    this.logger.debug(`target`, target)
-
     if (creep.pos.inRangeTo(target, 3)) {
       creep.build(target)
     } else {
@@ -45,15 +43,15 @@ export class CreepBuilder extends Action {
       }
     }
 
-    const target = creep.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES)
+    const targets = creep.room.find(FIND_MY_CONSTRUCTION_SITES).sort((c1, c2) => c2.progress - c1.progress);
 
-    if (target == null) {
+    if (targets.length === 0) {
       return null
     }
 
-    context.target = target.id
+    context.target = targets[0].id
 
-    return target
+    return targets[0]
   }
 }
 
