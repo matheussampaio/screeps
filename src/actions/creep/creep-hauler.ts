@@ -66,10 +66,12 @@ export class CreepHauler extends Action {
       return spawn
     }
 
-    if (creep.room.storage) {
-      context.target = creep.room.storage.id
-      return creep.room.storage
-    }
+    // @FIXME: since the storage can hold 1M resources,
+    // we would get in a dead lock until this get filled.
+    // if (creep.room.storage) {
+    //   context.target = creep.room.storage.id
+    //   return creep.room.storage
+    // }
 
     return null
   }
