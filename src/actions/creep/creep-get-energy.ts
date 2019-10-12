@@ -51,7 +51,7 @@ export class CreepGetEnergy extends Action {
     const source: Source | null = Game.getObjectById(context.source)
 
     // source is gone, try again next tick
-    if (source == null) {
+    if (source == null || source.energy === 0) {
       delete context.source
       return [ACTIONS_RESULT.WAIT_NEXT_TICK]
     }
