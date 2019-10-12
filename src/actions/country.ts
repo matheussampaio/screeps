@@ -8,6 +8,12 @@ export interface CountryContext {
   rooms: { [roomName:string]: number }
 }
 
+declare global {
+  interface RoomMemory {
+    PID: number
+  }
+}
+
 export class Country extends Action {
   run(context: CountryContext): [ACTIONS_RESULT, ...string[]] {
     _.defaults(context, {
@@ -15,11 +21,18 @@ export class Country extends Action {
     })
 
     for (const roomName in Game.rooms) {
-      if (context.rooms[roomName] == null) {
-        context.rooms[roomName] = this.fork({
-          actions: [[City.name], [GarbageCollector.name]],
+      const process = this.getProcessByPID(context.rooms[roomName])
+
+      if (process == null) {
+        const PID: number = this.fork({
+          actions: [[City.name]],
           memory: { roomName }
         })
+
+        const room: Room = Game.rooms[roomName]
+
+        room.memory.PID = PID
+        context.rooms[roomName] = PID
       }
     }
 
