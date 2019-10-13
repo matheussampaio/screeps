@@ -18,7 +18,7 @@ export class CreepHauler extends Action {
       return [ACTIONS_RESULT.SHIFT_AND_CONTINUE]
     }
 
-    const target: StructureSpawn | StructureExtension | StructureStorage | null = this.getHaulerTarget(creep, context)
+    const target: StructureSpawn | StructureExtension | StructureStorage | StructureTower | null = this.getHaulerTarget(creep, context)
 
     if (target == null) {
       this.logger.debug(`Can't find a target, trying to build sites`, context.creepName)
@@ -37,13 +37,27 @@ export class CreepHauler extends Action {
     return [ACTIONS_RESULT.SHIFT_AND_STOP]
   }
 
-  getHaulerTarget(creep: Creep, context: ICreepContext): StructureExtension | StructureSpawn | StructureStorage | null {
+  getHaulerTarget(creep: Creep, context: ICreepContext): StructureExtension | StructureTower | StructureSpawn | StructureStorage | null {
     if (context.target) {
       const target: StructureSpawn | StructureExtension | StructureStorage | null = Game.getObjectById(context.target)
 
       if (target) {
         return target
       }
+    }
+
+    const towers: StructureTower[] = (creep.room
+      .find(FIND_MY_STRUCTURES, {
+        filter: s => s.structureType === STRUCTURE_TOWER && s.energy < s.energyCapacity - 250
+      }) as StructureTower[])
+      .sort((t1: StructureTower, t2: StructureTower) => t1.energy - t2.energy)
+
+    if (towers.length) {
+      const tower = towers[0]
+
+      context.target = tower.id
+
+      return tower
     }
 
     const extension: StructureExtension | null = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {

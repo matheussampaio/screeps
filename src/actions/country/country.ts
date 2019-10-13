@@ -1,7 +1,7 @@
 import * as _ from 'lodash'
 
 import { Action, ACTIONS_RESULT } from '../../core'
-import { City, RoomStopIfConflict, Spawner, ICityContext } from '../city'
+import { City, RoomStopIfConflict, Spawner, ICityContext, CityDefense } from '../city'
 import { ICountryContext } from './interfaces'
 
 export class Country extends Action {
@@ -20,7 +20,7 @@ export class Country extends Action {
 
         const PID: number = this.fork({
           memory,
-          actions: [[RoomStopIfConflict.name], [City.name], [Spawner.name]],
+          actions: [[RoomStopIfConflict.name], [City.name], [Spawner.name], [CityDefense.name]],
           name: `City-${roomName}`
         })
 
