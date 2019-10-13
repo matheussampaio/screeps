@@ -21,27 +21,27 @@ Memory.configs = {
 }
 
 export class Logger {
-  public error(msg: string, ...data: any[]) {
+  public error(msg: any, ...data: any[]) {
     return this.log(LOG_LEVEL.error, msg, data)
   }
 
-  public warn(msg: string, ...data: any[]) {
+  public warn(msg: any, ...data: any[]) {
     return this.log(LOG_LEVEL.warn, msg, data)
   }
 
-  public info(msg: string, ...data: any[]) {
+  public info(msg: any, ...data: any[]) {
     return this.log(LOG_LEVEL.info, msg, data)
   }
 
-  public debug(msg: string, ...data: any[]) {
+  public debug(msg: any, ...data: any[]) {
     return this.log(LOG_LEVEL.debug, msg, data)
   }
 
-  public trace(msg: string, ...data: any[]) {
+  public trace(msg: any, ...data: any[]) {
     return this.log(LOG_LEVEL.trace, msg, data)
   }
 
-  private log(level: LOG_LEVEL, msg: string, data: any[]) {
+  private log(level: LOG_LEVEL, msg: any, data: any[]) {
     const loglevel = _.get(Memory, 'configs.logLevel', LOG_LEVEL.info)
 
     if (loglevel >= level) {
