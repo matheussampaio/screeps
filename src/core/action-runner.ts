@@ -20,6 +20,7 @@ export interface ForkOptions {
   actions: string[][]
   memory?: object
   priority?: number
+  name?: string
 }
 
 declare global {
@@ -70,7 +71,7 @@ export class ActionTreeRunner {
       PID: options.PID != null ? options.PID : ActionTreeRunner.getFreePID(),
       priority: options.priority || PRIORITY.NORMAL,
       memory: options.memory || {},
-      name: options.actions[0][0],
+      name: options.name || options.actions[0][0],
       actions: options.actions,
       state: PROCESS_STATE.WAITING
     }
@@ -121,7 +122,8 @@ export class ActionTreeRunner {
       ActionTreeRunner.fork({
         PID: 0,
         priority: PRIORITY.HIGH,
-        actions: bootActions
+        actions: bootActions,
+        name: 'Boot'
       })
     } else {
       _.defaultsDeep(Memory.processes[0].actions, bootActions)
