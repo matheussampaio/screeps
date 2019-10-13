@@ -37,7 +37,7 @@ $ npm run dev
   [ ] - Create one harvester per source
   [ ] - Create one courier per source
   [ ] - Create one upgrader (with container)
-  [ ] - Spawn a Builder whenever something is in the queue to be build
+  [x] - Spawn a Builder whenever something is in the queue to be build
 [ ] - LVL 5, build one line close to Storage
 [ ] - LVL 5, build one link close to the fatherst Source
 [ ] - LVL 6, build one link close to the closest Source
