@@ -41,7 +41,8 @@ $ npm run dev
   [ ] - Scout North, East, South, and West rooms and register Sources (and distance to Spawn)
   [ ] - Reserve rooms to increase Source's max energy
 [ ] - Tower
-  [ ] - Attack enemy creeps
+  [x] - Attack enemy creeps
+  [x] - Add as a target for Haulers
   [ ] - Maintain rampart, road, wall
 [ ] - Level 5, build one line close to Storage
 [ ] - Level 5, build one link close to the further Source
