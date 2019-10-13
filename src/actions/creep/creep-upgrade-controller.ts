@@ -34,7 +34,11 @@ export class CreepUpgradeController extends Action {
       return [ACTIONS_RESULT.WAIT_NEXT_TICK]
     }
 
-    if (creep.pos.inRangeTo(controller, 3)) {
+    if (context.rangeToController == null) {
+      context.rangeToController = Math.floor(Math.random() * 3) + 1
+    }
+
+    if (creep.pos.inRangeTo(controller, context.rangeToController)) {
       creep.upgradeController(controller)
     } else {
       creep.moveTo(controller)
