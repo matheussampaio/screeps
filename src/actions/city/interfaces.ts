@@ -1,9 +1,4 @@
 declare global {
-  interface CreepMemory {
-    roomName: string
-    PID: number
-  }
-
   interface Memory {
     counters?: {
       creepCounter?: number

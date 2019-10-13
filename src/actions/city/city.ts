@@ -1,12 +1,13 @@
 import * as _ from 'lodash'
 
 import { Action, ACTIONS_RESULT, PRIORITY } from '../../core'
-import { CreepGeneric } from '../creep'
+import { CreepCheckStop, CreepGeneric } from '../creep'
 import { CreateBody } from '../../utils/create-body'
 import { ICityContext } from './interfaces'
 
 const MIN_CREEP_PER_ROOM = 4
 const MAX_CREEP_PER_ROOM = 8
+const MINIMUM_ENERGY_FOR_SINGLE_PURPOSE_CREEPS = 700
 
 export class City extends Action {
   run(context: ICityContext): [ACTIONS_RESULT, ...string[]] {
@@ -14,6 +15,22 @@ export class City extends Action {
       queue: []
     })
 
+    const room = Game.rooms[context.roomName]
+
+    if (room.energyCapacityAvailable > MINIMUM_ENERGY_FOR_SINGLE_PURPOSE_CREEPS) {
+      return this.singlePurposeCreeps(context)
+    }
+
+    return this.multiPurposeCreeps(context)
+  }
+
+  singlePurposeCreeps(context: ICityContext): [ACTIONS_RESULT, ...string[]] {
+    this.logger.info('Single Purpose Creeps!')
+    return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+  }
+
+  multiPurposeCreeps(context: ICityContext): [ACTIONS_RESULT, ...string[]] {
+    this.logger.info('Multi Purpose Creeps!')
     const room = Game.rooms[context.roomName]
 
     const creepNumberInThisRoom = this.getTotalCreepInRoom(context, room)
@@ -33,7 +50,7 @@ export class City extends Action {
     context.queue.push({
       body,
       minimumEnergy,
-      actions: [[CreepGeneric.name]],
+      actions: [[CreepCheckStop.name], [CreepGeneric.name]],
       priority: PRIORITY.NORMAL,
       memory: {}
     })
