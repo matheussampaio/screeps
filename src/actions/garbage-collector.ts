@@ -1,8 +1,8 @@
 import { Action, ACTIONS_RESULT } from '../core'
-import { Sleep, SleepContext } from './sleep'
+import { Sleep, ISleepContext } from './sleep'
 
 export class GarbageCollector extends Action {
-  run(context: SleepContext): [ACTIONS_RESULT, ...string[]] {
+  run(context: ISleepContext): [ACTIONS_RESULT, ...string[]] {
     for (const creepName in Memory.creeps) {
       if (Game.creeps[creepName] == null) {
         delete Memory.creeps[creepName]

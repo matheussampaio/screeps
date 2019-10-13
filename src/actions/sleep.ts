@@ -1,12 +1,12 @@
 import { Action, ACTIONS_RESULT } from '../core'
 
-export interface SleepContext {
+export interface ISleepContext {
   sleepFor: number
   wakeAt: number
 }
 
 export class Sleep extends Action {
-  run(context: SleepContext): [ACTIONS_RESULT, ...string[]] {
+  run(context: ISleepContext): [ACTIONS_RESULT, ...string[]] {
     if (context.wakeAt == null && context.sleepFor == null) {
       return [ACTIONS_RESULT.SHIFT_AND_STOP]
     }
