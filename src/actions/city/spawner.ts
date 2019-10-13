@@ -2,7 +2,7 @@ import * as _ from 'lodash'
 
 import { Action, ACTIONS_RESULT } from '../../core'
 import { ISpawnerItem, ICityContext } from './interfaces'
-import { getUniqueName } from '../../utils'
+import { getUniqueCreepName } from '../../utils'
 
 export class Spawner extends Action {
   run(context: ICityContext): [ACTIONS_RESULT, ...string[]] {
@@ -33,7 +33,7 @@ export class Spawner extends Action {
       return [ACTIONS_RESULT.WAIT_NEXT_TICK]
     }
 
-    const creepName: string = getUniqueName()
+    const creepName: string = getUniqueCreepName()
 
     const result: ScreepsReturnCode = spawn.spawnCreep(item.body, creepName)
 

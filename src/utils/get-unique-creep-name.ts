@@ -1,4 +1,4 @@
-export function getUniqueName(): string {
+export function getUniqueCreepName(): string {
   const counters = Memory.counters || (Memory.counters = {})
 
   if (counters.creepCounter == null) {
