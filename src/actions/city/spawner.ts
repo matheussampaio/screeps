@@ -2,6 +2,7 @@ import * as _ from 'lodash'
 
 import { Action, ACTIONS_RESULT } from '../../core'
 import { ISpawnerItem, ICityContext } from './interfaces'
+import { getUniqueName } from '../../utils'
 
 export class Spawner extends Action {
   run(context: ICityContext): [ACTIONS_RESULT, ...string[]] {
@@ -15,7 +16,9 @@ export class Spawner extends Action {
 
     const item: ISpawnerItem = context.queue[0]
 
-    if (room.energyAvailable < item.minimumEnergy) {
+    const creepCost: number = item.body.reduce((sum, part) => BODYPART_COST[part] + sum, 0)
+
+    if (room.energyAvailable < creepCost) {
       return [ACTIONS_RESULT.WAIT_NEXT_TICK]
     }
 
@@ -30,7 +33,7 @@ export class Spawner extends Action {
       return [ACTIONS_RESULT.WAIT_NEXT_TICK]
     }
 
-    const creepName: string = this.getUniqueName()
+    const creepName: string = getUniqueName()
 
     const result: ScreepsReturnCode = spawn.spawnCreep(item.body, creepName)
 
@@ -58,24 +61,6 @@ export class Spawner extends Action {
     }
 
     return [ACTIONS_RESULT.WAIT_NEXT_TICK]
-  }
-
-  getUniqueName(): string {
-    const counters = Memory.counters || (Memory.counters = {})
-
-    if (counters.creepCounter == null) {
-      counters.creepCounter = 1
-    }
-
-    while (Game.creeps[`creep-${counters.creepCounter}`]) {
-      counters.creepCounter++
-
-      if (counters.creepCounter >= Number.MAX_SAFE_INTEGER) {
-        counters.creepCounter = 1
-      }
-    }
-
-    return `creep-${counters.creepCounter}`
   }
 }
 
