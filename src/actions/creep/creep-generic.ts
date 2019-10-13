@@ -2,21 +2,12 @@ import * as _ from 'lodash'
 
 import { Action, ACTIONS_RESULT, Process } from '../../core'
 import { CreepGetEnergy } from './creep-get-energy'
-import { CreepUpgradeController } from './creep-upgrade-controller'
 import { CreepHauler } from './creep-hauler'
-import { CreepContext } from './creep-context'
+import { ICreepContext } from './interfaces'
 
 export class CreepGeneric extends Action {
-  run(context: CreepContext, process: Process): [ACTIONS_RESULT, ...string[]] {
+  run(context: ICreepContext, process: Process): [ACTIONS_RESULT, ...string[]] {
     const creep: Creep | undefined = Game.creeps[context.creepName]
-
-    if (creep == null) {
-      return [ACTIONS_RESULT.HALT]
-    }
-
-    if (creep.memory.PID !== process.PID) {
-      return [ACTIONS_RESULT.HALT]
-    }
 
     if (creep.spawning) {
       return [ACTIONS_RESULT.WAIT_NEXT_TICK]

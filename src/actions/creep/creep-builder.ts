@@ -1,11 +1,11 @@
 import * as _ from 'lodash'
 
 import { Action, ACTIONS_RESULT } from '../../core'
-import { CreepContext } from './creep-context'
+import { ICreepContext } from './interfaces'
 import { CreepUpgradeController } from './creep-upgrade-controller'
 
 export class CreepBuilder extends Action {
-  run(context: CreepContext): [ACTIONS_RESULT, ...string[]] {
+  run(context: ICreepContext): [ACTIONS_RESULT, ...string[]] {
     const creep: Creep | undefined = Game.creeps[context.creepName]
 
     if (creep == null) {
@@ -34,7 +34,7 @@ export class CreepBuilder extends Action {
     return [ACTIONS_RESULT.WAIT_NEXT_TICK]
   }
 
-  getConstructionTarget(creep: Creep, context: CreepContext): any {
+  getConstructionTarget(creep: Creep, context: ICreepContext): any {
     if (context.target) {
       const target: any = Game.getObjectById(context.target)
 
