@@ -161,52 +161,56 @@ export class ActionTreeRunner {
 
         const action: Action = ActionsRegistry.fetch(subtree[0])
 
-        const [result, ...actions] = action.run(process.memory, process)
+        try {
+          const [result, ...actions] = action.run(process.memory, process)
 
-        // delete this action and continue with the next
-        if (result === ACTIONS_RESULT.SHIFT_AND_CONTINUE) {
-          subtree.shift()
-          continue
+          // delete this action and continue with the next
+          if (result === ACTIONS_RESULT.SHIFT_AND_CONTINUE) {
+            subtree.shift()
+            continue
 
-        // delete this action and continue with the next subtree
-        } else if (result === ACTIONS_RESULT.SHIFT_AND_STOP) {
-          subtree.shift()
-          break
+          // delete this action and continue with the next subtree
+          } else if (result === ACTIONS_RESULT.SHIFT_AND_STOP) {
+            subtree.shift()
+            break
 
-        // continue with the next subtree
-        } else if (result === ACTIONS_RESULT.WAIT_NEXT_TICK) {
-          break
+          // continue with the next subtree
+          } else if (result === ACTIONS_RESULT.WAIT_NEXT_TICK) {
+            break
 
-        // unshift more actions and continue with the first action
-        } else if (result === ACTIONS_RESULT.UNSHIFT_AND_CONTINUE) {
-          subtree.unshift(...actions)
-          continue
+          // unshift more actions and continue with the first action
+          } else if (result === ACTIONS_RESULT.UNSHIFT_AND_CONTINUE) {
+            subtree.unshift(...actions)
+            continue
 
-        // unshift more action and continue with the next subtree
-        } else if (result === ACTIONS_RESULT.UNSHIFT_AND_STOP) {
-          subtree.unshift(...actions)
-          break
+          // unshift more action and continue with the next subtree
+          } else if (result === ACTIONS_RESULT.UNSHIFT_AND_STOP) {
+            subtree.unshift(...actions)
+            break
 
-        // delete this action, unshift more actions and continue with the first action
-        } else if (result === ACTIONS_RESULT.SHIFT_UNSHIFT_AND_CONTINUE) {
-          subtree.shift()
-          subtree.unshift(...actions)
-          continue
+          // delete this action, unshift more actions and continue with the first action
+          } else if (result === ACTIONS_RESULT.SHIFT_UNSHIFT_AND_CONTINUE) {
+            subtree.shift()
+            subtree.unshift(...actions)
+            continue
 
-        // delete this action, unshift more actions and continue with the next subtree
-        } else if (result === ACTIONS_RESULT.SHIFT_UNSHIFT_AND_STOP) {
-          subtree.shift()
-          subtree.unshift(...actions)
-          break
+          // delete this action, unshift more actions and continue with the next subtree
+          } else if (result === ACTIONS_RESULT.SHIFT_UNSHIFT_AND_STOP) {
+            subtree.shift()
+            subtree.unshift(...actions)
+            break
 
-        // stop process and mark as dead (it will be cleaned by the OS)
-        } else if (result === ACTIONS_RESULT.HALT) {
-          process.state = PROCESS_STATE.DEAD
-          return
+          // stop process and mark as dead (it will be cleaned by the OS)
+          } else if (result === ACTIONS_RESULT.HALT) {
+            process.state = PROCESS_STATE.DEAD
+            return
 
-        // stop process
-        } else if (result === ACTIONS_RESULT.WAIT_NEXT_TICK_ALL) {
-          return
+          // stop process
+          } else if (result === ACTIONS_RESULT.WAIT_NEXT_TICK_ALL) {
+            return
+          }
+        } catch (error) {
+          this.logger.error(`ERROR exectuing ${subtree[0]}`, error)
         }
       }
     }
