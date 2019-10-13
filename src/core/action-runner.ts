@@ -203,6 +203,10 @@ export class ActionTreeRunner {
         } else if (result === ACTIONS_RESULT.HALT) {
           process.state = PROCESS_STATE.DEAD
           return
+
+        // stop process
+        } else if (result === ACTIONS_RESULT.WAIT_NEXT_TICK_ALL) {
+          return
         }
       }
     }
