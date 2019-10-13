@@ -26,9 +26,7 @@ export class CreepCheckStop extends Action {
       return [ACTIONS_RESULT.WAIT_NEXT_TICK_ALL]
     }
 
-    context.sleepFor = 5
-
-    return [ACTIONS_RESULT.UNSHIFT_AND_CONTINUE, Sleep.name]
+    return [ACTIONS_RESULT.WAIT_NEXT_TICK]
   }
 }
 
