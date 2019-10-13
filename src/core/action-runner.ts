@@ -210,7 +210,7 @@ export class ActionTreeRunner {
             return
           }
         } catch (error) {
-          this.logger.error(`ERROR exectuing ${subtree[0]}`, error)
+          this.logger.error(`${subtree[0]}: ${error.message}`, error.stack)
         }
       }
     }
