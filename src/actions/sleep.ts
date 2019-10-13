@@ -12,8 +12,8 @@ export class Sleep extends Action {
     }
 
     if (context.wakeAt == null) {
-      delete context.sleepFor
       context.wakeAt = Game.time + context.sleepFor
+      delete context.sleepFor
     }
 
     if (Game.time >= context.wakeAt) {
