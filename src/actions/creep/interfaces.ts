@@ -3,6 +3,8 @@ export interface ICreepContext {
   action?: string
   source?: string
   target?: string
+  rangeToController: number
+  spawn?: string
 }
 
 declare global {

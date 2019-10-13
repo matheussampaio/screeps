@@ -1,3 +1,5 @@
+import { ISleepContext } from '../sleep'
+
 declare global {
   interface Memory {
     counters?: {
@@ -12,13 +14,23 @@ declare global {
 
 export interface ISpawnerItem {
   body: BodyPartConstant[]
-  minimumEnergy: number
   priority: number
   actions: string[][]
   memory: any
+  creepName?: string
 }
 
-export interface ICityContext {
+export interface IPlanSource {
+  id: string
+  harvester: string | null
+  hauler: string | null
+  distance: number
+}
+
+export interface ICityContext extends ISleepContext {
   roomName: string
   queue: ISpawnerItem[]
+  plan: {
+    sources: IPlanSource[]
+  }
 }
