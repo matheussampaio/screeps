@@ -1,12 +1,12 @@
 import * as _ from 'lodash'
 
-import { Action, ACTIONS_RESULT, Process } from '../../core'
+import { Action, ACTIONS_RESULT } from '../../../core'
 import { CreepGetEnergy } from './creep-get-energy'
 import { CreepHauler } from './creep-hauler'
-import { ICreepContext } from './interfaces'
+import { ICreepGenericContext } from './interfaces'
 
 export class CreepGeneric extends Action {
-  run(context: ICreepContext, process: Process): [ACTIONS_RESULT, ...string[]] {
+  run(context: ICreepGenericContext): [ACTIONS_RESULT, ...string[]] {
     const creep: Creep | undefined = Game.creeps[context.creepName]
 
     if (creep.spawning) {

@@ -2,6 +2,7 @@ import * as _ from 'lodash'
 
 import { Action, ACTIONS_RESULT } from '../../core'
 import { ICreepContext } from './interfaces'
+import { CreepBuilder } from './creep-generic'
 
 export class CreepSingleHauler extends Action {
   run(context: ICreepContext): [ACTIONS_RESULT, ...string[]] {
@@ -14,7 +15,6 @@ export class CreepSingleHauler extends Action {
     }
 
     return this.fill(context)
-
   }
 
   fill(context: ICreepContext): [ACTIONS_RESULT, ...string[]] {
@@ -23,22 +23,8 @@ export class CreepSingleHauler extends Action {
     const target: StructureSpawn | StructureExtension | StructureStorage | StructureTower | null = this.getTransferTarget(creep, context)
 
     if (target == null) {
-      if (context.spawn == null) {
-        const spawns: StructureSpawn[] = creep.room.find(FIND_MY_STRUCTURES, {
-          filter: s => s.structureType === STRUCTURE_SPAWN
-        }) as StructureSpawn[]
-
-        if (spawns.length === 0) {
-          return [ACTIONS_RESULT.WAIT_NEXT_TICK]
-        }
-
-        context.spawn = spawns[0].name
-      }
-
-      const spawn: StructureSpawn = Game.spawns[context.spawn]
-
-      if (!creep.pos.inRangeTo(spawn, 3)) {
-        creep.moveTo(spawn)
+      if (creep.getActiveBodyparts(WORK)) {
+        return [ACTIONS_RESULT.UNSHIFT_AND_CONTINUE, CreepBuilder.name]
       }
 
       return [ACTIONS_RESULT.WAIT_NEXT_TICK]
@@ -117,18 +103,11 @@ export class CreepSingleHauler extends Action {
       return [ACTIONS_RESULT.WAIT_NEXT_TICK]
     }
 
-    if (!creep.pos.inRangeTo(source, 3)) {
-      creep.moveTo(source)
-      return [ACTIONS_RESULT.WAIT_NEXT_TICK]
-    }
+    const resource: Resource | undefined = _.sample(source.pos.findInRange(FIND_DROPPED_RESOURCES, 3, {
+      filter: r => r.resourceType === RESOURCE_ENERGY
+    }))
 
-    const resources: Resource[] = source.pos.findInRange(FIND_DROPPED_RESOURCES, 3, {
-      filter: r => r.resourceType === RESOURCE_ENERGY && r.amount >= 50
-    })
-
-    if (resources.length) {
-      const resource = resources[0]
-
+    if (resource) {
       if (creep.pos.isNearTo(resource)) {
         creep.pickup(resource)
       } else {

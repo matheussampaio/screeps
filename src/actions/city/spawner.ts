@@ -6,6 +6,10 @@ import { getUniqueCreepName } from '../../utils'
 
 export class Spawner extends Action {
   run(context: ICityContext): [ACTIONS_RESULT, ...string[]] {
+    _.defaults(context, {
+      queue: []
+    })
+
     const room: Room = Game.rooms[context.roomName]
 
     if (context.queue.length === 0) {
@@ -33,7 +37,7 @@ export class Spawner extends Action {
       return [ACTIONS_RESULT.WAIT_NEXT_TICK]
     }
 
-    const creepName: string = getUniqueCreepName()
+    const creepName: string = item.creepName || getUniqueCreepName()
 
     const result: ScreepsReturnCode = spawn.spawnCreep(item.body, creepName)
 

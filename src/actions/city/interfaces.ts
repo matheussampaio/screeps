@@ -22,15 +22,20 @@ export interface ISpawnerItem {
 
 export interface IPlanSource {
   id: string
-  harvester: string | null
-  hauler: string | null
+  harvesters: string[]
+  haulers: string[]
   distance: number
+  emptySpaces: number
+  desiredWorkParts: number
+  desiredCarryParts: number
+  container: string | null
 }
 
 export interface ICityContext extends ISleepContext {
   roomName: string
   queue: ISpawnerItem[]
   plan: {
+    energyCapacity: number
     sources: IPlanSource[]
   }
 }

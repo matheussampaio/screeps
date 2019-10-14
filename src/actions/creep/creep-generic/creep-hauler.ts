@@ -1,11 +1,11 @@
 import * as _ from 'lodash'
 
-import { Action, ACTIONS_RESULT } from '../../core'
-import { ICreepContext } from './interfaces'
+import { Action, ACTIONS_RESULT } from '../../../core'
+import { ICreepGenericContext } from './interfaces'
 import { CreepBuilder } from './creep-builder'
 
 export class CreepHauler extends Action {
-  run(context: ICreepContext): [ACTIONS_RESULT, ...string[]] {
+  run(context: ICreepGenericContext): [ACTIONS_RESULT, ...string[]] {
     const creep: Creep | undefined = Game.creeps[context.creepName]
 
     if (creep == null) {
@@ -37,7 +37,7 @@ export class CreepHauler extends Action {
     return [ACTIONS_RESULT.SHIFT_AND_STOP]
   }
 
-  getHaulerTarget(creep: Creep, context: ICreepContext): StructureExtension | StructureTower | StructureSpawn | StructureStorage | null {
+  getHaulerTarget(creep: Creep, context: ICreepGenericContext): StructureExtension | StructureTower | StructureSpawn | StructureStorage | null {
     if (context.target) {
       const target: StructureSpawn | StructureExtension | StructureStorage | null = Game.getObjectById(context.target)
 

@@ -1,10 +1,10 @@
 import * as _ from 'lodash'
 
-import { Action, ACTIONS_RESULT } from '../../core'
-import { ICreepContext } from './interfaces'
+import { Action, ACTIONS_RESULT } from '../../../core'
+import { ICreepGenericContext } from './interfaces'
 
 export class CreepUpgradeController extends Action {
-  run(context: ICreepContext): [ACTIONS_RESULT, ...string[]] {
+  run(context: ICreepGenericContext): [ACTIONS_RESULT, ...string[]] {
     const creep: Creep | undefined = Game.creeps[context.creepName]
 
     if (creep == null) {

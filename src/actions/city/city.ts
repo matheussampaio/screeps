@@ -3,155 +3,188 @@ import * as _ from 'lodash'
 import { Action, ACTIONS_RESULT, PRIORITY } from '../../core'
 import { CreepCheckStop, CreepHarvester, CreepSingleHauler, CreepGeneric } from '../creep'
 import { CreateBody } from '../../utils/create-body'
-import { Sleep } from '../sleep'
+// import { Sleep } from '../sleep'
 import { ICityContext, IPlanSource, ISpawnerItem } from './interfaces'
 import { getUniqueCreepName } from '../../utils'
 
-const MIN_CREEP_PER_ROOM = 4
-const MAX_CREEP_PER_ROOM = 8
-const MINIMUM_ENERGY_FOR_SINGLE_PURPOSE_CREEPS = 700
+// With 6 WORK parts, a creep can farm 3600 in 300 ticks (6 * 2 * 300).
+// It's more than enough to farm a 3k source.
+const OPTIMUM_WORK_PARTS_PER_SOURCE = 6
 
 export class City extends Action {
   run(context: ICityContext): [ACTIONS_RESULT, ...string[]] {
     _.defaults(context, {
-      queue: []
+      queue: [],
+      plan: {}
     })
 
-    const room = Game.rooms[context.roomName]
+    const room: Room = Game.rooms[context.roomName]
 
-    const creepNumberInThisRoom = this.getTotalCreepInRoom(context, room)
-    const isEmergency = creepNumberInThisRoom < MIN_CREEP_PER_ROOM
-
-    // enable single purpose creeps after we can build creeps large enough (700
-    // energy)
-    if (!isEmergency && room.energyCapacityAvailable > MINIMUM_ENERGY_FOR_SINGLE_PURPOSE_CREEPS) {
-      return this.singlePurposeCreeps(context)
-    }
-
-    return this.multiPurposeCreeps(context)
-  }
-
-  private singlePurposeCreeps(context: ICityContext): [ACTIONS_RESULT, ...string[]] {
-    if (context.plan == null) {
+    if (context.plan.energyCapacity !== room.energyCapacityAvailable) {
       this.plan(context)
     }
 
-    const room: Room = Game.rooms[context.roomName]
-    const sources: IPlanSource[] = context.plan.sources
-
-    for (const source of sources) {
-      if (source.harvester == null || !this.creepExists(context, source.harvester)) {
-        const creepName = getUniqueCreepName()
-
-        context.queue.push({
-          body: new CreateBody({ minimumEnergy: 700, energyAvailable: room.energyCapacityAvailable })
-            .add([MOVE, CARRY, WORK, WORK, WORK, WORK, WORK, WORK])
-            .add([MOVE, MOVE, MOVE, MOVE, MOVE, MOVE])
-            .value(),
-          actions: [[CreepCheckStop.name], [CreepHarvester.name]],
-          priority: PRIORITY.NORMAL,
-          memory: {
-            source: source.id
-          },
-          creepName
-        })
-
-        source.harvester = creepName
-      }
-
-      if (source.hauler == null || !this.creepExists(context, source.hauler)) {
-        const creepName = getUniqueCreepName()
-
-        context.queue.push({
-          body: new CreateBody({ minimumEnergy: 400, energyAvailable: room.energyAvailable })
-           .add([CARRY], { withMove: true, repeat: true })
-           .value(),
-          actions: [[CreepCheckStop.name], [CreepSingleHauler.name]],
-          priority: PRIORITY.NORMAL,
-          memory: {
-            source: source.id
-          },
-          creepName
-        })
-
-        source.hauler = creepName
-      }
-    }
-
-    context.sleepFor = 5
-
-    return [ACTIONS_RESULT.UNSHIFT_AND_CONTINUE, Sleep.name]
-  }
-
-  private plan(context: ICityContext): void {
-    this.logger.info('Planning...')
-    context.plan = {
-      sources: []
-    }
-
-    const room: Room = Game.rooms[context.roomName]
-
-    const spawn: StructureSpawn | undefined = _.sample(room.find(FIND_MY_SPAWNS))
-
-    context.plan.sources = room.find(FIND_SOURCES).map((source: Source) => ({
-      id: source.id,
-      harvester: null,
-      hauler: null,
-      // @FIXME: If we can't find a Spawn, we should look for something else
-      // to define the distance to the our base
-      distance: spawn ? source.pos.findPathTo(spawn).length : Infinity
-    }))
-
-    context.plan.sources.sort((s1: any, s2: any) => s1.distance - s2.distance)
-  }
-
-  private multiPurposeCreeps(context: ICityContext): [ACTIONS_RESULT, ...string[]] {
-    const room = Game.rooms[context.roomName]
-
-    const creepNumberInThisRoom = this.getTotalCreepInRoom(context, room)
-    const isEmergency = creepNumberInThisRoom < MIN_CREEP_PER_ROOM
-
-    // I don't want to queue all the creeps at the same time. To avoid having
-    // items in the queue for way to long. Sometimes it's interesting to change
-    // creeps size and numbers, we need to clear the queue and replan
-    if (context.queue.length || creepNumberInThisRoom >= MAX_CREEP_PER_ROOM) {
+    if (context.queue.length) {
       return [ACTIONS_RESULT.WAIT_NEXT_TICK]
     }
 
-    const minimumEnergy = isEmergency ? SPAWN_ENERGY_CAPACITY : room.energyCapacityAvailable
+    for (const source of context.plan.sources) {
+      source.harvesters = source.harvesters.filter(creepName => Game.creeps[creepName] != null)
+      source.haulers = source.haulers.filter(creepName => Game.creeps[creepName] != null)
 
-    const body = this.getGenericCreepBody(minimumEnergy, room)
+      const currentWorkParts: number = Math.min(OPTIMUM_WORK_PARTS_PER_SOURCE, this.getActiveBodyParts(source.harvesters, WORK))
+      const currentCarryParts: number = this.getActiveBodyParts(source.haulers, CARRY)
 
-    context.queue.push({
-      body,
-      actions: [[CreepCheckStop.name], [CreepGeneric.name]],
-      priority: PRIORITY.NORMAL,
-      memory: {}
-    } as ISpawnerItem)
+      // While the Hauler is traveling from source to storage and back, the
+      // Harvester should produce: WORK_PARTS * HARVEST_POWER * DISTANCE * 2
+      // Our Haulers should have enough CARRY parts to carry all that energy.
+      const energyProduced = source.distance * currentWorkParts * HARVEST_POWER * 2
+
+      source.desiredCarryParts = energyProduced / CARRY_CAPACITY
+
+      if (currentCarryParts * CARRY_CAPACITY < energyProduced) {
+        const memory = { source: source.id }
+        const creepName = this.createHaulers(context, memory)
+
+        source.haulers.push(creepName)
+
+        return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+      }
+
+      if (source.harvesters.length < source.emptySpaces && currentWorkParts < source.desiredWorkParts) {
+        const memory = { source: source.id }
+        const creepName = this.createHarvester(context, memory)
+
+        source.harvesters.push(creepName)
+
+        return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+      }
+
+      // TODO: queue container construction site
+    }
 
     return [ACTIONS_RESULT.WAIT_NEXT_TICK]
   }
 
-  private getTotalCreepInRoom(context: ICityContext, room: Room): number {
-    const totalCreepsAlive: number = _.filter(Game.creeps, creep => creep.memory.roomName === room.name).length
-    const totalCreepsToBeCreated: number = context.queue.length
+  private createHaulers(context: ICityContext, memory: any): string {
+    const room: Room = Game.rooms[context.roomName]
 
-    return totalCreepsAlive + totalCreepsToBeCreated
+    const creepName = getUniqueCreepName()
+
+    context.queue.push({
+      memory,
+      creepName,
+      body: new CreateBody({ minimumEnergy: 300, energyAvailable: room.energyCapacityAvailable })
+       .add([MOVE, CARRY, MOVE, WORK])
+       .add([CARRY], { withMove: true, repeat: true })
+       .value(),
+      actions: [[CreepCheckStop.name], [CreepSingleHauler.name]],
+      priority: PRIORITY.NORMAL
+    })
+
+    return creepName
   }
 
-  private getGenericCreepBody(minimumEnergy: number, room: Room): BodyPartConstant[] {
-    const body = new CreateBody({ minimumEnergy, energyAvailable: room.energyAvailable })
-      .add([WORK, CARRY], { repeat: true, withMove: true })
-      .value()
+  private createHarvester(context: ICityContext, memory: any): string {
+    const room: Room = Game.rooms[context.roomName]
 
-    return body
+    const creepName = getUniqueCreepName()
+
+    context.queue.push({
+      memory,
+      creepName,
+      body: new CreateBody({ minimumEnergy: 300, energyAvailable: room.energyCapacityAvailable })
+        .add([MOVE, CARRY, WORK, WORK, WORK, WORK, WORK, WORK])
+        .add([MOVE, MOVE, MOVE, MOVE, MOVE, MOVE])
+        .value(),
+      actions: [[CreepCheckStop.name], [CreepHarvester.name]],
+      priority: PRIORITY.NORMAL,
+    })
+
+    return creepName
   }
 
-  private creepExists(context: ICityContext, creepName: string): boolean {
-    if (Game.creeps[creepName]) {
-      return true
+  private plan(context: ICityContext): void {
+    this.logger.info('Planning...')
+
+    const room: Room = Game.rooms[context.roomName]
+
+    context.plan.energyCapacity = room.energyCapacityAvailable
+
+    if (context.plan.sources == null) {
+      const spawn: StructureSpawn | undefined = _.sample(room.find(FIND_MY_SPAWNS))
+
+      context.plan.sources = room.find(FIND_SOURCES).map((source: Source) => ({
+        id: source.id,
+        harvesters: [],
+        haulers: [],
+        container: null,
+        distance: spawn ? source.pos.findPathTo(spawn).length : Infinity,
+        emptySpaces: this.getEmptySpacesAroundPosition(source.pos),
+        desiredWorkParts: 0,
+        desiredCarryParts: 0
+      }))
+
+      context.plan.sources.sort((s1: any, s2: any) => s1.distance - s2.distance)
     }
 
-    return context.queue.some((item: ISpawnerItem) => item.creepName === creepName)
+    const maxWorkPartAllowedByEnergyCapacity = this.getMaxWorkPartAllowedByEnergyCapacity(context)
+
+    for (const source of context.plan.sources) {
+      const desiredWorkParts = Math.min(OPTIMUM_WORK_PARTS_PER_SOURCE, maxWorkPartAllowedByEnergyCapacity * source.emptySpaces)
+
+      source.desiredWorkParts = desiredWorkParts
+    }
+  }
+
+  private getEmptySpacesAroundPosition(pos: RoomPosition): number {
+    const positions = this.getNeighborsPositions(pos)
+
+    const terrain: RoomTerrain = new Room.Terrain(pos.roomName)
+
+    const TERRAIN_MASK_PLAIN = 0
+
+    return positions.map(p => terrain.get(p.x, p.y))
+      .filter(t => t === TERRAIN_MASK_SWAMP || t === TERRAIN_MASK_PLAIN)
+      .length
+  }
+
+  private getNeighborsPositions(pos: RoomPosition): RoomPosition[] {
+    const cords: [number, number][] = [
+      [-1, -1], [0, -1], [1, -1],
+      [-1,  0],          [1,  0],
+      [-1,  1], [0,  1], [1,  1]
+    ]
+
+    const room: Room = Game.rooms[pos.roomName]
+
+    const positions = cords
+      .map(([dx, dy]) => ([pos.x - dx, pos.y - dy]))
+      .map(([x, y]) => room.getPositionAt(x, y))
+      .filter(p => p != null) as RoomPosition[]
+
+    return positions
+  }
+
+  private getActiveBodyParts(names: string[], part: BodyPartConstant): number {
+    const creeps: Creep[] = this.getCreepsFromName(names)
+
+    const activeParts: number[] = creeps.map(creep => creep.getActiveBodyparts(part))
+
+    return _.sum(activeParts)
+  }
+
+  private getCreepsFromName(names: string[]): Creep[] {
+    return names
+      .map(name => Game.creeps[name])
+      .filter(creep => creep != null)
+  }
+
+  private getMaxWorkPartAllowedByEnergyCapacity(context: ICityContext): number {
+    const room: Room = Game.rooms[context.roomName]
+
+    const maximumWorkerParts: number = Math.floor((room.energyCapacityAvailable - BODYPART_COST[MOVE] - BODYPART_COST[CARRY]) / BODYPART_COST[WORK])
+
+    return maximumWorkerParts
   }
 }
