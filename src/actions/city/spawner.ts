@@ -42,6 +42,10 @@ export class Spawner extends Action {
     const result: ScreepsReturnCode = spawn.spawnCreep(item.body, creepName)
 
     if (result !== OK) {
+      if (result === ERR_NAME_EXISTS) {
+        context.queue.shift()
+      }
+
       this.logger.error(`Error spawning creep`, result, room.name)
 
       return [ACTIONS_RESULT.WAIT_NEXT_TICK]

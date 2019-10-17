@@ -20,7 +20,7 @@ export class Country extends Action {
 
         const PID: number = this.fork({
           memory,
-          actions: [[RoomStopIfConflict.name], [City.name], [CityEmergency.name], [CityDefense.name], [Spawner.name]],
+          actions: [[RoomStopIfConflict.name], [CityEmergency.name], [City.name], [CityDefense.name], [Spawner.name]],
           name: `City-${roomName}`
         })
 

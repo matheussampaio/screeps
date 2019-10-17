@@ -1,7 +1,7 @@
 import * as _ from 'lodash'
 
 import { Action, ACTIONS_RESULT, PRIORITY } from '../../core'
-import { CreepCheckStop, CreepHarvester, CreepSingleHauler, CreepGeneric } from '../creep'
+import { CreepCheckStop, CreepHarvester, CreepSingleHauler  } from '../creep'
 import { CreateBody } from '../../utils/create-body'
 // import { Sleep } from '../sleep'
 import { ICityContext, IPlanSource, ISpawnerItem } from './interfaces'

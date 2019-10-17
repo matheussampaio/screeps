@@ -10,6 +10,8 @@ export class CityEmergency extends Action {
     const totalCreepsAlive: number = _.filter(Game.creeps, creep => creep.memory.roomName === context.roomName).length
 
     if (totalCreepsAlive === 0) {
+      context.queue = []
+
       this.createEmergencyCreep(context)
     }
 
