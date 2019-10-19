@@ -5,7 +5,9 @@ export function getUniqueCreepName(): string {
     counters.creepCounter = 1
   }
 
-  while (Game.creeps[`creep-${counters.creepCounter++}`]) {
+  while (Game.creeps[`creep-${counters.creepCounter}`]) {
+    counters.creepCounter++
+
     if (counters.creepCounter >= Number.MAX_SAFE_INTEGER) {
       counters.creepCounter = 1
     }
