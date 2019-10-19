@@ -11,7 +11,7 @@ export class CreepSingleHauler extends Action {
     const isEmpty = _.sum(_.values(creep.carry)) === 0
 
     if (isEmpty) {
-      return this.getEnergy(context)
+      return [ACTIONS_RESULT.UNSHIFT_AND_CONTINUE, CreepSingleHaulerGetEnergy.name]
     }
 
     return this.fill(context)
@@ -85,34 +85,51 @@ export class CreepSingleHauler extends Action {
       return spawn
     }
 
-    if (creep.room.storage) {
-      context.target = creep.room.storage.id
-      return creep.room.storage
-    }
+    // if (creep.room.storage) {
+    //   context.target = creep.room.storage.id
+    //   return creep.room.storage
+    // }
 
     return null
   }
+}
 
-  getEnergy(context: ICreepContext): [ACTIONS_RESULT, ...string[]] {
+export class CreepSingleHaulerGetEnergy extends Action {
+  run(context: ICreepContext): [ACTIONS_RESULT, ...string[]] {
     const creep: Creep = Game.creeps[context.creepName]
+
+    if (creep == null) {
+      return [ACTIONS_RESULT.SHIFT_AND_STOP]
+    }
+
+    if (_.sum(_.values(creep.carry)) === creep.carryCapacity) {
+      return [ACTIONS_RESULT.SHIFT_AND_CONTINUE]
+    }
+
     const source: Source | null = Game.getObjectById(context.source)
 
     if (source == null) {
       this.logger.error(`CreepSingleHauler:${context.creepName}: source does not exists`)
 
+      return [ACTIONS_RESULT.SHIFT_AND_STOP]
+    }
+
+    const resources: Resource[] = source.pos.findInRange(FIND_DROPPED_RESOURCES, 3, {
+      filter: r => r.resourceType === RESOURCE_ENERGY
+    })
+
+    resources.sort((r1, r2) => r2.amount - r1.amount)
+
+    const resource = _.head(resources)
+
+    if (resource == null) {
       return [ACTIONS_RESULT.WAIT_NEXT_TICK]
     }
 
-    const resource: Resource | undefined = _.sample(source.pos.findInRange(FIND_DROPPED_RESOURCES, 3, {
-      filter: r => r.resourceType === RESOURCE_ENERGY
-    }))
-
-    if (resource) {
-      if (creep.pos.isNearTo(resource)) {
-        creep.pickup(resource)
-      } else {
-        creep.moveTo(resource)
-      }
+    if (creep.pos.isNearTo(resource)) {
+      creep.pickup(resource)
+    } else {
+      creep.moveTo(resource)
     }
 
     return [ACTIONS_RESULT.WAIT_NEXT_TICK]
