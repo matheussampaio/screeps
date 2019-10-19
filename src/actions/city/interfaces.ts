@@ -37,5 +37,7 @@ export interface ICityContext extends ISleepContext {
   plan: {
     energyCapacity: number
     sources: IPlanSource[]
+    builders: string[]
+    upgraders: string[]
   }
 }
