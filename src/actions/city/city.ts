@@ -48,7 +48,7 @@ export class City extends Action {
 
         source.haulers.push(creepName)
 
-        return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+        return this.waitNextTick()
       }
 
       if (source.harvesters.length < source.emptySpaces && currentWorkParts < source.desiredWorkParts) {

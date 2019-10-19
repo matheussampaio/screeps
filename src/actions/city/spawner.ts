@@ -13,7 +13,7 @@ export class Spawner extends Action {
     const room: Room = Game.rooms[context.roomName]
 
     if (context.queue.length === 0) {
-      return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+      return this.waitNextTick()
     }
 
     context.queue.sort((i1, i2) => i2.priority - i1.priority)
@@ -23,7 +23,7 @@ export class Spawner extends Action {
     const creepCost: number = item.body.reduce((sum, part) => BODYPART_COST[part] + sum, 0)
 
     if (room.energyAvailable < creepCost) {
-      return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+      return this.waitNextTick()
     }
 
     const spawns: StructureSpawn[] | null = room.find(FIND_MY_SPAWNS, {
@@ -34,7 +34,7 @@ export class Spawner extends Action {
 
     if (spawn == null) {
       // calculate for how many ticks the spawn is busy and sleep that amount
-      return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+      return this.waitNextTick()
     }
 
     const creepName: string = item.creepName || getUniqueCreepName()
@@ -48,7 +48,7 @@ export class Spawner extends Action {
 
       this.logger.error(`Error spawning creep`, result, room.name)
 
-      return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+      return this.waitNextTick()
     }
 
     context.queue.shift()
@@ -68,7 +68,7 @@ export class Spawner extends Action {
       roomName: room.name
     }
 
-    return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+    return this.waitNextTick()
   }
 }
 

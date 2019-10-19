@@ -6,14 +6,14 @@ export class RoomStopIfConflict extends Action {
 
     // stop if we lose access to this room
     if (room == null) {
-      return [ACTIONS_RESULT.HALT]
+      return this.halt()
     }
 
     // stop if another process owns this room
     if (room.memory.PID !== process.PID) {
-      return [ACTIONS_RESULT.HALT]
+      return this.halt()
     }
 
-    return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+    return this.waitNextTick()
   }
 }

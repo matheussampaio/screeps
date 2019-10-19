@@ -15,7 +15,7 @@ export class CityEmergency extends Action {
       this.createEmergencyCreep(context)
     }
 
-    return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+    return this.waitNextTick()
   }
 
   private createEmergencyCreep(context: ICityContext) {
