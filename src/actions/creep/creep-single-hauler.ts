@@ -50,13 +50,13 @@ export class CreepSingleHauler extends Action {
     if (context.target) {
       const target: StructureSpawn | StructureExtension | StructureStorage | null = Game.getObjectById(context.target)
 
-      if (target) {
+      if (target && target.store.getFreeCapacity(RESOURCE_ENERGY)) {
         return target
       }
     }
 
     const towers: StructureTower[] = creep.room.find(FIND_MY_STRUCTURES, {
-      filter: s => s.structureType === STRUCTURE_TOWER
+      filter: s => s.structureType === STRUCTURE_TOWER && s.store.getFreeCapacity(RESOURCE_ENERGY)
     }) as StructureTower[]
 
     const emptyTower = towers.find(tower => tower.store.getUsedCapacity(RESOURCE_ENERGY) as number < 250)
