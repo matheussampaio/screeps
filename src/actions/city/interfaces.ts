@@ -39,5 +39,6 @@ export interface ICityContext extends ISleepContext {
     sources: IPlanSource[]
     builders: string[]
     upgraders: string[]
+    upgradersBody: BodyPartConstant[]
   }
 }

@@ -87,8 +87,118 @@ export class City extends Action {
       return this.waitNextTick()
     }
 
+    const energyProduced = context.plan.sources.reduce((sum, source) => {
+      const currentWorkParts = utils.getActiveBodyPartsFromName(source.harvesters, WORK)
+
+      return sum + (currentWorkParts * HARVEST_POWER * 1500)
+    }, 0)
+
+    this.logger.info(`energyProduced`, energyProduced)
+
+    const creepsConsumingEnergy = context.plan.upgraders.concat(context.plan.builders)
+    const energyConsumed = creepsConsumingEnergy.reduce((sum, creepName) => {
+      const currentWorkParts = utils.getActiveBodyPartsFromName(creepName, WORK)
+
+      return sum + (currentWorkParts * HARVEST_POWER * 1500)
+    }, 0)
+    const energyConsumedByWalls = 0
+
+    this.logger.info(`energyConsumed`, energyConsumed)
+
+    const creepsInRoom: Creep[] = _.filter(Game.creeps, creep => creep.memory.roomName === context.roomName)
+    const totalCreepsCost = utils.getCreepsCost(creepsInRoom)
+
+    this.logger.info(`totalCreepsCost`, totalCreepsCost)
+
+
+    const total = energyProduced - energyConsumedByWalls - energyConsumed - totalCreepsCost
+
+    const workParts = context.plan.upgradersBody.filter(part => part === WORK).length
+    const consumeByUpgrader = workParts * HARVEST_POWER * 1500 + (_.sum(context.plan.upgradersBody.map(p => BODYPART_COST[p])))
+
+    console.log('consumeByUpgrader', consumeByUpgrader)
+    console.log('total', total)
+
+    if (total >= consumeByUpgrader) {
+      const creepName = this.createUpgrader(context)
+
+      context.plan.upgraders.push(creepName)
+
+      return this.waitNextTick()
+    }
 
     return this.waitNextTick()
+  }
+
+  private calculateEficiency({ distance, work, move, carry }): number {
+    const FATIGUE = 2
+
+    if (!move || !carry || !work) {
+      return 0
+    }
+
+    const ticksToUpgradeController = (carry * CARRY_CAPACITY) / work
+    const ticksToTravelToStorage = (distance * work * FATIGUE) / (move * FATIGUE)
+    const ticksToTravelToController = (distance * (work + carry) * FATIGUE) / (move * FATIGUE)
+
+    const eficiency = (carry * CARRY_CAPACITY) / (ticksToTravelToController + ticksToUpgradeController + ticksToTravelToStorage)
+
+    return eficiency
+  }
+
+  private addPermutation(perms: { [key: string]: number }, body: BodyPartConstant[], distance: number): boolean {
+    const work = body.filter(p => p === WORK).length
+    const move = body.filter(p => p === MOVE).length
+    const carry = body.filter(p => p === CARRY).length
+
+    const index = body.sort().join()
+
+    if (perms[index] != null) {
+      return false
+    }
+
+    perms[index] = this.calculateEficiency({
+      distance,
+      work,
+      move,
+      carry
+    })
+
+    return true
+  }
+
+  private generatePermutations(energy: number, distance: number) {
+    const parts: BodyPartConstant[] = [MOVE, CARRY, WORK]
+    const perms: { [key: string]: number } = {}
+
+    const queue: { energy: number, body: BodyPartConstant[] }[] = [{
+      energy: energy - (BODYPART_COST[MOVE] + BODYPART_COST[CARRY] + BODYPART_COST[WORK]),
+      body: [MOVE, CARRY, WORK]
+    }]
+
+    while (queue.length) {
+      const item = queue.shift()
+
+      this.addPermutation(perms, item.body, distance)
+
+      if (item.body.length >= MAX_CREEP_SIZE) {
+        continue
+      }
+
+      for (const part of parts) {
+        const cost = BODYPART_COST[part]
+
+        if (cost <= item.energy) {
+          const body = [...item.body, part]
+
+          if (this.addPermutation(perms, body, distance)) {
+            queue.push({ energy: item.energy - cost, body })
+          }
+        }
+      }
+    }
+
+    return perms
   }
 
   private createBuilder(context: ICityContext): string {
@@ -111,16 +221,12 @@ export class City extends Action {
   }
 
   private createUpgrader(context: ICityContext): string {
-    const room: Room = Game.rooms[context.roomName]
-
     const creepName = utils.getUniqueCreepName()
 
     context.queue.push({
       memory: {},
       creepName,
-      body: new CreateBody({ minimumEnergy: 300, energyAvailable: room.energyCapacityAvailable })
-       .add([CARRY, WORK], { withMove: true, repeat: true })
-       .value(),
+      body: context.plan.upgradersBody,
       actions: [[CreepCheckStop.name], [CreepSingleUpgrader.name]],
       priority: PRIORITY.NORMAL
     })
@@ -195,6 +301,35 @@ export class City extends Action {
 
       source.desiredWorkParts = desiredWorkParts
     }
+
+    const goal = []
+
+    if (room.storage) {
+      goal.push(room.storage.pos)
+
+    // TODO: has containers close to controller
+    } else {
+      const sources = room.find(FIND_SOURCES).map(source => source.pos)
+
+      goal.push(...sources)
+    }
+
+    const distance = PathFinder.search(room.controller.pos, goal).path.length
+    const permutations = this.generatePermutations(room.energyCapacityAvailable, distance / 3)
+
+    let bestEntry: string = ''
+    let bestEficiency = 0
+
+    for (const key in permutations) {
+      const eficiency = permutations[key]
+
+      if (eficiency > bestEficiency) {
+        bestEficiency = eficiency
+        bestEntry = key
+      }
+    }
+
+    context.plan.upgradersBody = bestEntry.split(',') as BodyPartConstant[]
   }
 
   private getMaxWorkPartAllowedByEnergyCapacity(context: ICityContext): number {
