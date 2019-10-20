@@ -60,4 +60,8 @@ export class Action {
   protected waitNextTickAll(): [ACTIONS_RESULT.WAIT_NEXT_TICK_ALL] {
     return [ACTIONS_RESULT.WAIT_NEXT_TICK_ALL]
   }
+
+  protected retry(): [ACTIONS_RESULT.RETRY] {
+   return [ACTIONS_RESULT.RETRY] 
+  }
 }

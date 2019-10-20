@@ -48,7 +48,7 @@ export class Spawner extends Action {
 
       this.logger.error(`Error spawning creep`, result, room.name)
 
-      return this.waitNextTick()
+      return this.retry()
     }
 
     context.queue.shift()

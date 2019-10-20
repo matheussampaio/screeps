@@ -208,7 +208,15 @@ export class ActionTreeRunner {
           // stop process
           } else if (result === ACTIONS_RESULT.WAIT_NEXT_TICK_ALL) {
             return
+
+          // re-execute action
+          } else if (result === ACTIONS_RESULT.RETRY) {
+            continue
+
+          } else {
+            throw new Error(`Unknown action result: ${result}`)
           }
+
         } catch (error) {
           this.logger.error(`${subtree[0]}: ${error.message}`, error.stack)
         }
