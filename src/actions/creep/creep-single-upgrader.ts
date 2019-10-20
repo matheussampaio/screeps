@@ -48,6 +48,32 @@ export class CreepSingleUpgraderGetEnergy extends Action {
       return this.shiftAndContinue()
     }
 
+    const resources = creep.room.controller.pos.findInRange(FIND_DROPPED_RESOURCES, 4, {
+      filter: r => r.resourceType === RESOURCE_ENERGY
+    })
+
+    if (resources) {
+      const resource = resources[0]
+
+      if (creep.pos.isNearTo(resource)) {
+        creep.pickup(resource)
+      } else {
+        creep.moveTo(resource)
+      }
+
+      return this.waitNextTick()
+    }
+
+    if (creep.room.storage && creep.room.storage.isActive && creep.room.storage.store.getUsedCapacity(RESOURCE_ENERGY)) {
+      if (creep.pos.isNearTo(creep.room.storage)) {
+        creep.withdraw(creep.room.storage, RESOURCE_ENERGY)
+      } else {
+        creep.moveTo(creep.room.storage)
+      }
+
+      return this.waitNextTick()
+    }
+
     const resource: Resource | null = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {
       filter: r => r.resourceType === RESOURCE_ENERGY
     })

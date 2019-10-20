@@ -66,6 +66,16 @@ export class CreepSingleBuilderGetEnergy extends Action {
       return this.shiftAndContinue()
     }
 
+    if (creep.room.storage && creep.room.storage.isActive && creep.room.storage.store.getUsedCapacity(RESOURCE_ENERGY)) {
+      if (creep.pos.isNearTo(creep.room.storage)) {
+        creep.withdraw(creep.room.storage, RESOURCE_ENERGY)
+      } else {
+        creep.moveTo(creep.room.storage)
+      }
+
+      return this.waitNextTick()
+    }
+
     const resource: Resource | null = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {
       filter: r => r.resourceType === RESOURCE_ENERGY
     })

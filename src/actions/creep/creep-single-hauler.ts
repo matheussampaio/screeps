@@ -21,10 +21,10 @@ export class CreepSingleHauler extends Action {
       return this.unshiftAndStop(CreepSingleHaulerGetEnergy.name)
     }
 
-    const spawn = this.getSpawn(context)
-
-    if (spawn && !creep.pos.inRangeTo(spawn, 3)) {
-      creep.moveTo(spawn)
+    if (creep.pos.inRangeTo(creep.room.controller, 2)) {
+      creep.drop(RESOURCE_ENERGY)
+    } else {
+      creep.moveTo(creep.room.controller)
     }
 
     return this.waitNextTick()
@@ -50,13 +50,13 @@ export class CreepSingleHauler extends Action {
     if (context.target) {
       const target: StructureSpawn | StructureExtension | StructureStorage | null = Game.getObjectById(context.target)
 
-      if (target && target.store.getFreeCapacity(RESOURCE_ENERGY)) {
+      if (target && target.isActive && target.store.getFreeCapacity(RESOURCE_ENERGY)) {
         return target
       }
     }
 
     const towers: StructureTower[] = creep.room.find(FIND_MY_STRUCTURES, {
-      filter: s => s.structureType === STRUCTURE_TOWER && s.store.getFreeCapacity(RESOURCE_ENERGY)
+      filter: s => s.structureType === STRUCTURE_TOWER && s.isActive && s.store.getFreeCapacity(RESOURCE_ENERGY)
     }) as StructureTower[]
 
     const emptyTower = towers.find(tower => tower.store.getUsedCapacity(RESOURCE_ENERGY) as number < 250)
@@ -69,7 +69,7 @@ export class CreepSingleHauler extends Action {
 
     const extension: StructureExtension | null = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
       filter: (s: StructureExtension) => {
-        return s.structureType === STRUCTURE_EXTENSION && s.store.getFreeCapacity(RESOURCE_ENERGY)
+        return s.structureType === STRUCTURE_EXTENSION && s.isActive && s.store.getFreeCapacity(RESOURCE_ENERGY)
       }
     }) as StructureExtension | null
 
@@ -79,7 +79,7 @@ export class CreepSingleHauler extends Action {
     }
 
     const spawn: StructureSpawn | null = creep.pos.findClosestByPath(FIND_MY_SPAWNS, {
-      filter: (s: StructureSpawn) => s.store.getFreeCapacity(RESOURCE_ENERGY)
+      filter: (s: StructureSpawn) => s.isActive && s.store.getFreeCapacity(RESOURCE_ENERGY)
     })
 
     if (spawn) {
@@ -99,10 +99,10 @@ export class CreepSingleHauler extends Action {
       return tower
     }
 
-    // if (creep.room.storage) {
-    //   context.target = creep.room.storage.id
-    //   return creep.room.storage
-    // }
+    if (creep.room.storage && creep.room.storage.isActive && creep.room.storage.store.getFreeCapacity(RESOURCE_ENERGY)) {
+      context.target = creep.room.storage.id
+      return creep.room.storage
+    }
 
     return null
   }
