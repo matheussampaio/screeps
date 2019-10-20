@@ -1,3 +1,5 @@
+import * as _ from 'lodash'
+
 declare global {
   interface Memory {
     analytics: {
@@ -25,7 +27,9 @@ declare global {
 
 export class Analytics {
   public static get memory() {
-    Memory.analytics = Memory.analytics || {}
+    _.defaults(Memory, {
+      analytics: {}
+    })
 
     return Memory.analytics
   }
