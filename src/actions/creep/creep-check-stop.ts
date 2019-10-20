@@ -2,7 +2,7 @@ import * as _ from 'lodash'
 
 import { Action, Process, ACTIONS_RESULT } from '../../core'
 import { ICreepContext } from './interfaces'
-import { Sleep, ISleepContext } from '../sleep'
+import { ISleepContext } from '../sleep'
 
 export class CreepCheckStop extends Action {
   run(context: ICreepContext & ISleepContext, process: Process): [ACTIONS_RESULT, ...string[]] {

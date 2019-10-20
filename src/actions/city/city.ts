@@ -24,12 +24,12 @@ export class City extends Action {
 
     const room: Room = Game.rooms[context.roomName]
 
-    if (context.plan.energyCapacity !== room.energyCapacityAvailable) {
-      this.plan(context)
-    }
-
     if (context.queue.length) {
       return this.waitNextTick()
+    }
+
+    if (context.plan.energyCapacity !== room.energyCapacityAvailable) {
+      this.plan(context)
     }
 
     for (const source of context.plan.sources) {
@@ -99,9 +99,10 @@ export class City extends Action {
     context.queue.push({
       memory: {},
       creepName,
-      body: new CreateBody({ minimumEnergy: 300, energyAvailable: room.energyCapacityAvailable })
-       .add([CARRY, WORK], { withMove: true, repeat: true })
-       .value(),
+      body: new CreateBody({ minimumEnergy: room.energyCapacityAvailable, ticksToMove: 2 })
+      .add([CARRY, WORK], { repeat: true })
+      .addMoveIfPossible()
+      .value(),
       actions: [[CreepCheckStop.name], [CreepSingleBuilder.name]],
       priority: PRIORITY.NORMAL
     })
@@ -136,9 +137,9 @@ export class City extends Action {
       memory,
       creepName,
       body: new CreateBody({ minimumEnergy: 300, energyAvailable: room.energyCapacityAvailable })
-       // .add([MOVE, CARRY, MOVE, WORK])
-       .add([CARRY], { withMove: true, repeat: true })
-       .value(),
+      // .add([MOVE, CARRY, MOVE, WORK])
+      .add([CARRY], { repeat: true })
+      .value(),
       actions: [[CreepCheckStop.name], [CreepSingleHauler.name]],
       priority: PRIORITY.NORMAL
     })
@@ -154,10 +155,10 @@ export class City extends Action {
     context.queue.push({
       memory,
       creepName,
-      body: new CreateBody({ minimumEnergy: 300, energyAvailable: room.energyCapacityAvailable })
-        .add([MOVE, CARRY, WORK, WORK, WORK, WORK, WORK, WORK])
-        .add([MOVE, MOVE, MOVE, MOVE, MOVE, MOVE])
-        .value(),
+      body: new CreateBody({ minimumEnergy: 300, energyAvailable: room.energyCapacityAvailable, ticksToMove: 3 })
+      .add([WORK, WORK, WORK, WORK, WORK, WORK])
+      .addMoveIfPossible()
+      .value(),
       actions: [[CreepCheckStop.name], [CreepHarvester.name]],
       priority: PRIORITY.NORMAL,
     })

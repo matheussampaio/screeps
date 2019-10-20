@@ -3,17 +3,27 @@ import * as _ from 'lodash'
 export class CreateBody {
   private energyAvailable: number
   private currentCreepBody: Partial<Record<BodyPartConstant, any>>
+  private ticksToMove: number
+  private hasRoads: boolean
+  private fatigueGeneratedAfterMoving: number
+  private fatigueDecreasedPerTick: number
 
-  constructor({ minimumEnergy = 150, energyAvailable }: { minimumEnergy: number, energyAvailable: number }) {
+  constructor({ minimumEnergy = 150, energyAvailable = 0, ticksToMove = 1, hasRoads = false }: { minimumEnergy: number, energyAvailable?: number, ticksToMove?: number, hasRoads?: boolean }) {
     this.energyAvailable = Math.max(minimumEnergy, energyAvailable)
     this.currentCreepBody = {}
+    this.ticksToMove = ticksToMove
+    this.hasRoads = hasRoads
+
+    this.fatigueGeneratedAfterMoving = 0
+    this.fatigueDecreasedPerTick = 0
   }
 
-  public add(parts: BodyPartConstant[], opts: { withMove?: boolean, repeat?: boolean } = {}): CreateBody {
+  public add(parts: BodyPartConstant[], opts: { repeat?: boolean } = {}): CreateBody {
     let addedSomeParts = 0
 
     for (const part of parts) {
-      const partsToAdd = opts.withMove ? [MOVE, part] : [part]
+      const withMove = this.calculateMoveRatio(part) > this.ticksToMove
+      const partsToAdd = withMove ? [MOVE, part] : [part]
 
       if (this.canAddPart(partsToAdd)) {
         this.addParts(partsToAdd)
@@ -29,10 +39,51 @@ export class CreateBody {
     return this
   }
 
+  public addMoveIfPossible(): CreateBody {
+    const parts = [MOVE]
+
+    while (this.moveRatio > 1 && this.canAddPart(parts)) {
+      this.addParts(parts)
+    }
+
+    return this
+  }
+
+  private calculateMoveRatio(part: BodyPartConstant): number {
+    let newFatigueDecreacedPerTick = this.fatigueDecreasedPerTick
+    let newFatigueGeneratedAfterMoving = this.fatigueGeneratedAfterMoving
+
+    if (part === MOVE) {
+      newFatigueDecreacedPerTick += 2
+    } else {
+      newFatigueGeneratedAfterMoving += this.hasRoads ? 1 : 2
+    }
+
+    if (newFatigueDecreacedPerTick === 0) {
+      return Infinity
+    }
+
+    return newFatigueGeneratedAfterMoving / newFatigueDecreacedPerTick
+  }
+
+  get moveRatio(): number {
+    if (this.fatigueDecreasedPerTick === 0) {
+      return Infinity
+    }
+
+    return this.fatigueGeneratedAfterMoving / this.fatigueDecreasedPerTick
+  }
+
   private addParts(parts: BodyPartConstant[]): void {
     for (const part of parts) {
       this.currentCreepBody[part] = (this.currentCreepBody[part] || 0) + 1
       this.energyAvailable -= BODYPART_COST[part]
+
+      if (part === MOVE) {
+        this.fatigueDecreasedPerTick += 2
+      } else {
+        this.fatigueGeneratedAfterMoving += this.hasRoads ? 1 : 2
+      }
     }
   }
 
@@ -52,7 +103,7 @@ export class CreateBody {
     return true
   }
 
-  value(): BodyPartConstant[] {
+  public value(): BodyPartConstant[] {
     const body: BodyPartConstant[] = []
 
     for (const part in this.currentCreepBody) {
@@ -66,5 +117,17 @@ export class CreateBody {
     // @TODO: sort body to destroy unvaluable parts first (i.e. TOUGH)
 
     return body
+  }
+
+  public human(): string {
+    const body = []
+
+    for (const part in this.currentCreepBody) {
+      const counter = this.currentCreepBody[part];
+
+      body.push(`${part}=${counter}`);
+    }
+
+    return body.sort().join() + `  MOVE_RATION=${this.moveRatio}`
   }
 }
