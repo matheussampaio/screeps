@@ -6,8 +6,7 @@ export function loop() {
 
     // Rectangle Array, the Rectangles will be protected by the returned tiles
     const protectedArea: RectCoordinates[] = [
-      { x1: 20, y1: 6, x2: 28, y2: 27 },
-      { x1: 29, y1: 13, x2: 34, y2: 16 }
+      { x1: 11, y1: 16, x2: 30, y2: 26 }
     ]
 
     // Boundary Array for Maximum Range

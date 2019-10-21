@@ -1,4 +1,4 @@
-type Edge = {
+interface Edge {
   u?: number
   v: number
   c: number
@@ -16,7 +16,9 @@ export class Graph {
     this.level = Array(menge_v)
 
     // Array: for every vertex an edge Array mit {v,r,c,f} vertex_to,res_edge,capacity,flow
-    this.edges = Array(menge_v).fill(0).map(_ => [])
+    this.edges = Array(menge_v)
+      .fill(0)
+      .map(_ => [])
   }
 
   public newEdge(u: number, v: number, c: number): void {
@@ -96,21 +98,19 @@ export class Graph {
 
   public BFSTheCut(s: number): number[] {
     // breadth-first-search which uses the level array to mark the vertices reachable from s
-    const e_in_cut = []
+    const edgesInCut = []
 
     this.level.fill(-1)
     this.level[s] = 1
 
-    const q = []
+    const q: number[] = []
 
     q.push(s)
 
     while (q.length) {
-      const u = q.splice(0, 1)[0]
+      const u: number = q.shift() as number
 
-      for (let i = 0; i < this.edges[u].length; i++) {
-        const edge: Edge = this.edges[u][i]
-
+      for (const edge of this.edges[u]) {
         if (edge.f < edge.c) {
           if (this.level[edge.v] < 1) {
             this.level[edge.v] = 1
@@ -121,26 +121,26 @@ export class Graph {
         if (edge.f === edge.c && edge.c > 0) {
           // blocking edge -> could be in min cut
           edge.u = u
-          e_in_cut.push(edge)
+          edgesInCut.push(edge)
         }
       }
     }
 
-    let min_cut: number[] = []
+    const minCut: number[] = []
 
-    for (let i = 0; i < e_in_cut.length; i++) {
-      if (this.level[e_in_cut[i].v] === -1) {
+    for (const edge of edgesInCut) {
+      if (this.level[edge.v] === -1) {
         // Only edges which are blocking and lead to from s unreachable vertices are in the min cut
-        min_cut.push(e_in_cut[i].u as number)
+        minCut.push(edge.u as number)
       }
     }
 
-    return min_cut
+    return minCut
   }
 
   public getMinCut(s: number, t: number): number {
     // calculates min-cut graph (Dinic Algorithm)
-    if (s == t) {
+    if (s === t) {
       return -1
     }
 
@@ -152,11 +152,13 @@ export class Graph {
 
       do {
         flow = this.DFSFlow(s, Number.MAX_VALUE, t, count)
-        if (flow > 0) returnvalue += flow
+
+        if (flow > 0) {
+          returnvalue += flow
+        }
       } while (flow)
     }
 
     return returnvalue
   }
 }
-
