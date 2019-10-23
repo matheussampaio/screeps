@@ -123,7 +123,7 @@ export class CreateBody {
     const body = []
 
     for (const part in this.currentCreepBody) {
-      const counter = this.currentCreepBody[part];
+      const counter: number = this.currentCreepBody[part as BodyPartConstant]
 
       body.push(`${part}=${counter}`);
     }

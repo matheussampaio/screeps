@@ -11,28 +11,73 @@ export class CreepGetEnergy extends Action {
       return [ACTIONS_RESULT.SHIFT_AND_STOP]
     }
 
-    const isFull = _.sum(_.values(creep.carry)) === creep.carryCapacity
-
-    if (isFull) {
+    if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
       delete context.source
-      return [ACTIONS_RESULT.SHIFT_AND_CONTINUE]
+
+      return this.shiftAndContinue()
     }
 
-    // @TODO: Select the closest resource
-    // @TODO: Mark the resource so no other creep go for it at the same time
+    let result = this.pickUpEnergy(context)
+
+    if (result) {
+      return result
+    }
+
+    result = this.withdrawEnergy(context)
+
+    if (result) {
+      return result
+    }
+
+    result = this.harvest(context)
+
+    if (result) {
+      return result
+    }
+
+    return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+  }
+
+  pickUpEnergy(context: ICreepGenericContext): [ACTIONS_RESULT, ...string[]] | null {
+    const creep: Creep = Game.creeps[context.creepName]
+
     const resource = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {
       filter: r => r.resourceType === RESOURCE_ENERGY
     })
 
-    if (resource) {
-      if (creep.pos.isNearTo(resource)) {
-        creep.pickup(resource)
+    if (resource == null) {
+      return null
+    }
+
+    if (creep.pos.isNearTo(resource)) {
+      creep.pickup(resource)
+    } else {
+      creep.moveTo(resource)
+    }
+
+    return this.waitNextTick()
+  }
+
+  withdrawEnergy(context: ICreepGenericContext): [ACTIONS_RESULT, ...string[]] | null {
+    const creep: Creep = Game.creeps[context.creepName]
+
+    const storage = creep.room.storage
+
+    if (storage && storage.isActive && storage.store.getUsedCapacity(RESOURCE_ENERGY)) {
+      if (creep.pos.isNearTo(storage)) {
+        creep.withdraw(storage, RESOURCE_ENERGY)
       } else {
-        creep.moveTo(resource)
+        creep.moveTo(storage)
       }
 
-      return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+      return this.waitNextTick()
     }
+
+    return null
+  }
+
+  harvest(context: ICreepGenericContext): [ACTIONS_RESULT, ...string[]] | null {
+    const creep: Creep = Game.creeps[context.creepName]
 
     if (context.source == null) {
       const source: Source | null = creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE, {
@@ -41,7 +86,7 @@ export class CreepGetEnergy extends Action {
 
       if (source == null) {
         this.logger.debug('No source available. waiting...', context.creepName)
-        return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+        return this.waitNextTick()
       }
 
       context.source = source.id
@@ -52,7 +97,8 @@ export class CreepGetEnergy extends Action {
     // source is gone, try again next tick
     if (source == null || source.energy === 0) {
       delete context.source
-      return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+
+      return this.waitNextTick()
     }
 
     if (creep.pos.isNearTo(source)) {
@@ -61,6 +107,6 @@ export class CreepGetEnergy extends Action {
       creep.moveTo(source)
     }
 
-    return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+    return this.waitNextTick()
   }
 }

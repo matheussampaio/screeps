@@ -130,7 +130,7 @@ export class City extends Action {
     return this.waitNextTick()
   }
 
-  private calculateEficiency({ distance, work, move, carry }): number {
+  private calculateEficiency({ distance, work, move, carry }: { distance: number, work: number, move: number, carry: number }): number {
     const FATIGUE = 2
 
     if (!move || !carry || !work) {
@@ -178,6 +178,10 @@ export class City extends Action {
 
     while (queue.length) {
       const item = queue.shift()
+
+      if (item == null) {
+        continue
+      }
 
       this.addPermutation(perms, item.body, distance)
 
@@ -312,6 +316,10 @@ export class City extends Action {
       const sources = room.find(FIND_SOURCES).map(source => source.pos)
 
       goal.push(...sources)
+    }
+
+    if (room.controller == null) {
+      return
     }
 
     const distance = PathFinder.search(room.controller.pos, goal).path.length

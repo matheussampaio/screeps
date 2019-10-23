@@ -11,7 +11,7 @@ export class CreepSingleHauler extends Action {
       return this.unshiftAndContinue(CreepSingleHaulerGetEnergy.name)
     }
 
-    const target: StructureSpawn | StructureExtension | StructureStorage | StructureTower | null = this.findTransferTarget(creep, context)
+    const target: StructureSpawn | StructureExtension | StructureStorage | StructureTower | StructureContainer | null = this.findTransferTarget(creep, context)
 
     if (target) {
       return this.unshiftAndContinue(CreepSingleHaulerTransfer.name)
@@ -19,6 +19,10 @@ export class CreepSingleHauler extends Action {
 
     if (creep.store.getFreeCapacity(RESOURCE_ENERGY)) {
       return this.unshiftAndStop(CreepSingleHaulerGetEnergy.name)
+    }
+
+    if (creep.room.controller == null) {
+      return this.waitNextTick()
     }
 
     if (creep.pos.inRangeTo(creep.room.controller, 2)) {
@@ -46,7 +50,7 @@ export class CreepSingleHauler extends Action {
     return spawn
   }
 
-  findTransferTarget(creep: Creep, context: ICreepContext): StructureExtension | StructureTower | StructureSpawn | StructureStorage | null {
+  findTransferTarget(creep: Creep, context: ICreepContext): StructureExtension | StructureTower | StructureSpawn | StructureStorage | StructureContainer | null {
     if (context.target) {
       const target: StructureSpawn | StructureExtension | StructureStorage | null = Game.getObjectById(context.target)
 
@@ -99,6 +103,20 @@ export class CreepSingleHauler extends Action {
       return tower
     }
 
+    if (creep.room.controller) {
+      const containers: StructureContainer[] = creep.room.controller.pos.findInRange(FIND_STRUCTURES, 3, {
+        filter: s => s.structureType === STRUCTURE_CONTAINER && s.store.getFreeCapacity(RESOURCE_ENERGY)
+      }) as StructureContainer[]
+
+      if (containers.length) {
+        const container = containers[0]
+
+        context.target = container.id
+
+        return container
+      }
+    }
+
     if (creep.room.storage && creep.room.storage.isActive && creep.room.storage.store.getFreeCapacity(RESOURCE_ENERGY)) {
       context.target = creep.room.storage.id
       return creep.room.storage
@@ -143,11 +161,25 @@ export class CreepSingleHaulerGetEnergy extends Action {
       return this.shiftAndContinue()
     }
 
+    let result = this.pickUpEnergy(context)
+
+    if (result) {
+      return result
+    }
+
+    result = this.withdrawContainers(context)
+
+    if (result) {
+      return result
+    }
+
+    return this.waitNextTick()
+  }
+
+  pickUpEnergy(context: ICreepContext): [ACTIONS_RESULT, ...string[]] | null {
     const source: Source | null = Game.getObjectById(context.source)
 
     if (source == null) {
-      this.logger.error(`CreepSingleHauler:${context.creepName}: source does not exists`)
-
       return this.shiftAndStop()
     }
 
@@ -160,13 +192,42 @@ export class CreepSingleHaulerGetEnergy extends Action {
     const resource = _.head(resources)
 
     if (resource == null) {
-      return this.waitNextTick()
+      return null
     }
+
+    const creep: Creep = Game.creeps[context.creepName]
 
     if (creep.pos.isNearTo(resource)) {
       creep.pickup(resource)
     } else {
       creep.moveTo(resource)
+    }
+
+    return this.waitNextTick()
+  }
+
+  withdrawContainers(context: ICreepContext): [ACTIONS_RESULT, ...string[]] | null {
+    const source: Source | null = Game.getObjectById(context.source)
+
+    if (source == null) {
+      return this.shiftAndStop()
+    }
+
+    const containers: StructureContainer[] = source.pos.findInRange(FIND_STRUCTURES, 3, {
+      filter: s => s.structureType === STRUCTURE_CONTAINER && s.store.getUsedCapacity(RESOURCE_ENERGY)
+    }) as StructureContainer[]
+
+    if (containers.length === 0) {
+      return null
+    }
+
+    const container = containers[0]
+    const creep: Creep = Game.creeps[context.creepName]
+
+    if (creep.pos.isNearTo(container)) {
+      creep.withdraw(container, RESOURCE_ENERGY)
+    } else {
+      creep.moveTo(container)
     }
 
     return this.waitNextTick()

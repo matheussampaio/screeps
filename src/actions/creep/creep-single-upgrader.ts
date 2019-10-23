@@ -11,11 +11,12 @@ export class CreepSingleUpgrader extends Action {
       return this.halt()
     }
 
-    if (creep.store.getUsedCapacity() === 0) {
+    if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
       return this.unshiftAndContinue(CreepSingleUpgraderGetEnergy.name)
     }
 
     const controller: StructureController | undefined = creep.room.controller
+
     // we should always find the controler...
     if (controller == null) {
       this.logger.error(`Can't find controller`, context.creepName)
@@ -44,8 +45,13 @@ export class CreepSingleUpgraderGetEnergy extends Action {
       return this.shiftAndStop()
     }
 
-    if (creep.store.getFreeCapacity() === 0) {
+    if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
       return this.shiftAndContinue()
+    }
+
+    if (creep.room.controller == null) {
+      this.logger.info('cant find controller, stopping', context.creepName)
+      return this.waitNextTick()
     }
 
     const resources = creep.room.controller.pos.findInRange(FIND_DROPPED_RESOURCES, 4, {
@@ -64,11 +70,13 @@ export class CreepSingleUpgraderGetEnergy extends Action {
       return this.waitNextTick()
     }
 
-    if (creep.room.storage && creep.room.storage.isActive && creep.room.storage.store.getUsedCapacity(RESOURCE_ENERGY)) {
-      if (creep.pos.isNearTo(creep.room.storage)) {
-        creep.withdraw(creep.room.storage, RESOURCE_ENERGY)
+    const storage = creep.room.storage
+
+    if (storage && storage.isActive && storage.store.getUsedCapacity(RESOURCE_ENERGY)) {
+      if (creep.pos.isNearTo(storage)) {
+        creep.withdraw(storage, RESOURCE_ENERGY)
       } else {
-        creep.moveTo(creep.room.storage)
+        creep.moveTo(storage)
       }
 
       return this.waitNextTick()
