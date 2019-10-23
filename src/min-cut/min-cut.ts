@@ -260,15 +260,17 @@ export class MinCut {
     return positions
   }
 
-  private static getRoom2D(roomName: string, bounds: RectCoordinates = { x1: 0, y1: 0, x2: 49, y2: 49 }): Room2D {
+  public static getRoom2D(roomName: string, bounds: RectCoordinates = { x1: 0, y1: 0, x2: 49, y2: 49 }): Room2D {
     // Array for room tiles
     const room2d: Room2D = Array(ROOM_SIZE)
       .fill(RoomCellType.NORMAL)
       .map(_ => Array(ROOM_SIZE).fill(RoomCellType.UNWALKABLE))
 
+    const terrain = Game.map.getRoomTerrain(roomName)
+
     for (let i = bounds.x1; i <= bounds.x2; i++) {
       for (let j = bounds.y1; j <= bounds.x2; j++) {
-        if (Game.map.getTerrainAt(i, j, roomName) !== 'wall') {
+        if (!(terrain.get(i, j) & TERRAIN_MASK_WALL)) {
           room2d[i][j] = RoomCellType.NORMAL // mark unwalkable
 
           if (i === bounds.x1 || j === bounds.y1 || i === bounds.x2 || j === bounds.y2) {
