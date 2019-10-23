@@ -1,13 +1,8 @@
-import * as _ from 'lodash'
-
-import { ActionTreeRunner, ActionsRegistry, IActionConstructor } from './core'
-import * as Actions from './actions'
-
-_.values(Actions)
-  .forEach((Action: IActionConstructor) => ActionsRegistry.register(Action))
+import { ActionTreeRunner } from './core'
+import { Country, GarbageCollector } from './actions'
 
 export function loop() {
   console.log(`time=${Game.time}`)
 
-  ActionTreeRunner.tick([[Actions.Country.name], [Actions.GarbageCollector.name]])
+  ActionTreeRunner.tick([[Country.name], [GarbageCollector.name]])
 }

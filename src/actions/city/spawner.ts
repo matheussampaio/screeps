@@ -1,9 +1,10 @@
 import * as _ from 'lodash'
 
-import { Action, ACTIONS_RESULT } from '../../core'
+import { ActionsRegistry, Action, ACTIONS_RESULT } from '../../core'
 import { ISpawnerItem, ICityContext } from './interfaces'
 import { getUniqueCreepName } from '../../utils'
 
+@ActionsRegistry.register
 export class Spawner extends Action {
   run(context: ICityContext): [ACTIONS_RESULT, ...string[]] {
     _.defaults(context, {

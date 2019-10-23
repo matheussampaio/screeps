@@ -1,9 +1,10 @@
 import * as _ from 'lodash'
 
-import { Action, Process, ACTIONS_RESULT } from '../../core'
+import { ActionsRegistry, Action, Process, ACTIONS_RESULT } from '../../core'
 import { ICreepContext } from './interfaces'
 import { ISleepContext } from '../sleep'
 
+@ActionsRegistry.register
 export class CreepCheckStop extends Action {
   run(context: ICreepContext & ISleepContext, process: Process): [ACTIONS_RESULT, ...string[]] {
     const creep: Creep | undefined = Game.creeps[context.creepName]

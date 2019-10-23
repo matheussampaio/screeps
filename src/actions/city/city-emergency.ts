@@ -1,10 +1,11 @@
 import * as _ from 'lodash'
 
-import { Action, ACTIONS_RESULT, PRIORITY } from '../../core'
+import { ActionsRegistry, Action, ACTIONS_RESULT, PRIORITY } from '../../core'
 import { CreateBody } from '../../utils/create-body'
 import { CreepCheckStop, CreepGeneric } from '../creep'
 import { ICityContext } from './interfaces'
 
+@ActionsRegistry.register
 export class CityEmergency extends Action {
   run(context: ICityContext): [ACTIONS_RESULT, ...string[]] {
     const totalCreepsAlive: number = _.filter(Game.creeps, creep => creep.memory.roomName === context.roomName).length

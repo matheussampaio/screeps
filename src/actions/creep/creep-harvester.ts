@@ -1,8 +1,8 @@
 import * as _ from 'lodash'
 
-import { Action, ACTIONS_RESULT } from '../../core'
-import { ICreepContext } from './interfaces'
+import { ActionsRegistry, Action, ACTIONS_RESULT } from '../../core'
 
+@ActionsRegistry.register
 export class CreepHarvester extends Action {
   run(context: ICreepContext): [ACTIONS_RESULT, ...string[]] {
     const creep = Game.creeps[context.creepName]

@@ -1,6 +1,6 @@
 import * as _ from 'lodash'
 
-import { Action, ACTIONS_RESULT, PRIORITY } from '../../core'
+import { ActionsRegistry, Action, ACTIONS_RESULT, PRIORITY } from '../../core'
 import { CreepCheckStop, CreepHarvester, CreepSingleHauler  } from '../creep'
 import { CreateBody } from '../../utils/create-body'
 import { ICityContext } from './interfaces'
@@ -12,6 +12,7 @@ import { CreepSingleBuilder } from '../creep/creep-single-builder'
 // It's more than enough to farm a 3k source.
 const OPTIMUM_WORK_PARTS_PER_SOURCE = 6
 
+@ActionsRegistry.register
 export class City extends Action {
   run(context: ICityContext): [ACTIONS_RESULT, ...string[]] {
     _.defaultsDeep(context, {

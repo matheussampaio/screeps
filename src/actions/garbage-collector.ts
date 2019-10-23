@@ -1,6 +1,6 @@
-import { Action, ACTIONS_RESULT } from '../core'
-import { Sleep, ISleepContext } from './sleep'
+import { ActionsRegistry, Action, ACTIONS_RESULT } from '../core'
 
+@ActionsRegistry.register
 export class GarbageCollector extends Action {
   run(context: ISleepContext): [ACTIONS_RESULT, ...string[]] {
     for (const creepName in Memory.creeps) {

@@ -1,6 +1,7 @@
 import { ACTIONS_RESULT, PRIORITY } from './constants'
 import { ActionTreeRunner, ForkOptions, Process } from './action-runner'
 import { Logger } from './utils/logger'
+import { ActionsRegistry } from './actions-registry'
 
 export interface IActionConstructor {
   new(): Action

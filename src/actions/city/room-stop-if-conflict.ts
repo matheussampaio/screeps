@@ -1,5 +1,6 @@
-import { Action, Process, ACTIONS_RESULT } from '../../core'
+import { ActionsRegistry, Action, Process, ACTIONS_RESULT } from '../../core'
 
+@ActionsRegistry.register
 export class RoomStopIfConflict extends Action {
   run(context: any, process: Process): [ACTIONS_RESULT, ...string[]] {
     const room = Game.rooms[context.roomName]

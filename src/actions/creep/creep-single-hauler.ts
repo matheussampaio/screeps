@@ -1,8 +1,9 @@
 import * as _ from 'lodash'
 
-import { Action, ACTIONS_RESULT } from '../../core'
+import { ActionsRegistry, Action, ACTIONS_RESULT } from '../../core'
 import { ICreepContext } from './interfaces'
 
+@ActionsRegistry.register
 export class CreepSingleHauler extends Action {
   run(context: ICreepContext): [ACTIONS_RESULT, ...string[]] {
     const creep = Game.creeps[context.creepName]
@@ -126,6 +127,7 @@ export class CreepSingleHauler extends Action {
   }
 }
 
+@ActionsRegistry.register
 export class CreepSingleHaulerTransfer extends Action {
   run(context: ICreepContext): [ACTIONS_RESULT, ...string[]] {
     const creep: Creep | undefined = Game.creeps[context.creepName]
@@ -149,6 +151,7 @@ export class CreepSingleHaulerTransfer extends Action {
   }
 }
 
+@ActionsRegistry.register
 export class CreepSingleHaulerGetEnergy extends Action {
   run(context: ICreepContext): [ACTIONS_RESULT, ...string[]] {
     const creep: Creep = Game.creeps[context.creepName]

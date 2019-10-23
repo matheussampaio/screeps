@@ -1,9 +1,10 @@
 import * as _ from 'lodash'
 
-import { Action, ACTIONS_RESULT } from '../../core'
+import { ActionsRegistry, Action, ACTIONS_RESULT } from '../../core'
 import { City, RoomStopIfConflict, Spawner, ICityContext, CityDefense, CityEmergency } from '../city'
 import { ICountryContext } from './interfaces'
 
+@ActionsRegistry.register
 export class Country extends Action {
   run(context: ICountryContext): [ACTIONS_RESULT, ...string[]] {
     _.defaults(context, {
