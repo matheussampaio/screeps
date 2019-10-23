@@ -267,7 +267,7 @@ export class City extends Action {
       memory,
       creepName,
       body: new CreateBody({ minimumEnergy: 300, energyAvailable: room.energyCapacityAvailable, ticksToMove: 3 })
-      .add([WORK, WORK, WORK, WORK, WORK, WORK])
+      .add([CARRY, WORK, WORK, WORK, WORK, WORK, WORK])
       .addMoveIfPossible()
       .value(),
       actions: [[CreepCheckStop.name], [CreepHarvester.name]],
