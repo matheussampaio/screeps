@@ -63,6 +63,35 @@ export class Action {
   }
 
   protected retry(): [ACTIONS_RESULT.RETRY] {
-   return [ACTIONS_RESULT.RETRY] 
+   return [ACTIONS_RESULT.RETRY]
+  }
+
+  protected sleep(context: any, ticks: number): [ACTIONS_RESULT.UNSHIFT_AND_CONTINUE, ...string[]] {
+    context.sleepFor = ticks
+
+    return this.unshiftAndContinue(Sleep.name)
+  }
+}
+
+@ActionsRegistry.register
+export class Sleep extends Action {
+  run(context: any): [ACTIONS_RESULT, ...string[]] {
+    if (context.wakeAt == null && context.sleepFor == null) {
+
+      return this.shiftAndStop()
+    }
+
+    if (context.wakeAt == null) {
+      context.wakeAt = Game.time + context.sleepFor
+      delete context.sleepFor
+    }
+
+    if (Game.time >= context.wakeAt) {
+      delete context.wakeAt
+
+      return this.shiftAndStop()
+    }
+
+    return this.waitNextTick()
   }
 }
