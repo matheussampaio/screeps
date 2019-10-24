@@ -84,20 +84,6 @@ export class CreepSingleUpgraderGetEnergy extends Action {
       return this.waitNextTick()
     }
 
-    const resource: Resource | null = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {
-      filter: r => r.resourceType === RESOURCE_ENERGY
-    })
-
-    if (resource == null) {
-      return this.waitNextTick()
-    }
-
-    if (creep.pos.isNearTo(resource)) {
-      creep.pickup(resource)
-    } else {
-      creep.moveTo(resource)
-    }
-
     return this.waitNextTick()
   }
 }

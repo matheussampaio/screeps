@@ -39,6 +39,7 @@ export interface ICityContext extends ISleepContext {
   queue: ISpawnerItem[]
   emergencyCreep: string
   plan: {
+    time: number
     rcl: number
     energyCapacity: number
     sources: IPlanSource[]

@@ -21,7 +21,8 @@ export class City extends Action {
       plan: {
         upgraders: [],
         builders: [],
-        storagers: []
+        storagers: [],
+        time: 0
       }
     })
 
@@ -33,8 +34,9 @@ export class City extends Action {
 
     const controllerUpgraded = room.controller && room.controller.level !== context.plan.rcl
     const extensionConstructed = room.energyCapacityAvailable !== context.plan.energyCapacity
+    const enoughTimePass = Game.time - context.plan.time >= 1000
 
-    if (controllerUpgraded || extensionConstructed) {
+    if (controllerUpgraded || extensionConstructed || enoughTimePass) {
       this.plan(context)
     }
 
@@ -317,6 +319,7 @@ export class City extends Action {
 
     context.plan.rcl = room.controller.level
     context.plan.energyCapacity = room.energyCapacityAvailable
+    context.plan.time = Game.time
 
     if (context.plan.sources == null) {
       const spawn: StructureSpawn = _.sample(room.find(FIND_MY_SPAWNS)) as StructureSpawn
