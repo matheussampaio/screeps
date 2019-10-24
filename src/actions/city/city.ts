@@ -42,7 +42,7 @@ export class City extends Action {
 
     context.plan.storagers = context.plan.storagers.filter(creepName => Game.creeps[creepName] != null)
 
-    if (!context.plan.storagers.length) {
+    if (room.storage && room.storage.isActive() && !context.plan.storagers.length) {
       const creepName = this.createStoragers(context)
 
       context.plan.storagers.push(creepName)

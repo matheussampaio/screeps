@@ -34,13 +34,13 @@ export class CreepStorager extends Action {
     if (context.target) {
       const target: StructureSpawn | StructureExtension | null = Game.getObjectById(context.target)
 
-      if (target && target.isActive && target.store.getFreeCapacity(RESOURCE_ENERGY)) {
+      if (target && target.isActive() && target.store.getFreeCapacity(RESOURCE_ENERGY)) {
         return target
       }
     }
 
     const towers: StructureTower[] = creep.room.find(FIND_MY_STRUCTURES, {
-      filter: s => s.structureType === STRUCTURE_TOWER && s.isActive && s.store.getFreeCapacity(RESOURCE_ENERGY)
+      filter: s => s.structureType === STRUCTURE_TOWER && s.isActive() && s.store.getFreeCapacity(RESOURCE_ENERGY)
     }) as StructureTower[]
 
     const emptyTower = towers.find(tower => tower.store.getUsedCapacity(RESOURCE_ENERGY) as number < 250)
@@ -53,7 +53,7 @@ export class CreepStorager extends Action {
 
     const extension: StructureExtension | null = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
       filter: (s: StructureExtension) => {
-        return s.structureType === STRUCTURE_EXTENSION && s.isActive && s.store.getFreeCapacity(RESOURCE_ENERGY)
+        return s.structureType === STRUCTURE_EXTENSION && s.isActive() && s.store.getFreeCapacity(RESOURCE_ENERGY)
       }
     }) as StructureExtension | null
 
@@ -63,7 +63,7 @@ export class CreepStorager extends Action {
     }
 
     const spawn: StructureSpawn | null = creep.pos.findClosestByPath(FIND_MY_SPAWNS, {
-      filter: (s: StructureSpawn) => s.isActive && s.store.getFreeCapacity(RESOURCE_ENERGY)
+      filter: (s: StructureSpawn) => s.isActive() && s.store.getFreeCapacity(RESOURCE_ENERGY)
     })
 
     if (spawn) {
@@ -135,7 +135,7 @@ export class CreepStoragerGetEnergy extends Action {
       return this.shiftAndContinue()
     }
 
-    if (storage == null || !storage.isActive || !storage.store.getUsedCapacity(RESOURCE_ENERGY)) {
+    if (storage == null || !storage.isActive() || !storage.store.getUsedCapacity(RESOURCE_ENERGY)) {
       return this.waitNextTick()
     }
 

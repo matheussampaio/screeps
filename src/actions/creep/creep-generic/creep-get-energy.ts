@@ -64,7 +64,7 @@ export class CreepGetEnergy extends Action {
 
     const storage = creep.room.storage
 
-    if (storage && storage.isActive && storage.store.getUsedCapacity(RESOURCE_ENERGY)) {
+    if (storage && storage.isActive() && storage.store.getUsedCapacity(RESOURCE_ENERGY)) {
       if (creep.pos.isNearTo(storage)) {
         creep.withdraw(storage, RESOURCE_ENERGY)
       } else {

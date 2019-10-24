@@ -52,7 +52,7 @@ export class CreepSingleHauler extends Action {
   }
 
   findTransferTarget(creep: Creep, context: ICreepContext): StructureExtension | StructureTower | StructureSpawn | StructureStorage | StructureContainer | null {
-    if (creep.room.storage && creep.room.storage.isActive && creep.room.storage.store.getFreeCapacity(RESOURCE_ENERGY)) {
+    if (creep.room.storage && creep.room.storage.isActive() && creep.room.storage.store.getFreeCapacity(RESOURCE_ENERGY)) {
       context.target = creep.room.storage.id
       return creep.room.storage
     }
@@ -60,13 +60,13 @@ export class CreepSingleHauler extends Action {
     if (context.target) {
       const target: StructureSpawn | StructureExtension | StructureStorage | null = Game.getObjectById(context.target)
 
-      if (target && target.isActive && target.store.getFreeCapacity(RESOURCE_ENERGY)) {
+      if (target && target.isActive() && target.store.getFreeCapacity(RESOURCE_ENERGY)) {
         return target
       }
     }
 
     const towers: StructureTower[] = creep.room.find(FIND_MY_STRUCTURES, {
-      filter: s => s.structureType === STRUCTURE_TOWER && s.isActive && s.store.getFreeCapacity(RESOURCE_ENERGY)
+      filter: s => s.structureType === STRUCTURE_TOWER && s.isActive() && s.store.getFreeCapacity(RESOURCE_ENERGY)
     }) as StructureTower[]
 
     const emptyTower = towers.find(tower => tower.store.getUsedCapacity(RESOURCE_ENERGY) as number < 250)
@@ -79,7 +79,7 @@ export class CreepSingleHauler extends Action {
 
     const extension: StructureExtension | null = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
       filter: (s: StructureExtension) => {
-        return s.structureType === STRUCTURE_EXTENSION && s.isActive && s.store.getFreeCapacity(RESOURCE_ENERGY)
+        return s.structureType === STRUCTURE_EXTENSION && s.isActive() && s.store.getFreeCapacity(RESOURCE_ENERGY)
       }
     }) as StructureExtension | null
 
@@ -89,7 +89,7 @@ export class CreepSingleHauler extends Action {
     }
 
     const spawn: StructureSpawn | null = creep.pos.findClosestByPath(FIND_MY_SPAWNS, {
-      filter: (s: StructureSpawn) => s.isActive && s.store.getFreeCapacity(RESOURCE_ENERGY)
+      filter: (s: StructureSpawn) => s.isActive() && s.store.getFreeCapacity(RESOURCE_ENERGY)
     })
 
     if (spawn) {
