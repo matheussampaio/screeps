@@ -29,7 +29,10 @@ export class City extends Action {
       return this.waitNextTick()
     }
 
-    if (context.plan.energyCapacity !== room.energyCapacityAvailable) {
+    const controllerUpgraded = room.controller && room.controller.level !== context.plan.rcl
+    const extensionConstructed = room.energyCapacityAvailable !== context.plan.energyCapacity
+
+    if (controllerUpgraded || extensionConstructed) {
       this.plan(context)
     }
 
@@ -278,6 +281,11 @@ export class City extends Action {
   private plan(context: ICityContext): void {
     const room: Room = Game.rooms[context.roomName]
 
+    if (room.controller == null) {
+      return
+    }
+
+    context.plan.rcl = room.controller.level
     context.plan.energyCapacity = room.energyCapacityAvailable
 
     if (context.plan.sources == null) {
@@ -311,6 +319,24 @@ export class City extends Action {
       source.desiredWorkParts = desiredWorkParts
     }
 
+    // build storage
+    if (!room.storage && room.controller.level >= 4) {
+      const constructionSite = room.find(FIND_MY_CONSTRUCTION_SITES, {
+        filter: c => c.structureType === STRUCTURE_STORAGE
+      })
+
+      if (!constructionSite.length) {
+        const emptySpaces = utils.getEmptySpacesAroundPosition(room.controller.pos)
+
+        if (emptySpaces.length) {
+          const emptySpace = emptySpaces[0]
+
+          room.createConstructionSite(emptySpace.x, emptySpace.y, STRUCTURE_STORAGE)
+        }
+      }
+    }
+
+    // best upgraders body
     const goal = []
 
     if (room.storage) {
@@ -321,10 +347,6 @@ export class City extends Action {
       const sources = room.find(FIND_SOURCES).map(source => source.pos)
 
       goal.push(...sources)
-    }
-
-    if (room.controller == null) {
-      return
     }
 
     const distance = PathFinder.search(room.controller.pos, goal).path.length

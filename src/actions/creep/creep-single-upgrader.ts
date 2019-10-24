@@ -60,7 +60,7 @@ export class CreepSingleUpgraderGetEnergy extends Action {
       filter: r => r.resourceType === RESOURCE_ENERGY
     })
 
-    if (resources) {
+    if (resources.length) {
       const resource = resources[0]
 
       if (creep.pos.isNearTo(resource)) {

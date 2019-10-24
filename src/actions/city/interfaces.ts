@@ -38,6 +38,7 @@ export interface ICityContext extends ISleepContext {
   roomName: string
   queue: ISpawnerItem[]
   plan: {
+    rcl: number
     energyCapacity: number
     sources: IPlanSource[]
     builders: string[]
