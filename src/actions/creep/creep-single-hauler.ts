@@ -217,10 +217,11 @@ export class CreepSingleHaulerGetEnergy extends Action {
       return this.waitNextTick()
     }
 
-    const usedCapacity = container.store.getUsedCapacity(RESOURCE_ENERGY) as number
-    const freeCapacity = creep.store.getFreeCapacity(RESOURCE_ENERGY) as number
+    const containerUsedCapacity = container.store.getUsedCapacity(RESOURCE_ENERGY) as number
+    const containerFreeCapacity = container.store.getFreeCapacity(RESOURCE_ENERGY) as number
+    const creepFreeCapacity = creep.store.getFreeCapacity(RESOURCE_ENERGY) as number
 
-    if (usedCapacity < freeCapacity) {
+    if (containerFreeCapacity && containerUsedCapacity < creepFreeCapacity) {
       return this.waitNextTick()
     }
 
