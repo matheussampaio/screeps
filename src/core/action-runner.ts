@@ -41,6 +41,10 @@ export class ActionTreeRunner {
       counter: 1
     })
 
+    if (ActionTreeRunner.shouldReset()) {
+      return ActionTreeRunner.reset()
+    }
+
     ActionTreeRunner.load()
 
     ActionTreeRunner.boot(bootActions)
@@ -50,6 +54,24 @@ export class ActionTreeRunner {
     ActionTreeRunner.save()
 
     ActionTreeRunner.analytics()
+  }
+
+  private static shouldReset(): boolean {
+    return Game.flags['reset'] != null
+  }
+
+  private static reset(): void {
+    for (const creepName in Game.creeps) {
+      Game.creeps[creepName].suicide()
+    }
+
+    for (const flagName in Game.flags) {
+      Game.flags[flagName].remove()
+    }
+
+    for (const key in Memory) {
+      delete (Memory as any)[key]
+    }
   }
 
   private static run() {
