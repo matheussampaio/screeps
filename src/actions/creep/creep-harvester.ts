@@ -47,7 +47,7 @@ export class CreepHarvester extends Action {
     }
 
     // repair container eveery 95 ticks
-    if (Game.time % 53 === 0 && container instanceof StructureContainer && container.hits < container.hitsMax - 5000 && this.canBuildContainer(context, creep)) {
+    if (Game.time % 43 === 0 && container instanceof StructureContainer && container.hits < container.hitsMax - 5000 && this.canBuildContainer(context, creep)) {
       creep.cancelOrder('harvest')
       creep.repair(container)
     }
