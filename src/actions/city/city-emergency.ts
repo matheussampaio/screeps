@@ -4,13 +4,38 @@ import { ActionsRegistry, Action, ACTIONS_RESULT, PRIORITY } from '../../core'
 import { CreateBody } from '../../utils/create-body'
 import { CreepCheckStop, CreepGeneric } from '../creep'
 import { ICityContext } from './interfaces'
+import * as utils from '../../utils'
 
 @ActionsRegistry.register
 export class CityEmergency extends Action {
   run(context: ICityContext): [ACTIONS_RESULT, ...string[]] {
-    const totalCreepsAlive: number = _.filter(Game.creeps, creep => creep.memory.roomName === context.roomName).length
 
-    if (totalCreepsAlive === 0) {
+    const creep = Game.creeps[context.emergencyCreep]
+
+    // already in emergency
+    if (creep) {
+      return this.waitNextTick()
+    }
+
+    let hasHarvesters = false
+    let hasHaulers = false
+
+    for (const source of context.plan.sources) {
+      const foundOneHarvesterAlive = source.harvesters.some(creepName => Game.creeps[creepName])
+      const foundOneHaulerAlive = source.haulers.some(creepName => Game.creeps[creepName])
+
+      if (foundOneHarvesterAlive) {
+        hasHarvesters = true
+      }
+
+      if (foundOneHaulerAlive) {
+        hasHaulers = true
+      }
+    }
+
+    const enableEmergencyCreep = !hasHaulers || !hasHarvesters
+
+    if (enableEmergencyCreep) {
       context.queue = []
 
       this.createEmergencyCreep(context)
@@ -24,13 +49,17 @@ export class CityEmergency extends Action {
     const body: BodyPartConstant[] = new CreateBody({ minimumEnergy: 300, energyAvailable: room.energyAvailable })
         .add([WORK, CARRY], { repeat: true, withMove: true })
         .value()
+    const creepName = utils.getUniqueCreepName()
 
     context.queue.push({
       body,
+      creepName,
       actions: [[CreepCheckStop.name], [CreepGeneric.name]],
       priority: PRIORITY.VERY_HIGH,
       memory: {}
     })
+
+    context.emergencyCreep = creepName
   }
 }
 

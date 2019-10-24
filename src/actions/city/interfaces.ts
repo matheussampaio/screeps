@@ -37,6 +37,7 @@ export interface IPlanSource {
 export interface ICityContext extends ISleepContext {
   roomName: string
   queue: ISpawnerItem[]
+  emergencyCreep: string
   plan: {
     rcl: number
     energyCapacity: number
