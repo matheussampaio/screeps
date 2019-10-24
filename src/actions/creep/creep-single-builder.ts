@@ -68,31 +68,70 @@ export class CreepSingleBuilderGetEnergy extends Action {
       return this.shiftAndContinue()
     }
 
-    if (creep.room.storage && creep.room.storage.isActive() && creep.room.storage.store.getUsedCapacity(RESOURCE_ENERGY)) {
-      if (creep.pos.isNearTo(creep.room.storage)) {
-        creep.withdraw(creep.room.storage, RESOURCE_ENERGY)
-      } else {
-        creep.moveTo(creep.room.storage)
-      }
+    const target = this.findTarget(context)
+
+    if (target == null) {
+       delete context.target
 
       return this.waitNextTick()
+    }
+
+    if (!creep.pos.isNearTo(target)) {
+      creep.moveTo(target)
+
+      return this.waitNextTick()
+    }
+
+    if (target instanceof Resource) {
+      creep.pickup(target)
+    } else {
+      creep.withdraw(target, RESOURCE_ENERGY)
+    }
+
+    delete context.target
+
+    return this.waitNextTick()
+  }
+
+  findTarget(context: any): Resource | StructureContainer | StructureStorage | null {
+    if (context.target) {
+      const target: any = Game.getObjectById(context.target)
+
+      if (target) {
+        return target
+      }
+    }
+
+    const creep: Creep = Game.creeps[context.creepName]
+    const storage = creep.room.storage
+
+    if (storage && storage.isActive() && storage.store.getUsedCapacity(RESOURCE_ENERGY)) {
+      context.target = storage.id
+
+      return storage
     }
 
     const resource: Resource | null = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {
       filter: r => r.resourceType === RESOURCE_ENERGY
     })
 
-    if (resource == null) {
-      return this.waitNextTick()
+    if (resource) {
+      context.target = resource.id
+
+      return resource
     }
 
-    if (creep.pos.isNearTo(resource)) {
-      creep.pickup(resource)
-    } else {
-      creep.moveTo(resource)
+    const container: StructureContainer = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+      filter: s => s.structureType === STRUCTURE_CONTAINER && s.store.getUsedCapacity(RESOURCE_ENERGY)
+    }) as StructureContainer
+
+    if (container) {
+      context.target = container.id
+
+      return container
     }
 
-    return this.waitNextTick()
+    return null
   }
 }
 
