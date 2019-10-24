@@ -153,7 +153,7 @@ export class CreepSingleHaulerTransfer extends Action {
 
 @ActionsRegistry.register
 export class CreepSingleHaulerGetEnergy extends Action {
-  run(context: ICreepContext): [ACTIONS_RESULT, ...string[]] {
+  run(context: any): [ACTIONS_RESULT, ...string[]] {
     const creep: Creep = Game.creeps[context.creepName]
 
     if (creep == null) {
@@ -170,13 +170,7 @@ export class CreepSingleHaulerGetEnergy extends Action {
       return result
     }
 
-    result = this.withdrawContainers(context)
-
-    if (result) {
-      return result
-    }
-
-    return this.waitNextTick()
+    return this.withdrawContainers(context)
   }
 
   pickUpEnergy(context: ICreepContext): [ACTIONS_RESULT, ...string[]] | null {
@@ -187,7 +181,7 @@ export class CreepSingleHaulerGetEnergy extends Action {
     }
 
     const resources: Resource[] = source.pos.findInRange(FIND_DROPPED_RESOURCES, 3, {
-      filter: r => r.resourceType === RESOURCE_ENERGY
+      filter: r => r.resourceType === RESOURCE_ENERGY && r.amount > 50
     })
 
     resources.sort((r1, r2) => r2.amount - r1.amount)
@@ -209,31 +203,51 @@ export class CreepSingleHaulerGetEnergy extends Action {
     return this.waitNextTick()
   }
 
-  withdrawContainers(context: ICreepContext): [ACTIONS_RESULT, ...string[]] | null {
-    const source: Source | null = Game.getObjectById(context.source)
-
-    if (source == null) {
-      return this.shiftAndStop()
-    }
-
-    const containers: StructureContainer[] = source.pos.findInRange(FIND_STRUCTURES, 3, {
-      filter: s => s.structureType === STRUCTURE_CONTAINER && s.store.getUsedCapacity(RESOURCE_ENERGY)
-    }) as StructureContainer[]
-
-    if (containers.length === 0) {
-      return null
-    }
-
-    const container = containers[0]
+  withdrawContainers(context: any): [ACTIONS_RESULT, ...string[]] {
     const creep: Creep = Game.creeps[context.creepName]
 
-    if (creep.pos.isNearTo(container)) {
-      creep.withdraw(container, RESOURCE_ENERGY)
-    } else {
-      creep.moveTo(container)
+    const container = this.getContainer(context)
+
+    if (container == null) {
+      return this.waitNextTick()
     }
 
+    if (!creep.pos.isNearTo(container)) {
+      creep.moveTo(container)
+      return this.waitNextTick()
+    }
+
+    const usedCapacity = container.store.getUsedCapacity(RESOURCE_ENERGY) as number
+    const freeCapacity = creep.store.getFreeCapacity(RESOURCE_ENERGY) as number
+
+    if (usedCapacity < freeCapacity) {
+      return this.waitNextTick()
+    }
+
+    creep.withdraw(container, RESOURCE_ENERGY)
+
     return this.waitNextTick()
+  }
+
+  getContainer(context: any): StructureContainer | null {
+    let container: StructureContainer | null = Game.getObjectById(context.container)
+
+    if (container != null) {
+      return container
+    }
+
+    const creep = Game.creeps[context.creepName]
+    const { x, y } = context.containerPos
+
+    const pos = creep.room.getPositionAt(x, y) as RoomPosition
+
+    container = pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_CONTAINER) as StructureContainer
+
+    if (container) {
+      context.container = container.id
+    }
+
+    return container
   }
 }
 

@@ -28,7 +28,10 @@ export interface IPlanSource {
   emptySpaces: number
   desiredWorkParts: number
   desiredCarryParts: number
-  container: string | null
+  containerPos: {
+    x: number
+    y: number
+  }
 }
 
 export interface ICityContext extends ISleepContext {

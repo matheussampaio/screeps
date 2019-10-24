@@ -3,7 +3,7 @@ import * as _ from 'lodash'
 import { ActionsRegistry, Action, ACTIONS_RESULT, PRIORITY } from '../../core'
 import { CreepCheckStop, CreepHarvester, CreepSingleHauler  } from '../creep'
 import { CreateBody } from '../../utils/create-body'
-import { ICityContext } from './interfaces'
+import { ICityContext, IPlanSource } from './interfaces'
 import * as utils from '../../utils'
 import { CreepSingleUpgrader } from '../creep/creep-single-upgrader'
 import { CreepSingleBuilder } from '../creep/creep-single-builder'
@@ -48,7 +48,7 @@ export class City extends Action {
       source.desiredCarryParts = energyProduced / CARRY_CAPACITY
 
       if (currentCarryParts * CARRY_CAPACITY < energyProduced) {
-        const memory = { source: source.id }
+        const memory = { source: source.id, containerPos: source.containerPos }
         const creepName = this.createHaulers(context, memory)
 
         source.haulers.push(creepName)
@@ -57,15 +57,13 @@ export class City extends Action {
       }
 
       if (source.harvesters.length < source.emptySpaces && currentWorkParts < source.desiredWorkParts) {
-        const memory = { source: source.id }
+        const memory = { source: source.id, containerPos: source.containerPos }
         const creepName = this.createHarvester(context, memory)
 
         source.harvesters.push(creepName)
 
         return this.waitNextTick()
       }
-
-      // TODO: queue container construction site
     }
 
     context.plan.upgraders = context.plan.upgraders.filter(creepName => Game.creeps[creepName] != null)
@@ -94,7 +92,7 @@ export class City extends Action {
       return sum + (currentWorkParts * HARVEST_POWER * 1500)
     }, 0)
 
-    this.logger.info(`energyProduced`, energyProduced)
+    // this.logger.info(`energyProduced`, energyProduced)
 
     const creepsConsumingEnergy = context.plan.upgraders.concat(context.plan.builders)
     const energyConsumed = creepsConsumingEnergy.reduce((sum, creepName) => {
@@ -104,12 +102,12 @@ export class City extends Action {
     }, 0)
     const energyConsumedByWalls = 0
 
-    this.logger.info(`energyConsumed`, energyConsumed)
+    // this.logger.info(`energyConsumed`, energyConsumed)
 
     const creepsInRoom: Creep[] = _.filter(Game.creeps, creep => creep.memory.roomName === context.roomName)
     const totalCreepsCost = utils.getCreepsCost(creepsInRoom)
 
-    this.logger.info(`totalCreepsCost`, totalCreepsCost)
+//     this.logger.info(`totalCreepsCost`, totalCreepsCost)
 
 
     const total = energyProduced - energyConsumedByWalls - energyConsumed - totalCreepsCost
@@ -117,8 +115,8 @@ export class City extends Action {
     const workParts = context.plan.upgradersBody.filter(part => part === WORK).length
     const consumeByUpgrader = workParts * HARVEST_POWER * 1500 + (_.sum(context.plan.upgradersBody.map(p => BODYPART_COST[p])))
 
-    console.log('consumeByUpgrader', consumeByUpgrader)
-    console.log('total', total)
+//     console.log('consumeByUpgrader', consumeByUpgrader)
+//     console.log('total', total)
 
     if (total >= consumeByUpgrader) {
       const creepName = this.createUpgrader(context)
@@ -283,18 +281,24 @@ export class City extends Action {
     context.plan.energyCapacity = room.energyCapacityAvailable
 
     if (context.plan.sources == null) {
-      const spawn: StructureSpawn | undefined = _.sample(room.find(FIND_MY_SPAWNS))
+      const spawn: StructureSpawn = _.sample(room.find(FIND_MY_SPAWNS)) as StructureSpawn
 
-      context.plan.sources = room.find(FIND_SOURCES).map((source: Source) => ({
-        id: source.id,
-        harvesters: [],
-        haulers: [],
-        container: null,
-        distance: spawn ? source.pos.findPathTo(spawn).length : Infinity,
-        emptySpaces: utils.getEmptySpacesAroundPosition(source.pos),
-        desiredWorkParts: 0,
-        desiredCarryParts: 0
-      }))
+      context.plan.sources = room.find(FIND_SOURCES).map((source: Source) => {
+        const pathToSpawn = source.pos.findPathTo(spawn, {
+          ignoreCreeps: true
+        })
+
+        return {
+          id: source.id,
+          harvesters: [],
+          haulers: [],
+          containerPos: pathToSpawn[0],
+          distance: pathToSpawn.length,
+          emptySpaces: utils.getEmptySpacesAroundPosition(source.pos).length,
+          desiredWorkParts: 0,
+          desiredCarryParts: 0
+        }
+      })
 
       context.plan.sources.sort((s1: any, s2: any) => s1.distance - s2.distance)
     }

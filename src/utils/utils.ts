@@ -1,15 +1,13 @@
 import * as _ from 'lodash'
 
-export function getEmptySpacesAroundPosition(pos: RoomPosition): number {
+export function getEmptySpacesAroundPosition(pos: RoomPosition): RoomPosition[] {
   const positions = getNeighborsPositions(pos)
 
   const terrain: RoomTerrain = new Room.Terrain(pos.roomName)
 
   const TERRAIN_MASK_PLAIN = 0
 
-  return positions.map(p => terrain.get(p.x, p.y))
-    .filter(t => t === TERRAIN_MASK_SWAMP || t === TERRAIN_MASK_PLAIN)
-    .length
+  return positions.filter(p => terrain.get(p.x, p.y) === TERRAIN_MASK_SWAMP || terrain.get(p.x, p.y) === TERRAIN_MASK_PLAIN)
 }
 
 export function getNeighborsPositions(pos: RoomPosition): RoomPosition[] {
