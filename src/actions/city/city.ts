@@ -3,10 +3,11 @@ import * as _ from 'lodash'
 import { ActionsRegistry, Action, ACTIONS_RESULT, PRIORITY } from '../../core'
 import { CreepCheckStop, CreepHarvester, CreepSingleHauler  } from '../creep'
 import { CreateBody } from '../../utils/create-body'
-import { ICityContext, IPlanSource } from './interfaces'
+import { ICityContext } from './interfaces'
 import * as utils from '../../utils'
 import { CreepSingleUpgrader } from '../creep/creep-single-upgrader'
 import { CreepSingleBuilder } from '../creep/creep-single-builder'
+import { CreepStorager } from '../creep/creep-storager'
 
 // With 6 WORK parts, a creep can farm 3600 in 300 ticks (6 * 2 * 300).
 // It's more than enough to farm a 3k source.
@@ -19,7 +20,8 @@ export class City extends Action {
       queue: [],
       plan: {
         upgraders: [],
-        builders: []
+        builders: [],
+        storagers: []
       }
     })
 
@@ -34,6 +36,16 @@ export class City extends Action {
 
     if (controllerUpgraded || extensionConstructed) {
       this.plan(context)
+    }
+
+    context.plan.storagers = context.plan.storagers.filter(creepName => Game.creeps[creepName] != null)
+
+    if (!context.plan.storagers.length) {
+      const creepName = this.createStoragers(context)
+
+      context.plan.storagers.push(creepName)
+
+      return this.waitNextTick()
     }
 
     for (const source of context.plan.sources) {
@@ -234,6 +246,24 @@ export class City extends Action {
       creepName,
       body: context.plan.upgradersBody,
       actions: [[CreepCheckStop.name], [CreepSingleUpgrader.name]],
+      priority: PRIORITY.NORMAL
+    })
+
+    return creepName
+  }
+
+  private createStoragers(context: ICityContext): string {
+    const room: Room = Game.rooms[context.roomName]
+
+    const creepName = utils.getUniqueCreepName()
+
+    context.queue.push({
+      memory: {},
+      creepName,
+      body: new CreateBody({ minimumEnergy: 300, energyAvailable: room.energyAvailable })
+      .add([CARRY], { repeat: true })
+      .value(),
+      actions: [[CreepCheckStop.name], [CreepStorager.name]],
       priority: PRIORITY.NORMAL
     })
 

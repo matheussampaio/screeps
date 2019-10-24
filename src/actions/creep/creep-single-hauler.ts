@@ -52,6 +52,11 @@ export class CreepSingleHauler extends Action {
   }
 
   findTransferTarget(creep: Creep, context: ICreepContext): StructureExtension | StructureTower | StructureSpawn | StructureStorage | StructureContainer | null {
+    if (creep.room.storage && creep.room.storage.isActive && creep.room.storage.store.getFreeCapacity(RESOURCE_ENERGY)) {
+      context.target = creep.room.storage.id
+      return creep.room.storage
+    }
+
     if (context.target) {
       const target: StructureSpawn | StructureExtension | StructureStorage | null = Game.getObjectById(context.target)
 
@@ -116,11 +121,6 @@ export class CreepSingleHauler extends Action {
 
         return container
       }
-    }
-
-    if (creep.room.storage && creep.room.storage.isActive && creep.room.storage.store.getFreeCapacity(RESOURCE_ENERGY)) {
-      context.target = creep.room.storage.id
-      return creep.room.storage
     }
 
     return null
