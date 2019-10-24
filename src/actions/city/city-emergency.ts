@@ -3,13 +3,12 @@ import * as _ from 'lodash'
 import { ActionsRegistry, Action, ACTIONS_RESULT, PRIORITY } from '../../core'
 import { CreateBody } from '../../utils/create-body'
 import { CreepCheckStop, CreepGeneric } from '../creep'
-import { ICityContext } from './interfaces'
+import { ICityContext, IPlanSource } from './interfaces'
 import * as utils from '../../utils'
 
 @ActionsRegistry.register
 export class CityEmergency extends Action {
   run(context: ICityContext): [ACTIONS_RESULT, ...string[]] {
-
     const creep = Game.creeps[context.emergencyCreep]
 
     // already in emergency
@@ -20,7 +19,9 @@ export class CityEmergency extends Action {
     let hasHarvesters = false
     let hasHaulers = false
 
-    for (const source of context.plan.sources) {
+    const sources: IPlanSource[] = _.get(context, 'plan.sources', [])
+
+    for (const source of sources) {
       const foundOneHarvesterAlive = source.harvesters.some(creepName => Game.creeps[creepName])
       const foundOneHaulerAlive = source.haulers.some(creepName => Game.creeps[creepName])
 
