@@ -60,13 +60,11 @@ export class CreepSingleUpgraderGetEnergy extends Action {
       return this.waitNextTick()
     }
 
-    const resources = creep.room.controller.pos.findInRange(FIND_DROPPED_RESOURCES, 4, {
+    const resource = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {
       filter: r => r.resourceType === RESOURCE_ENERGY
     })
 
-    if (resources.length) {
-      const resource = resources[0]
-
+    if (resource) {
       if (creep.pos.isNearTo(resource)) {
         creep.pickup(resource)
       } else {
