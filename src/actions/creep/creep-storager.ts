@@ -27,7 +27,7 @@ export class CreepStorager extends Action {
       return this.unshiftAndContinue(CreepStoragerGetEnergy.name)
     }
 
-    return this.waitNextTick()
+    return this.sleep(context, 5)
   }
 
   findTransferTarget(creep: Creep, context: any): StructureExtension | StructureTower | StructureSpawn | StructureContainer | null {
