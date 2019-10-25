@@ -25,7 +25,7 @@ export class CreepSingleUpgrader extends Action {
     }
 
     if (context.rangeToController == null) {
-      context.rangeToController = Math.floor(Math.random() * 3) + 1
+      context.rangeToController = Math.floor(Math.random() * 2) + 1
     }
 
     if (creep.pos.inRangeTo(controller, context.rangeToController)) {
