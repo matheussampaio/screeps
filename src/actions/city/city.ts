@@ -65,8 +65,10 @@ export class City extends Action {
       source.desiredCarryParts = energyProduced / CARRY_CAPACITY
 
       if (currentCarryParts * CARRY_CAPACITY < energyProduced) {
+        const missingCarryParts = Math.ceil(energyProduced / CARRY_CAPACITY - currentCarryParts)
+
         const memory = { source: source.id, containerPos: source.containerPos }
-        const creepName = this.createHaulers(context, memory)
+        const creepName = this.createHaulers(context, memory, { [CARRY]: missingCarryParts + 2 })
 
         source.haulers.push(creepName)
 
@@ -74,8 +76,10 @@ export class City extends Action {
       }
 
       if (source.harvesters.length < source.emptySpaces && currentWorkParts < source.desiredWorkParts) {
+        const missingHarvesterParts = source.desiredWorkParts - currentWorkParts
+
         const memory = { source: source.id, containerPos: source.containerPos }
-        const creepName = this.createHarvester(context, memory)
+        const creepName = this.createHarvester(context, memory, { [WORK]: missingHarvesterParts })
 
         source.harvesters.push(creepName)
 
@@ -272,7 +276,7 @@ export class City extends Action {
     return creepName
   }
 
-  private createHaulers(context: ICityContext, memory: any): string {
+  private createHaulers(context: ICityContext, memory: any, maxParts: Partial<Record<BodyPartConstant, any>>): string {
     const room: Room = Game.rooms[context.roomName]
 
     const creepName = utils.getUniqueCreepName('hauler')
@@ -280,7 +284,7 @@ export class City extends Action {
     context.queue.push({
       memory,
       creepName,
-      body: new CreateBody({ minimumEnergy: 300, energyAvailable: room.energyCapacityAvailable })
+      body: new CreateBody({ minimumEnergy: 300, energyAvailable: room.energyCapacityAvailable, maxParts })
       // .add([MOVE, CARRY, MOVE, WORK])
       .add([CARRY], { repeat: true })
       .value(),
@@ -291,7 +295,7 @@ export class City extends Action {
     return creepName
   }
 
-  private createHarvester(context: ICityContext, memory: any): string {
+  private createHarvester(context: ICityContext, memory: any, maxParts: Partial<Record<BodyPartConstant, any>>): string {
     const room: Room = Game.rooms[context.roomName]
 
     const creepName = utils.getUniqueCreepName('harvester')
@@ -299,7 +303,7 @@ export class City extends Action {
     context.queue.push({
       memory,
       creepName,
-      body: new CreateBody({ minimumEnergy: 300, energyAvailable: room.energyCapacityAvailable, ticksToMove: 3 })
+      body: new CreateBody({ minimumEnergy: 300, energyAvailable: room.energyCapacityAvailable, ticksToMove: 3, maxParts })
       .add([CARRY, WORK, WORK, WORK, WORK, WORK, WORK])
       .addMoveIfPossible()
       .value(),

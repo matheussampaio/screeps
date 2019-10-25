@@ -3,16 +3,30 @@ import * as _ from 'lodash'
 export class CreateBody {
   private energyAvailable: number
   private currentCreepBody: Partial<Record<BodyPartConstant, any>>
+  private maxParts: Partial<Record<BodyPartConstant, any>>
   private ticksToMove: number
   private hasRoads: boolean
   private fatigueGeneratedAfterMoving: number
   private fatigueDecreasedPerTick: number
 
-  constructor({ minimumEnergy = 150, energyAvailable = 0, ticksToMove = 1, hasRoads = false }: { minimumEnergy: number, energyAvailable?: number, ticksToMove?: number, hasRoads?: boolean }) {
+  constructor({
+    minimumEnergy = 150,
+    energyAvailable = 0,
+    ticksToMove = 1,
+    hasRoads = false,
+    maxParts = {}
+  }: {
+    minimumEnergy: number,
+    energyAvailable?: number,
+    ticksToMove?: number,
+    hasRoads?: boolean,
+    maxParts?: Partial<Record<BodyPartConstant, any>>
+  }) {
     this.energyAvailable = Math.max(minimumEnergy, energyAvailable)
     this.currentCreepBody = {}
     this.ticksToMove = ticksToMove
     this.hasRoads = hasRoads
+    this.maxParts = maxParts
 
     this.fatigueGeneratedAfterMoving = 0
     this.fatigueDecreasedPerTick = 0
@@ -88,6 +102,14 @@ export class CreateBody {
   }
 
   private canAddPart(parts: BodyPartConstant[]): boolean {
+    const reachedPartLimit = parts.some(part => 
+      this.maxParts[part] && this.currentCreepBody[part] >= this.maxParts[part]
+    )
+
+    if (reachedPartLimit) {
+      return false
+    }
+
     const partsSumCost: number = _.sum(parts.map(part => BODYPART_COST[part]))
 
     if (this.energyAvailable < partsSumCost) {
