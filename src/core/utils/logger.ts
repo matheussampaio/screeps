@@ -45,7 +45,7 @@ export class Logger {
     const loglevel = _.get(Memory, 'configs.logLevel', LOG_LEVEL.info)
 
     if (loglevel >= level) {
-      console.log(`date=${Date.now()},level=${level},msg="${msg}"`, ...data)
+      console.log(`date=${Game.time},level=${level},msg="${msg}"`, ...data)
     }
   }
 }
