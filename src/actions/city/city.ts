@@ -321,19 +321,13 @@ export class City extends Action {
     context.plan.time = Game.time
 
     if (context.plan.sources == null) {
-      const spawn: StructureSpawn = _.sample(room.find(FIND_MY_SPAWNS)) as StructureSpawn
-
       context.plan.sources = room.find(FIND_SOURCES).map((source: Source) => {
-        const pathToSpawn = source.pos.findPathTo(spawn, {
-          ignoreCreeps: true
-        })
-
         return {
           id: source.id,
           harvesters: [],
           haulers: [],
-          containerPos: pathToSpawn[0],
-          distance: pathToSpawn.length,
+          containerPos: null,
+          distance: 0,
           emptySpaces: utils.getEmptySpacesAroundPosition(source.pos).length,
           desiredWorkParts: 0,
           desiredCarryParts: 0
@@ -345,10 +339,24 @@ export class City extends Action {
 
     const maxWorkPartAllowedByEnergyCapacity = this.getMaxWorkPartAllowedByEnergyCapacity(context)
 
-    for (const source of context.plan.sources) {
-      const desiredWorkParts = Math.min(OPTIMUM_WORK_PARTS_PER_SOURCE, maxWorkPartAllowedByEnergyCapacity * source.emptySpaces)
+    for (const sourcePlan of context.plan.sources) {
+      const target: StructureStorage | StructureController = room.storage || room.controller
+      const source: Source | null = Game.getObjectById(sourcePlan.id)
 
-      source.desiredWorkParts = desiredWorkParts
+      if (source == null) {
+        continue
+      }
+
+      const path = source.pos.findPathTo(target, {
+        ignoreCreeps: true
+      })
+
+      sourcePlan.containerPos = path[0]
+      sourcePlan.distance = path.length
+
+      const desiredWorkParts = Math.min(OPTIMUM_WORK_PARTS_PER_SOURCE, maxWorkPartAllowedByEnergyCapacity * sourcePlan.emptySpaces)
+
+      sourcePlan.desiredWorkParts = desiredWorkParts
     }
 
     // build storage

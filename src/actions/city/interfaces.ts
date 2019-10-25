@@ -31,7 +31,7 @@ export interface IPlanSource {
   containerPos: {
     x: number
     y: number
-  }
+  } | null
 }
 
 export interface ICityContext extends ISleepContext {
