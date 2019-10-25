@@ -7,8 +7,6 @@ export class CreepStorager extends Action {
   run(context: any): [ACTIONS_RESULT, ...string[]] {
     const creep = Game.creeps[context.creepName]
 
-    creep.say('S')
-
     if (creep.room.storage == null) {
       return this.halt()
     }
