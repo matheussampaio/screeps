@@ -36,11 +36,6 @@ export class ActionTreeRunner {
   public static logger: Logger = new Logger()
 
   public static tick(bootActions: string[][]) {
-    _.defaults(Memory, {
-      processes: {},
-      counter: 1
-    })
-
     if (ActionTreeRunner.shouldReset()) {
       return ActionTreeRunner.reset()
     }
@@ -136,6 +131,11 @@ export class ActionTreeRunner {
   }
 
   private static boot(bootActions: string[][]) {
+    _.defaults(Memory, {
+      processes: {},
+      counter: 1
+    })
+
     ActionTreeRunner.logger.debug('ActionTreeRunner::boot::start')
 
     const bootProcessExists = Memory.processes[0] != null
