@@ -34,6 +34,10 @@ export class CreepSingleUpgrader extends Action {
       creep.moveTo(controller)
     }
 
+    if (creep.store.getUsedCapacity(RESOURCE_ENERGY) as number < creep.getActiveBodyparts(WORK)) {
+      return this.unshiftAndContinue(CreepSingleUpgraderGetEnergy.name)
+    }
+
     return this.waitNextTick()
   }
 }
