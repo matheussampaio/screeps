@@ -224,7 +224,7 @@ export class City extends Action {
   private createBuilder(context: ICityContext): string {
     const room: Room = Game.rooms[context.roomName]
 
-    const creepName = utils.getUniqueCreepName()
+    const creepName = utils.getUniqueCreepName('builder')
 
     context.queue.push({
       memory: {},
@@ -241,7 +241,7 @@ export class City extends Action {
   }
 
   private createUpgrader(context: ICityContext): string {
-    const creepName = utils.getUniqueCreepName()
+    const creepName = utils.getUniqueCreepName('upgrader')
 
     context.queue.push({
       memory: {},
@@ -257,7 +257,7 @@ export class City extends Action {
   private createStoragers(context: ICityContext): string {
     const room: Room = Game.rooms[context.roomName]
 
-    const creepName = utils.getUniqueCreepName()
+    const creepName = utils.getUniqueCreepName('storager')
 
     context.queue.push({
       memory: {},
@@ -275,7 +275,7 @@ export class City extends Action {
   private createHaulers(context: ICityContext, memory: any): string {
     const room: Room = Game.rooms[context.roomName]
 
-    const creepName = utils.getUniqueCreepName()
+    const creepName = utils.getUniqueCreepName('hauler')
 
     context.queue.push({
       memory,
@@ -294,7 +294,7 @@ export class City extends Action {
   private createHarvester(context: ICityContext, memory: any): string {
     const room: Room = Game.rooms[context.roomName]
 
-    const creepName = utils.getUniqueCreepName()
+    const creepName = utils.getUniqueCreepName('harvester')
 
     context.queue.push({
       memory,

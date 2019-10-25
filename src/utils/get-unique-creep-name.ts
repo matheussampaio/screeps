@@ -1,11 +1,11 @@
-export function getUniqueCreepName(): string {
+export function getUniqueCreepName(prefix: string = 'creep'): string {
   const counters = Memory.counters || (Memory.counters = {})
 
   if (counters.creepCounter == null) {
     counters.creepCounter = 1
   }
 
-  while (Game.creeps[`creep-${counters.creepCounter}`]) {
+  while (Game.creeps[`${prefix}-${counters.creepCounter}`]) {
     counters.creepCounter++
 
     if (counters.creepCounter >= Number.MAX_SAFE_INTEGER) {
@@ -13,6 +13,6 @@ export function getUniqueCreepName(): string {
     }
   }
 
-  return `creep-${counters.creepCounter}`
+  return `${prefix}-${counters.creepCounter}`
 }
 

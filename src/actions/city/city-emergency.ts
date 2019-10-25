@@ -50,7 +50,7 @@ export class CityEmergency extends Action {
     const body: BodyPartConstant[] = new CreateBody({ minimumEnergy: 300, energyAvailable: room.energyAvailable })
         .add([WORK, CARRY], { repeat: true, withMove: true })
         .value()
-    const creepName = utils.getUniqueCreepName()
+    const creepName = utils.getUniqueCreepName('emergency')
 
     context.queue.push({
       body,
