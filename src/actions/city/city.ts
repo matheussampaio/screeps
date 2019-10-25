@@ -151,19 +151,14 @@ export class City extends Action {
   }
 
   private calculateEficiency({ distance, work, move, carry }: { distance: number, work: number, move: number, carry: number }): number {
-    const FATIGUE = 2
-
     if (!move || !carry || !work) {
       return 0
     }
 
-    const ticksToUpgradeController = (carry * CARRY_CAPACITY) / work
-    const ticksToTravelToStorage = (distance * work * FATIGUE) / (move * FATIGUE)
-    const ticksToTravelToController = (distance * (work + carry) * FATIGUE) / (move * FATIGUE)
+    const ticksToArriveAtController = (distance - 3) * Math.ceil(work / move)
+    const ticksGettingEnergy = 1500 / (Math.floor(carry * 50 / work) + 1)
 
-    const eficiency = (carry * CARRY_CAPACITY) / (ticksToTravelToController + ticksToUpgradeController + ticksToTravelToStorage)
-
-    return eficiency
+    return (1500 - ticksToArriveAtController - ticksGettingEnergy) * work
   }
 
   private addPermutation(perms: { [key: string]: number }, body: BodyPartConstant[], distance: number): boolean {
@@ -374,18 +369,7 @@ export class City extends Action {
     }
 
     // best upgraders body
-    const goal = []
-
-    if (room.storage) {
-      goal.push(room.storage.pos)
-
-    // TODO: has containers close to controller
-    } else {
-      const sources = room.find(FIND_SOURCES).map(source => source.pos)
-
-      goal.push(...sources)
-    }
-
+    const goal = room.find(FIND_MY_SPAWNS).map(source => source.pos)
     const distance = PathFinder.search(room.controller.pos, goal).path.length
     const permutations = this.generatePermutations(room.energyCapacityAvailable, distance / 3)
 
