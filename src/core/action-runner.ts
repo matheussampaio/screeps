@@ -40,6 +40,8 @@ export class ActionTreeRunner {
       return ActionTreeRunner.reset()
     }
 
+    Analytics.reset()
+
     ActionTreeRunner.load()
 
     ActionTreeRunner.boot(bootActions)
@@ -48,7 +50,7 @@ export class ActionTreeRunner {
 
     ActionTreeRunner.save()
 
-    ActionTreeRunner.analytics()
+    Analytics.record()
   }
 
   private static shouldReset(): boolean {
@@ -62,6 +64,14 @@ export class ActionTreeRunner {
 
     for (const flagName in Game.flags) {
       Game.flags[flagName].remove()
+    }
+
+    for (const spawnName in Game.spawns) {
+      const spawning = Game.spawns[spawnName].spawning
+
+      if (spawning != null) {
+        spawning.cancel()
+      }
     }
 
     for (const key in Memory) {
@@ -184,7 +194,13 @@ export class ActionTreeRunner {
         const action: Action = ActionsRegistry.fetch(subtree[0])
 
         try {
+          const usedCPUBefore = Game.cpu.getUsed()
+
           const [result, ...actions] = action.run(process.memory, process)
+
+          const usedCPU = Game.cpu.getUsed() - usedCPUBefore
+
+          Analytics.registerActionUsedCPU(subtree[0], usedCPU)
 
           // delete this action and continue with the next
           if (result === ACTIONS_RESULT.SHIFT_AND_CONTINUE) {
@@ -258,49 +274,5 @@ export class ActionTreeRunner {
     }
 
     return deprecatedActions[action] || action
-  }
-
-  private static analytics() {
-    Memory.analytics = {
-      rooms: {},
-      time: Game.time,
-      totalCreepCount: _.size(Game.creeps)
-    }
-
-    // Collect room stats
-    for (const roomName in Game.rooms) {
-      const room: Room = Game.rooms[roomName]
-      const isMyRoom: boolean = (room.controller ? room.controller.my : false)
-
-      if (isMyRoom) {
-        const roomStats: any = Memory.analytics.rooms[roomName] = {}
-        roomStats.storageEnergy = (room.storage ? room.storage.store.energy : 0)
-        roomStats.terminalEnergy = (room.terminal ? room.terminal.store.energy : 0)
-        roomStats.energyAvailable = room.energyAvailable
-        roomStats.energyCapacityAvailable = room.energyCapacityAvailable
-        roomStats.controllerProgress = room.controller!.progress
-        roomStats.controllerProgressTotal = room.controller!.progressTotal
-        roomStats.controllerLevel = room.controller!.level
-      }
-    }
-
-    // Collect GCL Analytics
-    Memory.analytics.gcl = {
-      progress: Game.gcl.progress,
-      progressTotal: Game.gcl.progressTotal,
-      level: Game.gcl.level
-    }
-
-    // Collect Memory analytics
-    Memory.analytics.memory = {
-      used: RawMemory.get().length
-    }
-
-    // Collect CPU analytics
-    Memory.analytics.cpu = {
-      bucket: Game.cpu.bucket,
-      limit: Game.cpu.limit,
-      used: Game.cpu.getUsed()
-    }
   }
 }
