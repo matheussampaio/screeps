@@ -43,7 +43,7 @@ export class CreepSingleBuilder extends Action {
       delete context.target
     }
 
-    const targets = creep.room.find(FIND_MY_CONSTRUCTION_SITES).sort((c1, c2) => c2.progress - c1.progress);
+    const targets = creep.room.find(FIND_MY_CONSTRUCTION_SITES).sort((c1, c2) => c2.progress === c1.progress ? c1.progressTotal - c2.progressTotal : c2.progress - c1.progress);
 
     if (targets.length === 0) {
       return null
