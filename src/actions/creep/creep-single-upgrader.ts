@@ -67,9 +67,11 @@ export class CreepSingleUpgraderGetEnergy extends Action {
     if (resource) {
       if (creep.pos.isNearTo(resource)) {
         creep.pickup(resource)
-      } else {
-        creep.moveTo(resource)
+
+        return this.shiftAndStop()
       }
+
+      creep.moveTo(resource)
 
       return this.waitNextTick()
     }
@@ -79,9 +81,11 @@ export class CreepSingleUpgraderGetEnergy extends Action {
     if (storage && storage.isActive() && storage.store.getUsedCapacity(RESOURCE_ENERGY) as number > 10000) {
       if (creep.pos.isNearTo(storage)) {
         creep.withdraw(storage, RESOURCE_ENERGY)
-      } else {
-        creep.moveTo(storage)
+
+        return this.shiftAndStop()
       }
+
+      creep.moveTo(storage)
 
       return this.waitNextTick()
     }
