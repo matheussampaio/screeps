@@ -65,10 +65,8 @@ export class City extends Action {
       source.desiredCarryParts = energyProduced / CARRY_CAPACITY
 
       if (currentCarryParts * CARRY_CAPACITY < energyProduced) {
-        const missingCarryParts = Math.ceil(energyProduced / CARRY_CAPACITY - currentCarryParts)
-
         const memory = { source: source.id, containerPos: source.containerPos }
-        const creepName = this.createHaulers(context, memory, { [CARRY]: missingCarryParts + 2 })
+        const creepName = this.createHaulers(context, memory, { [CARRY]: source.desiredCarryParts + 2 })
 
         source.haulers.push(creepName)
 
@@ -76,10 +74,8 @@ export class City extends Action {
       }
 
       if (source.harvesters.length < source.emptySpaces && currentWorkParts < source.desiredWorkParts) {
-        const missingHarvesterParts = source.desiredWorkParts - currentWorkParts
-
         const memory = { source: source.id, containerPos: source.containerPos }
-        const creepName = this.createHarvester(context, memory, { [WORK]: missingHarvesterParts })
+        const creepName = this.createHarvester(context, memory, { [WORK]: source.desiredWorkParts })
 
         source.harvesters.push(creepName)
 
