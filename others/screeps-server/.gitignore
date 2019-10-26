@@ -2,9 +2,9 @@ assets/
 data/
 example-mods/
 node_modules/
+logs/
 
 *.log
-
 
 mods.example.json
 steam_appid.txt

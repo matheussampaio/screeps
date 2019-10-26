@@ -1,9 +1,0 @@
-.git/
-node_modules/
-
-*.log
-
-Dockerfile
-docker-compose.yml
-.env
-.env.sample
