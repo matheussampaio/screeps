@@ -13,6 +13,6 @@ export function getUniqueCreepName(prefix: string = 'creep'): string {
     }
   }
 
-  return `${prefix}-${counters.creepCounter}`
+  return `${prefix}-${counters.creepCounter++}`
 }
 
