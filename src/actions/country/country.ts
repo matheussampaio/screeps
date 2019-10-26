@@ -12,6 +12,12 @@ export class Country extends Action {
     })
 
     for (const roomName in Game.rooms) {
+      const room = Game.rooms[roomName]
+
+      if (!room.controller || !room.controller.my) {
+        continue
+      }
+
       const process = this.getProcessByPID(context.rooms[roomName])
 
       if (process == null) {
