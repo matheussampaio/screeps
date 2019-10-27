@@ -64,11 +64,11 @@ export class CityDefense extends Action {
   }
 
   repair(towers: StructureTower[], structures: StructureRoad[] | StructureWall[] | StructureRampart[]): [ACTIONS_RESULT.WAIT_NEXT_TICK] {
+    while(towers.length && structures.length) {
+      const structure = structures.shift() as StructureRoad | StructureWall | StructureRampart
+      const tower = towers.shift() as StructureTower
 
-    for (const tower of towers) {
-      const s = _.sample(structures) as StructureRoad | StructureWall | StructureRampart
-
-      tower.repair(s)
+      tower.repair(structure)
     }
 
     return this.waitNextTick()
