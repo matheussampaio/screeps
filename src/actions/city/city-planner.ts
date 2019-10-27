@@ -1,95 +1,39 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry, Action, ACTIONS_RESULT } from '../../core'
+import { ActionsRegistry, Action } from '../../core'
 import * as utils from '../../utils'
+
+const cms: any = {}
 
 @ActionsRegistry.register
 export class CityPlanner extends Action {
   private context: any
-  private _costMatrix?: CostMatrix
 
-  run(context: any): [ACTIONS_RESULT, ...string[]] {
+  run(context: any) {
     this.context = context
 
     this.resetPlanIfFlag()
 
-    if (this.mem.level !== this.controller.level) {
+    if (this.mem.plannedAt == null) {
       this.replan()
-      this.mem.level = this.controller.level
     }
 
-    if (_.size(Game.constructionSites) >= MAX_CONSTRUCTION_SITES) {
-      return this.waitNextTick()
-    }
-
-    this.visualize()
-
-    if (this.mem.nextPrune <= Game.time) {
-      const constructionSites = this.room.find(FIND_MY_CONSTRUCTION_SITES).length
-
-      if (!constructionSites) {
-        this.prune(STRUCTURE_ROAD, 10) ||
-          this.prune(STRUCTURE_EXTENSION, 1) ||
-          this.prune(STRUCTURE_TOWER, 1) ||
-          this.prune(STRUCTURE_STORAGE, 1)
-      }
-
-      this.mem.nextPrune = Game.time + 100
-    }
-
-    if (this.mem.nextConstruction <= Game.time) {
-      this.createConstructionSites()
-
-      this.mem.nextConstruction = Game.time + 102
-    }
-
-    return this.waitNextTick()
+    return this.sleep(5)
   }
 
-  private prune(structureType: BuildableStructureConstant, maxPrune = 100): boolean {
-    const structures = this.room.find(FIND_STRUCTURES, {
-      filter: s => s.structureType === structureType
-    })
+  private get costMatrix(): CostMatrix {
+    const cm = cms[this.context.roomName] || (cms[this.context.roomName] = {})
 
-    for (const structure of structures) {
-      const desiredStructure = this.getPos(structure.pos.x, structure.pos.y)
-
-      if (desiredStructure !== structureType) {
-        console.log(`prune: destroying STRUCTURE. it should be ${desiredStructure}, but it is ${structure.structureType}`)
-
-        structure.destroy()
-        maxPrune--
-
-        if (!maxPrune) {
-          return true
-        }
-      }
+    if (cm.time !== Game.time) {
+      cm.time = Game.time
+      cm.matrix = new PathFinder.CostMatrix()
     }
 
-    const constructionSites = this.room.find(FIND_MY_CONSTRUCTION_SITES, {
-      filter: s => s.structureType === structureType
-    })
-
-    for (const constructionSite of constructionSites) {
-      const desiredConstruction = this.getPos(constructionSite.pos.x, constructionSite.pos.y) 
-
-      if (desiredConstruction !== structureType) {
-        console.log(`prune: destroying CONSTRUCTION. it should be ${desiredConstruction}, but it is ${constructionSite.structureType}`)
-
-        constructionSite.remove()
-        maxPrune--
-
-        if (!maxPrune) {
-          return true
-        }
-      }
-    }
-
-    return false
+    return cm.matrix
   }
 
   private replan() {
-    this._costMatrix = undefined
+    this.mem.plannedAt = Game.time
 
     const exits = [
       FIND_EXIT_TOP,
@@ -174,66 +118,6 @@ export class CityPlanner extends Action {
 
       this.context.planner = null
     }
-  }
-
-  private createConstructionSites(): [ACTIONS_RESULT.WAIT_NEXT_TICK] | null {
-    const constructionOrder: BuildableStructureConstant[] = []
-
-    if (this.controller.level >= 2) {
-      constructionOrder.push(STRUCTURE_EXTENSION)
-    }
-
-    if (this.controller.level >= 3) {
-      constructionOrder.push(STRUCTURE_ROAD, STRUCTURE_TOWER, STRUCTURE_WALL, STRUCTURE_RAMPART)
-    }
-
-    if (this.controller.level >= 4) {
-      constructionOrder.push(STRUCTURE_STORAGE)
-    }
-
-    for (const structureType of constructionOrder) {
-      const positions = this.findStructuresToBeConstructed(structureType)
-
-      if (positions.length) {
-        const pos = _.head(positions) as RoomPosition
-
-        console.log(`creating ${structureType} at ${pos.x},${pos.y}`, this.room.createConstructionSite(pos.x, pos.y, structureType))
-
-        return this.waitNextTick()
-      }
-    }
-
-    return null
-  }
-
-  private findStructuresToBeConstructed(structureType: BuildableStructureConstant): RoomPosition[] {
-    const positions = []
-
-    for (let x = 0; x < 50; x++) {
-      for (let y = 0; y < 50; y++) {
-        const st = this.getPos(x, y)
-
-        if (st === structureType) {
-          const result = this.room.lookAt(x, y)
-
-          const isTileFree = result.every(item => item.type !== LOOK_STRUCTURES && item.type !== LOOK_CONSTRUCTION_SITES)
-
-          if (isTileFree) {
-            positions.push(this.room.getPositionAt(x, y) as RoomPosition)
-          }
-        }
-      }
-    }
-
-    return positions
-  }
-
-  private get costMatrix(): CostMatrix {
-    if (this._costMatrix == null) {
-      this._costMatrix = new PathFinder.CostMatrix()
-    }
-
-    return this._costMatrix
   }
 
   private getStructureCounter(structureType: BuildableStructureConstant): number {
@@ -464,44 +348,6 @@ export class CityPlanner extends Action {
     }
 
     return center
-  }
-
-  private visualize() {
-    const flag = Game.flags['visual']
-
-    if (flag == null) {
-      return
-    }
-
-    this.room.visual.circle(this.center.x, this.center.y, { radius: 0.5, fill: '#00ff00' })
-
-    for (let x = 0; x < 50; x++) {
-      for (let y = 0; y < 50; y++) {
-        const value = this.getPos(x, y)
-
-        if (value === STRUCTURE_ROAD) {
-          const neighbors = utils.getNeighborsCoords(x, y)
-
-          neighbors.forEach(coord => {
-            const v2 = this.getPos(coord.x, coord.y)
-
-            if (v2 === STRUCTURE_ROAD) {
-              this.room.visual.line(x, y, coord.x, coord.y, { color: '#808080', opacity: 0.25 })
-            }
-          })
-        } else if (value === STRUCTURE_STORAGE) {
-          this.room.visual.circle(x, y, { radius: 0.5, fill: '#ff0000' })
-        } else if (value === STRUCTURE_SPAWN) {
-          this.room.visual.circle(x, y, { radius: 0.5, fill: '#0000ff' })
-        } else if (value === STRUCTURE_EXTENSION) {
-          this.room.visual.circle(x, y, { radius: 0.5, fill: '#ff00ff' })
-        }
-
-        if (this.costMatrix.get(x, y)) {
-          this.room.visual.text(this.costMatrix.get(x, y).toString(), x, y, { align: 'center' })
-        }
-      }
-    }
   }
 }
 
