@@ -43,7 +43,26 @@ export class CreepSingleBuilder extends Action {
       delete context.buildTarget
     }
 
-    const targets = creep.room.find(FIND_MY_CONSTRUCTION_SITES).sort((c1, c2) => c2.progress === c1.progress ? c1.progressTotal - c2.progressTotal : c2.progress - c1.progress);
+    const targets = creep.room.find(FIND_MY_CONSTRUCTION_SITES).sort((c1, c2) => {
+      // build smaller contructions first
+      if (c1.progressTotal !== c2.progressTotal) {
+        return c1.progressTotal - c2.progressTotal
+      }
+
+      // build constructions closer to finish
+      if (c1.progress !== c2.progress) {
+        return c2.progress - c1.progress
+      }
+
+      const storage = creep.room.storage
+
+      // build constructions close to storage first
+      if (storage) {
+        return c1.pos.getRangeTo(storage) - c2.pos.getRangeTo(storage)
+      }
+
+      return 0
+    });
 
     if (targets.length === 0) {
       return null
@@ -112,7 +131,7 @@ export class CreepSingleBuilderGetEnergy extends Action {
     }
 
     const resource: Resource | null = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {
-      filter: r => r.resourceType === RESOURCE_ENERGY
+      filter: r => r.resourceType === RESOURCE_ENERGY && r.amount >= 50
     })
 
     if (resource) {
