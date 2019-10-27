@@ -13,7 +13,7 @@ export class CreateBody {
     minimumEnergy = 150,
     energyAvailable = 0,
     ticksToMove = 1,
-    hasRoads = false,
+    hasRoads = true,
     maxParts = {}
   }: {
     minimumEnergy: number,
