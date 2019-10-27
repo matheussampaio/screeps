@@ -27,6 +27,12 @@ export class CityPlanner extends Action {
     if (cm.time !== Game.time) {
       cm.time = Game.time
       cm.matrix = new PathFinder.CostMatrix()
+
+      const roads = this.room.find(FIND_STRUCTURES, {
+        filter: s => s.structureType === STRUCTURE_ROAD
+      })
+
+      roads.forEach(road => cm.matrix.set(road.pos.x, road.pos.y, 1))
     }
 
     return cm.matrix
@@ -120,18 +126,6 @@ export class CityPlanner extends Action {
     }
   }
 
-  private getStructureCounter(structureType: BuildableStructureConstant): number {
-    let counter = 0
-
-    for (let i = 0; i < this.map.length; i++) {
-      if (this.map[i] === structureType) {
-        counter += 1
-      }
-    }
-
-    return counter
-  }
-
   private placeStorage() {
     utils.getEmptySpacesAroundPosition(this.center)
       .forEach(pos => this.setPos(pos.x, pos.y, STRUCTURE_ROAD))
@@ -140,22 +134,7 @@ export class CityPlanner extends Action {
   }
 
   private placeExtensions() {
-    const extensionsCounter = this.getStructureCounter(STRUCTURE_EXTENSION)
-
-    const maxNumberExtensions: { [level: number]: number } = {
-      1: 0,
-      2: 5,
-      3: 10,
-      4: 20,
-      5: 30,
-      6: 40,
-      7: 50,
-      8: 60
-    }
-
-    const missingExtensions = maxNumberExtensions[this.controller.level] - extensionsCounter
-
-    for (let i = 0; i < missingExtensions; i++) {
+    for (let i = 0; i < 60; i++) {
       const pos = this.findSuitablePlaceForStructure(STRUCTURE_EXTENSION)
 
       if (pos) {
@@ -165,22 +144,7 @@ export class CityPlanner extends Action {
   }
 
   private placeTowers() {
-    const towersCounter = this.getStructureCounter(STRUCTURE_TOWER)
-
-    const maxTowerNumber: { [level: number]: number } = {
-      1: 0,
-      2: 0,
-      3: 1,
-      4: 1,
-      5: 2,
-      6: 2,
-      7: 3,
-      8: 6
-    }
-
-    const missingTowers =  maxTowerNumber[this.controller.level] - towersCounter
-
-    for (let i = 0; i < missingTowers; i++) {
+    for (let i = 0; i < 6; i++) {
       const pos = this.findSuitablePlaceForStructure(STRUCTURE_TOWER)
 
       if (pos) {

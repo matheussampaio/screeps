@@ -46,6 +46,7 @@ export class CityBuilder extends Action {
       this.prune(STRUCTURE_TOWER, 1) ||
       this.prune(STRUCTURE_STORAGE, 1)
   }
+
   private prune(structureType: BuildableStructureConstant, maxPrune = 100): boolean {
     const structures = this.room.find(FIND_STRUCTURES, {
       filter: s => s.structureType === structureType
@@ -103,15 +104,20 @@ export class CityBuilder extends Action {
       constructionOrder.push(STRUCTURE_STORAGE)
     }
 
+    const structures = this.room.find(FIND_STRUCTURES)
+    const sites = this.room.find(FIND_CONSTRUCTION_SITES)
+
     for (const structureType of constructionOrder) {
-      const positions = this.findStructuresToBeConstructed(structureType)
+      const structureCounter = structures.filter(s => s.structureType === structureType).length + sites.filter(s => s.structureType === structureType).length
 
-      if (positions.length) {
-        const pos = _.head(positions) as RoomPosition
+      if (structureCounter < CONTROLLER_STRUCTURES[structureType][this.controller.level]) {
+        const positions = this.findStructuresToBeConstructed(structureType)
 
-        const result = this.room.createConstructionSite(pos.x, pos.y, structureType)
+        positions.forEach(pos => this.room.createConstructionSite(pos.x, pos.y, structureType))
 
-        return result === OK
+        if (positions.length) {
+          return true
+        }
       }
     }
 
@@ -186,7 +192,7 @@ export class CityBuilder extends Action {
             const v2 = this.getPos(coord.x, coord.y)
 
             if (v2 === STRUCTURE_ROAD) {
-              this.room.visual.line(x, y, coord.x, coord.y, { color: '#808080', opacity: 0.25 })
+              this.room.visual.line(x, y, coord.x, coord.y, { color: '#000000', opacity: 0.5 })
             }
           })
         } else if (value === STRUCTURE_STORAGE) {
