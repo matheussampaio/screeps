@@ -5,7 +5,7 @@ import { ICreepContext } from './interfaces'
 
 @ActionsRegistry.register
 export class CreepSingleBuilder extends Action {
-  run(context: ICreepContext): [ACTIONS_RESULT, ...string[]] {
+  run(context: any): [ACTIONS_RESULT, ...string[]] {
     const creep: Creep | undefined = Game.creeps[context.creepName]
 
     if (creep == null) {
@@ -32,15 +32,15 @@ export class CreepSingleBuilder extends Action {
     return this.waitNextTick()
   }
 
-  getConstructionTarget(creep: Creep, context: ICreepContext): any {
-    if (context.target) {
-      const target: any = Game.getObjectById(context.target)
+  getConstructionTarget(creep: Creep, context: any): any {
+    if (context.buildTarget) {
+      const target: any = Game.getObjectById(context.buildTarget)
 
       if (target) {
         return target
       }
 
-      delete context.target
+      delete context.buildTarget
     }
 
     const targets = creep.room.find(FIND_MY_CONSTRUCTION_SITES).sort((c1, c2) => c2.progress === c1.progress ? c1.progressTotal - c2.progressTotal : c2.progress - c1.progress);
@@ -49,7 +49,7 @@ export class CreepSingleBuilder extends Action {
       return null
     }
 
-    context.target = targets[0].id
+    context.buildTarget = targets[0].id
 
     return targets[0]
   }
@@ -57,7 +57,7 @@ export class CreepSingleBuilder extends Action {
 
 @ActionsRegistry.register
 export class CreepSingleBuilderGetEnergy extends Action {
-  run(context: ICreepContext): [ACTIONS_RESULT, ...string[]] {
+  run(context: any): [ACTIONS_RESULT, ...string[]] {
     const creep: Creep = Game.creeps[context.creepName]
 
     if (creep == null) {
@@ -71,9 +71,9 @@ export class CreepSingleBuilderGetEnergy extends Action {
     const target = this.findTarget(context)
 
     if (target == null) {
-       delete context.target
+       delete context.energyTarget
 
-      return this.waitNextTick()
+      return this.retry()
     }
 
     if (!creep.pos.isNearTo(target)) {
@@ -88,14 +88,14 @@ export class CreepSingleBuilderGetEnergy extends Action {
       creep.withdraw(target, RESOURCE_ENERGY)
     }
 
-    delete context.target
+    delete context.energyTarget
 
     return this.waitNextTick()
   }
 
   findTarget(context: any): Resource | StructureContainer | StructureStorage | null {
-    if (context.target) {
-      const target: any = Game.getObjectById(context.target)
+    if (context.energyTarget) {
+      const target: any = Game.getObjectById(context.energyTarget)
 
       if (target) {
         return target
@@ -106,7 +106,7 @@ export class CreepSingleBuilderGetEnergy extends Action {
     const storage = creep.room.storage
 
     if (storage && storage.isActive() && storage.store.getUsedCapacity(RESOURCE_ENERGY)) {
-      context.target = storage.id
+      context.energyTarget = storage.id
 
       return storage
     }
@@ -116,7 +116,7 @@ export class CreepSingleBuilderGetEnergy extends Action {
     })
 
     if (resource) {
-      context.target = resource.id
+      context.energyTarget = resource.id
 
       return resource
     }
@@ -126,7 +126,7 @@ export class CreepSingleBuilderGetEnergy extends Action {
     }) as StructureContainer
 
     if (container) {
-      context.target = container.id
+      context.energyTarget = container.id
 
       return container
     }
