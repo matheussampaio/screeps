@@ -19,7 +19,7 @@ export class CreepSingleBuilder extends Action {
     const target: any = this.getConstructionTarget(creep, context)
 
     if (target == null) {
-      this.logger.debug(`Can't find a construction target.`, context.creepName)
+      creep.suicide()
       return this.waitNextTick()
     }
 
