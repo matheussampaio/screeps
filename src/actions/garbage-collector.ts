@@ -2,7 +2,7 @@ import { ActionsRegistry, Action, ACTIONS_RESULT } from '../core'
 
 @ActionsRegistry.register
 export class GarbageCollector extends Action {
-  run(context: any): [ACTIONS_RESULT, ...string[]] {
+  run() {
     for (const creepName in Memory.creeps) {
       if (Game.creeps[creepName] == null) {
         delete Memory.creeps[creepName]
@@ -15,6 +15,6 @@ export class GarbageCollector extends Action {
       }
     }
 
-    return this.sleep(context, 50)
+    return this.sleep(50)
   }
 }

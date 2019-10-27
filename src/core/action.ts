@@ -10,7 +10,7 @@ export interface IActionConstructor {
 export class Action {
   static priority: number = PRIORITY.NORMAL
 
-  run(context: object, process: Process): [ACTIONS_RESULT, ...string[]] {
+  run(context: object, process: Process): [ACTIONS_RESULT, ...(string | number)[]] {
     return [ACTIONS_RESULT.WAIT_NEXT_TICK]
   }
 
@@ -66,10 +66,8 @@ export class Action {
    return [ACTIONS_RESULT.RETRY]
   }
 
-  protected sleep(context: any, ticks: number): [ACTIONS_RESULT.UNSHIFT_AND_CONTINUE, ...string[]] {
-    context.sleepFor = ticks
-
-    return this.unshiftAndContinue(Sleep.name)
+  protected sleep(ticks: number = 5): [ACTIONS_RESULT.UNSHIFT_AND_STOP, string, number] {
+    return [ACTIONS_RESULT.UNSHIFT_AND_STOP, 'Sleep', ticks]
   }
 }
 

@@ -8,7 +8,7 @@ import { Analytics } from './utils/analytics'
 
 export interface Process {
   PID: number
-  actions: string[][]
+  actions: (string | number)[][]
   memory: object
   name?: string
   priority: number
@@ -187,11 +187,26 @@ export class ActionTreeRunner {
       let iterations = 0
 
       while (subtree.length && iterations++ < ActionTreeRunner.MAX_ITERATIONS && Game.cpu.getUsed() < getCPULimit()) {
-        ActionTreeRunner.transitionDeprecatedActions(subtree)
-
         ActionTreeRunner.logger.debug('ActionTreeRunner::execute::action::', subtree[0])
 
-        const action: Action = ActionsRegistry.fetch(subtree[0])
+        if (subtree[0] === 'Sleep') {
+          if (subtree.length === 1 || typeof subtree[1] !== 'number') {
+            subtree.shift()
+            continue
+          }
+
+          if (subtree[1]) {
+            subtree[1] -= 1
+            break
+          }
+
+          subtree.shift() // shift tick counter
+          subtree.shift() // shift Sleep action
+
+          continue
+        }
+
+        const action: Action = ActionsRegistry.fetch(subtree[0] as string)
 
         try {
           const usedCPUBefore = Game.cpu.getUsed()
@@ -200,7 +215,7 @@ export class ActionTreeRunner {
 
           const usedCPU = Game.cpu.getUsed() - usedCPUBefore
 
-          Analytics.registerActionUsedCPU(subtree[0], usedCPU)
+          Analytics.registerActionUsedCPU(subtree[0] as string, usedCPU)
 
           // delete this action and continue with the next
           if (result === ACTIONS_RESULT.SHIFT_AND_CONTINUE) {
@@ -262,17 +277,5 @@ export class ActionTreeRunner {
     }
 
     process.state = PROCESS_STATE.WAITING
-  }
-
-  private static transitionDeprecatedActions(subtree: string[]): void {
-    subtree[0] = ActionTreeRunner.deprecatedActions(subtree[0])
-  }
-
-  private static deprecatedActions(action: string): string {
-    const deprecatedActions: { [name: string]: string } = {
-      CreepAction: 'CreepGeneric'
-    }
-
-    return deprecatedActions[action] || action
   }
 }

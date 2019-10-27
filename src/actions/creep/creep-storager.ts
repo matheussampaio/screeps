@@ -4,7 +4,7 @@ import { ActionsRegistry, Action, ACTIONS_RESULT } from '../../core'
 
 @ActionsRegistry.register
 export class CreepStorager extends Action {
-  run(context: any): [ACTIONS_RESULT, ...string[]] {
+  run(context: any) {
     const creep = Game.creeps[context.creepName]
 
     if (creep.room.storage == null) {
@@ -25,7 +25,7 @@ export class CreepStorager extends Action {
       return this.unshiftAndContinue(CreepStoragerGetEnergy.name)
     }
 
-    return this.sleep(context, 5)
+    return this.sleep(5)
   }
 
   findTransferTarget(creep: Creep, context: any): StructureExtension | StructureTower | StructureSpawn | StructureContainer | null {
