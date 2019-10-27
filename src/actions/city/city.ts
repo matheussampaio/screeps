@@ -355,23 +355,6 @@ export class City extends Action {
       sourcePlan.desiredWorkParts = desiredWorkParts
     }
 
-    // build storage
-    if (!room.storage && room.controller.level >= 4) {
-      const constructionSite = room.find(FIND_MY_CONSTRUCTION_SITES, {
-        filter: c => c.structureType === STRUCTURE_STORAGE
-      })
-
-      if (!constructionSite.length) {
-        const emptySpaces = utils.getEmptySpacesAroundPosition(room.controller.pos)
-
-        if (emptySpaces.length) {
-          const emptySpace = emptySpaces[0]
-
-          room.createConstructionSite(emptySpace.x, emptySpace.y, STRUCTURE_STORAGE)
-        }
-      }
-    }
-
     // best upgraders body
     const goal = room.find(FIND_MY_SPAWNS).map(source => source.pos)
     const distance = PathFinder.search(room.controller.pos, goal).path.length
