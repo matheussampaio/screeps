@@ -111,7 +111,7 @@ export class CreepStoragerTransfer extends Action {
     }
 
     if (!creep.pos.isNearTo(target)) {
-      creep.moveTo(target)
+      creep.travelTo(target, { range: 1 })
       return this.waitNextTick()
     }
 
@@ -140,7 +140,7 @@ export class CreepStoragerGetEnergy extends Action {
     if (creep.pos.isNearTo(storage)) {
       creep.withdraw(storage, RESOURCE_ENERGY)
     } else {
-      creep.moveTo(storage)
+      creep.travelTo(storage, { range: 1 })
     }
 
     return this.waitNextTick()

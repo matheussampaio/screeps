@@ -29,7 +29,7 @@ export class CreepSingleHauler extends Action {
     if (creep.pos.inRangeTo(creep.room.controller, 2)) {
       creep.drop(RESOURCE_ENERGY)
     } else {
-      creep.moveTo(creep.room.controller)
+      creep.travelTo(creep.room.controller, { range: 1 })
     }
 
     return this.waitNextTick()
@@ -139,7 +139,7 @@ export class CreepSingleHaulerTransfer extends Action {
     }
 
     if (!creep.pos.isNearTo(target)) {
-      creep.moveTo(target)
+      creep.travelTo(target, { range: 1 })
       return this.waitNextTick()
     }
 
@@ -197,7 +197,7 @@ export class CreepSingleHaulerGetEnergy extends Action {
     if (creep.pos.isNearTo(resource)) {
       creep.pickup(resource)
     } else {
-      creep.moveTo(resource)
+      creep.travelTo(resource, { range: 1 })
     }
 
     return this.waitNextTick()
@@ -213,7 +213,7 @@ export class CreepSingleHaulerGetEnergy extends Action {
     }
 
     if (!creep.pos.isNearTo(container)) {
-      creep.moveTo(container)
+      creep.travelTo(container, { range: 1 })
       return this.waitNextTick()
     }
 

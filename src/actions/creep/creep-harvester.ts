@@ -18,7 +18,8 @@ export class CreepHarvester extends Action {
 
     // walk to source
     if (!creep.pos.isNearTo(source)) {
-      creep.moveTo(source)
+      creep.travelTo(source, { range: 1 })
+
       return this.waitNextTick()
     }
 
@@ -43,7 +44,7 @@ export class CreepHarvester extends Action {
 
     // try to move on top of container every 10 ticks
     if (Game.time % 12 === 0 && !creep.pos.isEqualTo(container) && !container.pos.lookFor(LOOK_CREEPS).length) {
-      creep.moveTo(container)
+      creep.travelTo(container)
     }
 
     // repair container eveery 95 ticks

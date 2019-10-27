@@ -27,7 +27,7 @@ export class CreepHauler extends Action {
     }
 
     if (!creep.pos.isNearTo(target)) {
-      creep.moveTo(target)
+      creep.travelTo(target)
       return [ACTIONS_RESULT.WAIT_NEXT_TICK]
     }
 

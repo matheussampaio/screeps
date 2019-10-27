@@ -53,7 +53,7 @@ export class CreepGetEnergy extends Action {
     if (creep.pos.isNearTo(resource)) {
       creep.pickup(resource)
     } else {
-      creep.moveTo(resource)
+      creep.travelTo(resource)
     }
 
     return this.waitNextTick()
@@ -68,7 +68,7 @@ export class CreepGetEnergy extends Action {
       if (creep.pos.isNearTo(storage)) {
         creep.withdraw(storage, RESOURCE_ENERGY)
       } else {
-        creep.moveTo(storage)
+        creep.travelTo(storage)
       }
 
       return this.waitNextTick()
@@ -105,7 +105,7 @@ export class CreepGetEnergy extends Action {
     if (creep.pos.isNearTo(source)) {
       creep.harvest(source)
     } else {
-      creep.moveTo(source)
+      creep.travelTo(source)
     }
 
     return this.waitNextTick()

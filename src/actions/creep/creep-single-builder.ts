@@ -26,7 +26,7 @@ export class CreepSingleBuilder extends Action {
     if (creep.pos.inRangeTo(target, 3)) {
       creep.build(target)
     } else {
-      creep.moveTo(target)
+      creep.travelTo(target, { range: 3 })
     }
 
     return this.waitNextTick()
@@ -96,7 +96,7 @@ export class CreepSingleBuilderGetEnergy extends Action {
     }
 
     if (!creep.pos.isNearTo(target)) {
-      creep.moveTo(target)
+      creep.travelTo(target, { range: 1 })
 
       return this.waitNextTick()
     }
