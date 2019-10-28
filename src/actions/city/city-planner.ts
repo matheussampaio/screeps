@@ -2,6 +2,7 @@ import * as _ from 'lodash'
 
 import { ActionsRegistry, Action } from '../../core'
 import * as utils from '../../utils'
+import { RectCoordinates, MinCut, Coordinates } from '../../utils/min-cut'
 
 const cms: any = {}
 
@@ -18,7 +19,8 @@ export class CityPlanner extends Action {
       this.replan()
     }
 
-    return this.sleep(5)
+    return this.waitNextTick()
+    // return this.sleep(5)
   }
 
   private get costMatrix(): CostMatrix {
@@ -57,10 +59,10 @@ export class CityPlanner extends Action {
     const spawns = this.room.find(FIND_MY_SPAWNS)
 
     for (const spawn of spawns) {
-      this.setPos(spawn.pos.x, spawn.pos.y, STRUCTURE_SPAWN)
+      this.setPos(spawn.pos.x, spawn.pos.y, [STRUCTURE_SPAWN])
 
       utils.getEmptySpacesAroundPosition(spawn.pos).forEach(pos => {
-        this.setPos(pos.x, pos.y, STRUCTURE_ROAD)
+        this.setPos(pos.x, pos.y, [STRUCTURE_ROAD])
       })
     }
 
@@ -88,7 +90,7 @@ export class CityPlanner extends Action {
       }
 
       for (const pos of result.path.slice(1)) {
-        this.setPos(pos.x, pos.y, STRUCTURE_ROAD)
+        this.setPos(pos.x, pos.y, [STRUCTURE_ROAD])
       }
     }
 
@@ -107,13 +109,44 @@ export class CityPlanner extends Action {
       }
 
       for (const pos of result.path.slice(1)) {
-        this.setPos(pos.x, pos.y, STRUCTURE_ROAD)
+        this.setPos(pos.x, pos.y, [STRUCTURE_ROAD])
       }
     }
 
     this.placeExtensions()
 
     this.placeTowers()
+
+    this.placeWallsAndRamparts()
+  }
+
+  private placeWallsAndRamparts() {
+    const protectedArea: RectCoordinates[] = []
+
+    for (let x = 0; x < 50; x++) {
+      for (let y = 0; y < 50; y++) {
+        const value = this.getPos(x, y)
+
+        if (value.length && !value.includes(STRUCTURE_ROAD)) {
+          protectedArea.push({ x1: x - 1, y1: y - 1, x2: x + 1, y2: y + 1})
+        }
+      }
+    }
+
+    // Boundary Array for Maximum Range
+    const bounds: RectCoordinates = { x1: 0, y1: 0, x2: 49, y2: 49 }
+
+    const positions: Coordinates[] = MinCut.GetCutTiles(this.context.roomName, protectedArea, bounds)
+
+    for (const pos of positions) {
+      const value = this.getPos(pos.x, pos.y)
+
+      if (!value.length) {
+        this.setPos(pos.x, pos.y, [STRUCTURE_WALL])
+      } else {
+        this.setPos(pos.x, pos.y, [...value, STRUCTURE_RAMPART], true)
+      }
+    }
   }
 
   private resetPlanIfFlag() {
@@ -128,7 +161,7 @@ export class CityPlanner extends Action {
 
   private placeStorage() {
     utils.getEmptySpacesAroundPosition(this.center)
-      .forEach(pos => this.setPos(pos.x, pos.y, STRUCTURE_ROAD))
+      .forEach(pos => this.setPos(pos.x, pos.y, [STRUCTURE_ROAD]))
 
     this.placeStructure(this.center, STRUCTURE_STORAGE, true)
   }
@@ -189,7 +222,7 @@ export class CityPlanner extends Action {
       }
 
       // if this position is already taken, continue
-      if (this.getPos(pos.x, pos.y) != null) {
+      if (this.getPos(pos.x, pos.y).length) {
         continue
       }
 
@@ -200,7 +233,7 @@ export class CityPlanner extends Action {
 
       // if this position has a road connected to it, it's a nice fit
       // (assuming the road is not a dead end)
-      if (neighbors.find(p => this.getPos(p.x, p.y) === STRUCTURE_ROAD)) {
+      if (neighbors.find(p => this.getPos(p.x, p.y).includes(STRUCTURE_ROAD))) {
         return pos
       }
 
@@ -229,23 +262,23 @@ export class CityPlanner extends Action {
   }
 
   private placeStructure(pos: RoomPosition, structureType: BuildableStructureConstant, force: boolean = false) {
-    this.setPos(pos.x, pos.y, structureType, force)
+    this.setPos(pos.x, pos.y, [structureType], force)
   }
 
-  private get map(): (BuildableStructureConstant | null)[] {
-    return this.mem.map || (this.mem.map = Array(50 * 50).fill(null))
+  private get map(): BuildableStructureConstant[][] {
+    return this.mem.map || (this.mem.map = Array(50 * 50).fill([]))
   }
 
-  private getPos(x: number, y: number): BuildableStructureConstant | null {
+  private getPos(x: number, y: number): BuildableStructureConstant[] {
     return this.map[y * 50 + x]
   }
 
-  private setPos(x: number, y: number, value: BuildableStructureConstant | null, force: boolean = false) {
+  private setPos(x: number, y: number, value: BuildableStructureConstant[], force: boolean = false) {
     const idx = y * 50 + x
 
-    if (this.map[idx] == null || force) {
+    if (this.map[idx].length === 0 || force) {
       this.map[y * 50 + x] = value
-      this.costMatrix.set(x, y, value === STRUCTURE_ROAD ? 1 : Infinity)
+      this.costMatrix.set(x, y, value.includes(STRUCTURE_ROAD) ? 1 : Infinity)
     }
   }
 

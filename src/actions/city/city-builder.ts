@@ -1,6 +1,6 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry, Action, ACTIONS_RESULT } from '../../core'
+import { ActionsRegistry, Action } from '../../core'
 import * as utils from '../../utils'
 
 @ActionsRegistry.register
@@ -44,7 +44,9 @@ export class CityBuilder extends Action {
     return this.prune(STRUCTURE_ROAD, 10) ||
       this.prune(STRUCTURE_EXTENSION, 1) ||
       this.prune(STRUCTURE_TOWER, 1) ||
-      this.prune(STRUCTURE_STORAGE, 1)
+      this.prune(STRUCTURE_STORAGE, 1) ||
+      this.prune(STRUCTURE_WALL, 50) ||
+      this.prune(STRUCTURE_RAMPART, 50)
   }
 
   private prune(structureType: BuildableStructureConstant, maxPrune = 100): boolean {
@@ -53,10 +55,10 @@ export class CityBuilder extends Action {
     })
 
     for (const structure of structures) {
-      const desiredStructure = this.getPos(structure.pos.x, structure.pos.y)
+      const desiredStructures = this.getPos(structure.pos.x, structure.pos.y)
 
-      if (desiredStructure !== structureType) {
-        console.log(`prune: destroying STRUCTURE. it should be ${desiredStructure}, but it is ${structure.structureType}`)
+      if (!desiredStructures.includes(structure.structureType as any)) {
+        console.log(`prune: destroying STRUCTURE. it should be ${desiredStructures}, but it is ${structure.structureType}`)
 
         structure.destroy()
         maxPrune--
@@ -72,9 +74,9 @@ export class CityBuilder extends Action {
     })
 
     for (const constructionSite of constructionSites) {
-      const desiredConstruction = this.getPos(constructionSite.pos.x, constructionSite.pos.y) 
+      const desiredConstruction = this.getPos(constructionSite.pos.x, constructionSite.pos.y)
 
-      if (desiredConstruction !== structureType) {
+      if (!desiredConstruction.includes(structureType)) {
         console.log(`prune: destroying CONSTRUCTION. it should be ${desiredConstruction}, but it is ${constructionSite.structureType}`)
 
         constructionSite.remove()
@@ -131,14 +133,28 @@ export class CityBuilder extends Action {
       for (let y = 0; y < 50; y++) {
         const st = this.getPos(x, y)
 
-        if (st === structureType) {
+        if (st.includes(structureType)) {
           const result = this.room.lookAt(x, y)
 
-          const isTileFree = result.every(item => item.type !== LOOK_STRUCTURES && item.type !== LOOK_CONSTRUCTION_SITES)
+          const isThereAConstructionSite = result.some(item => item.type === LOOK_CONSTRUCTION_SITES)
 
-          if (isTileFree) {
-            positions.push(this.room.getPositionAt(x, y) as RoomPosition)
+          if (isThereAConstructionSite) {
+            continue
           }
+
+          const isThereAStructure = result.filter(item => item.type === LOOK_STRUCTURES)
+
+          if (isThereAStructure && structureType !== STRUCTURE_RAMPART) {
+            continue
+          }
+
+          const isThereARampart = result.find(item => item.structure && item.structure.structureType === STRUCTURE_RAMPART)
+
+          if (isThereARampart && structureType === STRUCTURE_RAMPART) {
+            continue
+          }
+
+          positions.push(this.room.getPositionAt(x, y) as RoomPosition)
         }
       }
     }
@@ -146,11 +162,11 @@ export class CityBuilder extends Action {
     return positions
   }
 
-  private get map(): (BuildableStructureConstant | null)[] {
+  private get map(): BuildableStructureConstant[][] {
     return this.mem.map
   }
 
-  private getPos(x: number, y: number): BuildableStructureConstant | null {
+  private getPos(x: number, y: number): BuildableStructureConstant[] {
     return this.map[y * 50 + x]
   }
 
@@ -185,22 +201,40 @@ export class CityBuilder extends Action {
       for (let y = 0; y < 50; y++) {
         const value = this.getPos(x, y)
 
-        if (value === STRUCTURE_ROAD) {
+        if (value.includes(STRUCTURE_ROAD)) {
           const neighbors = utils.getNeighborsCoords(x, y)
 
           neighbors.forEach(coord => {
             const v2 = this.getPos(coord.x, coord.y)
 
-            if (v2 === STRUCTURE_ROAD) {
+            if (v2.includes(STRUCTURE_ROAD)) {
               this.room.visual.line(x, y, coord.x, coord.y, { color: '#000000', opacity: 0.5 })
             }
           })
-        } else if (value === STRUCTURE_STORAGE) {
+        }
+
+        if (value.includes(STRUCTURE_STORAGE)) {
           this.room.visual.circle(x, y, { radius: 0.5, fill: '#ff0000' })
-        } else if (value === STRUCTURE_SPAWN) {
+        }
+
+        if (value.includes(STRUCTURE_SPAWN)) {
           this.room.visual.circle(x, y, { radius: 0.5, fill: '#0000ff' })
-        } else if (value === STRUCTURE_EXTENSION) {
+        }
+
+        if (value.includes(STRUCTURE_EXTENSION)) {
           this.room.visual.circle(x, y, { radius: 0.5, fill: '#ff00ff' })
+        }
+
+        if (value.includes(STRUCTURE_TOWER)) {
+          this.room.visual.circle(x, y, { radius: 0.5, fill: '#ddccff' })
+        }
+
+        if (value.includes(STRUCTURE_WALL)) {
+          this.room.visual.circle(x, y, { radius: 0.5, fill: '#888800' })
+        }
+
+        if (value.includes(STRUCTURE_RAMPART)) {
+          this.room.visual.circle(x, y, { radius: 0.5, fill: '#880000' })
         }
       }
     }
