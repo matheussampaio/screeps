@@ -224,7 +224,7 @@ export class City extends Action {
     context.queue.push({
       memory: {},
       creepName,
-      body: new CreateBody({ minimumEnergy: room.energyCapacityAvailable, ticksToMove: 2 })
+      body: new CreateBody({ minimumEnergy: room.energyCapacityAvailable, ticksToMove: 1, hasRoads: false })
       .add([CARRY, WORK], { repeat: true })
       .addMoveIfPossible()
       .value(),
