@@ -60,8 +60,14 @@ export class CreepSingleBuilder extends Action {
         return c1.pos.getRangeTo(storage) - c2.pos.getRangeTo(storage)
       }
 
-      return 0
-    });
+      const controller = creep.room.controller
+
+      if (controller) {
+        return c1.pos.getRangeTo(controller) - c2.pos.getRangeTo(controller)
+      }
+
+      return c1.pos.getRangeTo(creep) - c2.pos.getRangeTo(creep)
+    })
 
     if (targets.length === 0) {
       return null
