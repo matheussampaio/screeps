@@ -21,7 +21,8 @@
     "upload": "gulp upload",
     "build:upload": "rollup -c && gulp upload",
     "dev": "nodemon -w src -x npm run build:upload",
-    "release": "NODE_ENV=production rollup -c && SCREEPS_BRANCH=default gulp upload"
+    "release": "NODE_ENV=production rollup -c && SCREEPS_BRANCH=default gulp upload",
+    "postinstall": "./bin/download-latest-types.sh"
   },
   "nodemonConfig": {
     "ext": "ts,js,json",
@@ -34,7 +35,7 @@
   },
   "devDependencies": {
     "@types/lodash": "4.14.138",
-    "@types/screeps": "2.5.4",
+    "@types/screeps": "2.5.5",
     "dotenv": "8.1.0",
     "gulp": "4.0.2",
     "gulp-screeps": "1.0.8",
