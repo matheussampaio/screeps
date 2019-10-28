@@ -142,7 +142,7 @@ export class CityBuilder extends Action {
             continue
           }
 
-          const isThereAStructure = result.filter(item => item.type === LOOK_STRUCTURES)
+          const isThereAStructure = result.find(item => item.structure)
 
           if (isThereAStructure && structureType !== STRUCTURE_RAMPART) {
             continue
