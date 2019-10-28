@@ -63,13 +63,17 @@ export class MinCut {
 
       for (let x = r.x1; x < r.x2 + 1; x++) {
         for (let y = r.y1; y < r.y2 + 1; y++) {
-          if (x === r.x1 || x === r.x2 || y === r.y1 || y === r.y2) {
+          const neighborToToExit = surr.map(([dx, dy]) => [x + dx, y + dy])
+            .some(([dx, dy]) => room2d[dx][dy] === RoomCellType.TO_EXIT)
+
+          if (x === r.x1 || x === r.x2 || y === r.y1 || y === r.y2 || neighborToToExit) {
             if (room2d[x][y] === RoomCellType.NORMAL) {
               room2d[x][y] = RoomCellType.PROTECTED
             }
           } else {
             room2d[x][y] = RoomCellType.UNWALKABLE
           }
+
         }
       }
     }
@@ -80,9 +84,9 @@ export class MinCut {
     for (let x = 0; x < 50; x++) {
       for (let y = 0; y < 50; y++) {
         if (room2d[x][y] === RoomCellType.UNWALKABLE)
-          visual.circle(x, y, { radius: 0.5, fill: '#111166', opacity: 0.3 })
+          visual.circle(x, y, { radius: 0.5, fill: '#ff0000', opacity: 0.3 })
         else if (room2d[x][y] === RoomCellType.NORMAL)
-          visual.circle(x, y, { radius: 0.5, fill: '#e8e863', opacity: 0.3 })
+          visual.circle(x, y, { radius: 0.5, fill: '#404040', opacity: 0.3 })
         else if (room2d[x][y] === RoomCellType.PROTECTED) {
           visual.circle(x, y, { radius: 0.5, fill: '#75e863', opacity: 0.3 })
         } else if (room2d[x][y] === RoomCellType.TO_EXIT) {
@@ -264,98 +268,63 @@ export class MinCut {
     // Array for room tiles
     const room2d: Room2D = Array(ROOM_SIZE)
       .fill(RoomCellType.NORMAL)
-      .map(_ => Array(ROOM_SIZE).fill(RoomCellType.UNWALKABLE))
+      .map(_ => Array(ROOM_SIZE).fill(RoomCellType.NORMAL))
 
     const terrain = Game.map.getRoomTerrain(roomName)
 
     for (let i = bounds.x1; i <= bounds.x2; i++) {
       for (let j = bounds.y1; j <= bounds.x2; j++) {
-        if (!(terrain.get(i, j) & TERRAIN_MASK_WALL)) {
-          room2d[i][j] = RoomCellType.NORMAL // mark unwalkable
+        if (terrain.get(i, j) & TERRAIN_MASK_WALL) {
+          room2d[i][j] = RoomCellType.UNWALKABLE
 
-          if (i === bounds.x1 || j === bounds.y1 || i === bounds.x2 || j === bounds.y2) {
-            room2d[i][j] = RoomCellType.TO_EXIT // Sink Tiles mark from given bounds
-          }
+          continue
+        }
 
-          if (i === 0 || j === 0 || i === 49 || j === 49) {
-            room2d[i][j] = RoomCellType.EXIT // Exit Tiles mark
-          }
+        if (i === bounds.x1 || j === bounds.y1 || i === bounds.x2 || j === bounds.y2) {
+          room2d[i][j] = RoomCellType.TO_EXIT // Sink Tiles mark from given bounds
+        }
+
+        if (i === 0 || j === 0 || i === 49 || j === 49) {
+          room2d[i][j] = RoomCellType.EXIT // Exit Tiles mark
         }
       }
     }
 
     // Marks tiles Near Exits for sink- where you cannot build wall/rampart
-
-    for (let y = 1; y < 49; y++) {
-      if (room2d[0][y - 1] === RoomCellType.EXIT) {
-        room2d[1][y] = RoomCellType.TO_EXIT
+    // Marks tiles as unbuildable if they are proximate to exits
+    for (let y = bounds.y1 + 1; y <= bounds.y2 - 1; y++) {
+      if (room2d[bounds.x1][y] === RoomCellType.EXIT) {
+        for (let dy of [-1, 0, 1]) {
+          if (room2d[bounds.x1 + 1][y + dy] !== RoomCellType.UNWALKABLE) {
+            room2d[bounds.x1 + 1][y + dy] = RoomCellType.TO_EXIT;
+          }
+        }
       }
-      if (room2d[0][y] === RoomCellType.EXIT) {
-        room2d[1][y] = RoomCellType.TO_EXIT
-      }
-      if (room2d[0][y + 1] === RoomCellType.EXIT) {
-        room2d[1][y] = RoomCellType.TO_EXIT
-      }
-      if (room2d[49][y - 1] === RoomCellType.EXIT) {
-        room2d[48][y] = RoomCellType.TO_EXIT
-      }
-      if (room2d[49][y] === RoomCellType.EXIT) {
-        room2d[48][y] = RoomCellType.TO_EXIT
-      }
-      if (room2d[49][y + 1] === RoomCellType.EXIT) {
-        room2d[48][y] = RoomCellType.TO_EXIT
+      if (room2d[bounds.x2][y] === RoomCellType.EXIT) {
+        for (let dy of [-1, 0, 1]) {
+          if (room2d[bounds.x2 - 1][y + dy] !== RoomCellType.UNWALKABLE) {
+            room2d[bounds.x2 - 1][y + dy] = RoomCellType.TO_EXIT;
+          }
+        }
       }
     }
-
-    for (let x = 1; x < 49; x++) {
-      if (room2d[x - 1][0] === RoomCellType.EXIT) {
-        room2d[x][1] = RoomCellType.TO_EXIT
+    for (let x = bounds.x1 + 1; x <= bounds.x2 - 1; x++) {
+      if (room2d[x][bounds.y1] === RoomCellType.EXIT) {
+        for (let dx of [-1, 0, 1]) {
+          if (room2d[x + dx][bounds.y1 + 1] !== RoomCellType.UNWALKABLE) {
+            room2d[x + dx][bounds.y1 + 1] = RoomCellType.TO_EXIT;
+          }
+        }
       }
-      if (room2d[x][0] === RoomCellType.EXIT) {
-        room2d[x][1] = RoomCellType.TO_EXIT
+      if (room2d[x][bounds.y2] === RoomCellType.EXIT) {
+        for (let dx of [-1, 0, 1]) {
+          if (room2d[x + dx][bounds.y2 - 1] !== RoomCellType.UNWALKABLE) {
+            room2d[x + dx][bounds.y2 - 1] = RoomCellType.TO_EXIT;
+          }
+        }
       }
-      if (room2d[x + 1][0] === RoomCellType.EXIT) {
-        room2d[x][1] = RoomCellType.TO_EXIT
-      }
-      if (room2d[x - 1][49] === RoomCellType.EXIT) {
-        room2d[x][48] = RoomCellType.TO_EXIT
-      }
-      if (room2d[x][49] === RoomCellType.EXIT) {
-        room2d[x][48] = RoomCellType.TO_EXIT
-      }
-      if (room2d[x + 1][49] === RoomCellType.EXIT) {
-        room2d[x][48] = RoomCellType.TO_EXIT
-      }
-    }
-
-    // mark Border Tiles as not usable
-    for (let y = 1; y < 49; y++) {
-      room2d[0][y] === RoomCellType.UNWALKABLE
-      room2d[49][y] === RoomCellType.UNWALKABLE
-    }
-
-    for (let x = 1; x < 49; x++) {
-      room2d[x][0] === RoomCellType.UNWALKABLE
-      room2d[x][49] === RoomCellType.UNWALKABLE
     }
 
     return room2d
-  }
-}
-
-export function loop() {
-  if (Game.time % 10 !== 0) {
-    const startCPU: number = Game.cpu.getUsed()
-
-    // Rectangle Array, the Rectangles will be protected by the returned tiles
-    const protectedArea: RectCoordinates[] = [{ x1: 20, y1: 6, x2: 28, y2: 27 }, { x1: 29, y1: 13, x2: 34, y2: 16 }]
-
-    // Boundary Array for Maximum Range
-    const bounds: RectCoordinates = { x1: 0, y1: 0, x2: 49, y2: 49 }
-
-    const positions: Coordinates[] = MinCut.GetCutTiles('sim', protectedArea, bounds)
-
-    console.log(`Positions returned: ${positions.length}`)
-    console.log(`Needed ${Game.cpu.getUsed() - startCPU} cpu time`)
   }
 }
