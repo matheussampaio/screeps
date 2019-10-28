@@ -5,7 +5,7 @@ import { ICreepContext } from './interfaces'
 
 @ActionsRegistry.register
 export class CreepSingleBuilder extends Action {
-  run(context: any): [ACTIONS_RESULT, ...string[]] {
+  run(context: any) {
     const creep: Creep | undefined = Game.creeps[context.creepName]
 
     if (creep == null) {
@@ -19,8 +19,7 @@ export class CreepSingleBuilder extends Action {
     const target: any = this.getConstructionTarget(creep, context)
 
     if (target == null) {
-      creep.suicide()
-      return this.waitNextTick()
+      return this.sleep(10)
     }
 
     if (creep.pos.inRangeTo(target, 3)) {
