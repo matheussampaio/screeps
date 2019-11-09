@@ -256,6 +256,34 @@ export class CityBuilder extends Action {
         if (value.includes(STRUCTURE_EXTRACTOR)) {
           this.room.visual.circle(x, y, { radius: 0.5, fill: '#008080' })
         }
+
+        if (value.includes(STRUCTURE_LINK)) {
+          this.room.visual.circle(x, y, { radius: 0.5, fill: '#cccc00' })
+        }
+
+        if (value.includes(STRUCTURE_TERMINAL)) {
+          this.room.visual.circle(x, y, { radius: 0.5, fill: '#0066cc' })
+        }
+
+        if (value.includes(STRUCTURE_LAB)) {
+          this.room.visual.circle(x, y, { radius: 0.5, fill: '#ff3399' })
+        }
+
+        if (value.includes(STRUCTURE_FACTORY)) {
+          this.room.visual.circle(x, y, { radius: 0.5, fill: '#cc0000' })
+        }
+
+        if (value.includes(STRUCTURE_POWER_SPAWN)) {
+          this.room.visual.circle(x, y, { radius: 0.5, fill: '#cc0000' })
+        }
+
+        if (value.includes(STRUCTURE_NUKER)) {
+          this.room.visual.circle(x, y, { radius: 0.5, fill: '#cc0000' })
+        }
+
+        if (value.includes(STRUCTURE_OBSERVER)) {
+          this.room.visual.circle(x, y, { radius: 0.5, fill: '#006600' })
+        }
       }
     }
   }
