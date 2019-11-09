@@ -141,9 +141,11 @@ export class CityPlanner extends Action {
 
     this.placeSpawners()
 
-    this.placeExtensions()
+    this.placeStructureType(STRUCTURE_TOWER)
 
-    this.placeTowers()
+    this.placeStructureType(STRUCTURE_TERMINAL)
+
+    this.placeStructureType(STRUCTURE_EXTENSION)
 
     this.placeWallsAndRamparts()
 
@@ -230,27 +232,15 @@ export class CityPlanner extends Action {
       .forEach(pos => this.setPos(pos.x, pos.y, [STRUCTURE_ROAD]))
   }
 
-  private placeExtensions() {
-    for (let i = 0; i < CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][8]; i++) {
-      const pos = this.findSuitablePlaceForStructure(STRUCTURE_EXTENSION)
+  private placeStructureType(structureType: BuildableStructureConstant) {
+    for (let i = 0; i < CONTROLLER_STRUCTURES[structureType][8]; i++) {
+      const pos = this.findSuitablePlaceForStructure(structureType)
 
       if (pos == null) {
         break
       }
 
-      this.placeStructure(pos, STRUCTURE_EXTENSION)
-    }
-  }
-
-  private placeTowers() {
-    for (let i = 0; i < CONTROLLER_STRUCTURES[STRUCTURE_TOWER][8]; i++) {
-      const pos = this.findSuitablePlaceForStructure(STRUCTURE_TOWER)
-
-      if (pos == null) {
-        break
-      }
-
-      this.placeStructure(pos, STRUCTURE_TOWER)
+      this.placeStructure(pos, structureType)
     }
   }
 
