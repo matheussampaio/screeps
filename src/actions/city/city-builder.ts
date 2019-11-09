@@ -224,21 +224,21 @@ export class CityBuilder extends Action {
             const v2 = this.getPos(coord.x, coord.y)
 
             if (v2.includes(STRUCTURE_ROAD)) {
-              this.room.visual.line(x, y, coord.x, coord.y, { color: '#000000', opacity: 0.5 })
+              this.room.visual.line(x, y, coord.x, coord.y, { color: '#111111' })
             }
           })
         }
 
         if (value.includes(STRUCTURE_STORAGE)) {
-          this.room.visual.circle(x, y, { radius: 0.5, fill: '#ff0000' })
-        }
-
-        if (value.includes(STRUCTURE_SPAWN)) {
           this.room.visual.circle(x, y, { radius: 0.5, fill: '#0000ff' })
         }
 
+        if (value.includes(STRUCTURE_SPAWN)) {
+          this.room.visual.circle(x, y, { radius: 0.5, fill: '#ffff00', stroke: 'red' })
+        }
+
         if (value.includes(STRUCTURE_EXTENSION)) {
-          this.room.visual.circle(x, y, { radius: 0.5, fill: '#ff00ff' })
+          this.room.visual.circle(x, y, { radius: 0.5, fill: '#ffff00' })
         }
 
         if (value.includes(STRUCTURE_TOWER)) {
@@ -246,11 +246,11 @@ export class CityBuilder extends Action {
         }
 
         if (value.includes(STRUCTURE_WALL)) {
-          this.room.visual.circle(x, y, { radius: 0.5, fill: '#888800' })
+          this.room.visual.circle(x, y, { radius: 0.5, fill: '#000000', stroke: 'white' })
         }
 
         if (value.includes(STRUCTURE_RAMPART)) {
-          this.room.visual.circle(x, y, { radius: 0.5, fill: '#880000' })
+          this.room.visual.circle(x, y, { radius: 0.5, fill: '#00cc00', stroke: 'white' })
         }
 
         if (value.includes(STRUCTURE_EXTRACTOR)) {

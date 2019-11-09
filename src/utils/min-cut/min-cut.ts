@@ -79,21 +79,21 @@ export class MinCut {
     }
 
     // ********************** Visualisierung
-    const visual = new RoomVisual(roomName)
+    // const visual = new RoomVisual(roomName)
 
-    for (let x = 0; x < 50; x++) {
-      for (let y = 0; y < 50; y++) {
-        if (room2d[x][y] === RoomCellType.UNWALKABLE)
-          visual.circle(x, y, { radius: 0.5, fill: '#ff0000', opacity: 0.3 })
-        else if (room2d[x][y] === RoomCellType.NORMAL)
-          visual.circle(x, y, { radius: 0.5, fill: '#404040', opacity: 0.3 })
-        else if (room2d[x][y] === RoomCellType.PROTECTED) {
-          visual.circle(x, y, { radius: 0.5, fill: '#75e863', opacity: 0.3 })
-        } else if (room2d[x][y] === RoomCellType.TO_EXIT) {
-          visual.circle(x, y, { radius: 0.5, fill: '#b063e8', opacity: 0.3 })
-        }
-      }
-    }
+    // for (let x = 0; x < 50; x++) {
+    //   for (let y = 0; y < 50; y++) {
+    //     if (room2d[x][y] === RoomCellType.UNWALKABLE)
+    //       visual.circle(x, y, { radius: 0.5, fill: '#ff0000', opacity: 0.3 })
+    //     else if (room2d[x][y] === RoomCellType.NORMAL)
+    //       visual.circle(x, y, { radius: 0.5, fill: '#404040', opacity: 0.3 })
+    //     else if (room2d[x][y] === RoomCellType.PROTECTED) {
+    //       visual.circle(x, y, { radius: 0.5, fill: '#75e863', opacity: 0.3 })
+    //     } else if (room2d[x][y] === RoomCellType.TO_EXIT) {
+    //       visual.circle(x, y, { radius: 0.5, fill: '#b063e8', opacity: 0.3 })
+    //     }
+    //   }
+    // }
 
     // initialise graph
     // possible 2*50*50 +2 (st) Vertices (Walls etc set to unused later)
@@ -249,17 +249,17 @@ export class MinCut {
     }
 
     // Visualise Result
-    if (positions.length > 0) {
-      const visual = new RoomVisual(roomName)
+    // if (positions.length > 0) {
+    //   const visual = new RoomVisual(roomName)
 
-      for (let i = positions.length - 1; i >= 0; i--) {
-        visual.circle(positions[i].x, positions[i].y, {
-          fill: '#ff7722',
-          opacity: 0.9,
-          radius: 0.5
-        })
-      }
-    }
+    //   for (let i = positions.length - 1; i >= 0; i--) {
+    //     visual.circle(positions[i].x, positions[i].y, {
+    //       fill: '#ff7722',
+    //       opacity: 0.9,
+    //       radius: 0.5
+    //     })
+    //   }
+    // }
 
     return positions
   }
