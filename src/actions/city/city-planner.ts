@@ -139,6 +139,8 @@ export class CityPlanner extends Action {
       }
     }
 
+    this.placeSpawners()
+
     this.placeExtensions()
 
     this.placeTowers()
@@ -146,6 +148,24 @@ export class CityPlanner extends Action {
     this.placeWallsAndRamparts()
 
     this.placeExtractors()
+  }
+
+  private placeSpawners() {
+    const spawners = this.room.find(FIND_MY_SPAWNS)
+
+    for (let i = spawners.length; i < CONTROLLER_STRUCTURES[STRUCTURE_SPAWN][8]; i++) {
+      const pos = this.findSuitablePlaceForStructure(STRUCTURE_SPAWN)
+
+      if (pos == null) {
+        break
+      }
+
+      // place rounds around spawner
+      utils.getEmptySpacesAroundPosition(pos)
+        .forEach(pos => this.setPos(pos.x, pos.y, [STRUCTURE_ROAD]))
+
+      this.placeStructure(pos, STRUCTURE_SPAWN)
+    }
   }
 
   private placeExtractors() {
@@ -270,6 +290,10 @@ export class CityPlanner extends Action {
 
       // if this position is protected in the cost matrix
       if (this.costMatrix.get(pos.x, pos.y) >= 50) {
+        continue
+      }
+
+      if (structureType === STRUCTURE_SPAWN && utils.getEmptySpacesAroundPosition(pos).length < 8) {
         continue
       }
 
