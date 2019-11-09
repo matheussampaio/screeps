@@ -79,11 +79,37 @@ export class CityPlanner extends Action {
       })
     }
 
+    const minerals = this.room.find(FIND_MINERALS)
+
+    // block tiles around minerals and place extractor
+    for (const mineral of minerals) {
+      utils.getNeighborsPositions(mineral.pos).forEach(pos => {
+        this.costMatrix.set(pos.x, pos.y, Infinity)
+      })
+
+      utils.getEmptySpacesAroundPosition(mineral.pos).forEach(pos => {
+        this.costMatrix.set(pos.x, pos.y, 5)
+      })
+    }
+
     this.placeStorage()
 
     // block and plan roads to sources
     for (const source of sources) {
       const result = this.search(source.pos)
+
+      if (result.incomplete) {
+        continue
+      }
+
+      for (const pos of result.path.slice(1)) {
+        this.setPos(pos.x, pos.y, [STRUCTURE_ROAD])
+      }
+    }
+
+    // block and plan roads to minerals
+    for (const mineral of minerals) {
+      const result = this.search(mineral.pos)
 
       if (result.incomplete) {
         continue
@@ -118,6 +144,22 @@ export class CityPlanner extends Action {
     this.placeTowers()
 
     this.placeWallsAndRamparts()
+
+    this.placeExtractors()
+  }
+
+  private placeExtractors() {
+    const minerals = this.room.find(FIND_MINERALS)
+
+    for (let i = 0; i < CONTROLLER_STRUCTURES[STRUCTURE_EXTRACTOR][8]; i++) {
+      const mineral = minerals.shift()
+
+      if (mineral == null) {
+        break
+      }
+
+      this.placeStructure(mineral.pos, STRUCTURE_EXTRACTOR)
+    }
   }
 
   private placeWallsAndRamparts() {

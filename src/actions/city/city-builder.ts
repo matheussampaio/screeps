@@ -106,6 +106,10 @@ export class CityBuilder extends Action {
       constructionOrder.push(STRUCTURE_STORAGE)
     }
 
+    if (this.controller.level >= 6) {
+      constructionOrder.push(STRUCTURE_EXTRACTOR)
+    }
+
     const structures = this.room.find(FIND_STRUCTURES)
     const sites = this.room.find(FIND_CONSTRUCTION_SITES)
 
@@ -235,6 +239,10 @@ export class CityBuilder extends Action {
 
         if (value.includes(STRUCTURE_RAMPART)) {
           this.room.visual.circle(x, y, { radius: 0.5, fill: '#880000' })
+        }
+
+        if (value.includes(STRUCTURE_EXTRACTOR)) {
+          this.room.visual.circle(x, y, { radius: 0.5, fill: '#008080' })
         }
       }
     }
