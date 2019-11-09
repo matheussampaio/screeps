@@ -198,20 +198,12 @@ export class CityBuilder extends Action {
     return this.context.planner
   }
 
-  private get center(): RoomPosition {
-    const { x, y } = this.mem.center
-
-    return this.room.getPositionAt(x, y) as RoomPosition
-  }
-
   private visualize() {
     const flag = Game.flags['visual']
 
     if (flag == null) {
       return
     }
-
-    this.room.visual.circle(this.center.x, this.center.y, { radius: 0.5, fill: '#00ff00' })
 
     for (let x = 0; x < 50; x++) {
       for (let y = 0; y < 50; y++) {
@@ -230,7 +222,7 @@ export class CityBuilder extends Action {
         }
 
         if (value.includes(STRUCTURE_STORAGE)) {
-          this.room.visual.circle(x, y, { radius: 0.5, fill: '#0000ff' })
+          this.room.visual.rect(x - 0.5, y - 0.5, 1, 1, { fill: '#ffff00', stroke: 'green' })
         }
 
         if (value.includes(STRUCTURE_SPAWN)) {
@@ -242,7 +234,7 @@ export class CityBuilder extends Action {
         }
 
         if (value.includes(STRUCTURE_TOWER)) {
-          this.room.visual.circle(x, y, { radius: 0.5, fill: '#ddccff' })
+          this.room.visual.rect(x - 0.5, y - 0.5, 1, 1, { fill: '#ffff00', stroke: 'red' })
         }
 
         if (value.includes(STRUCTURE_WALL)) {
@@ -254,7 +246,7 @@ export class CityBuilder extends Action {
         }
 
         if (value.includes(STRUCTURE_EXTRACTOR)) {
-          this.room.visual.circle(x, y, { radius: 0.5, fill: '#008080' })
+          this.room.visual.circle(x, y, { radius: 0.5, fill: '#008080', stroke: 'red' })
         }
 
         if (value.includes(STRUCTURE_LINK)) {
@@ -262,7 +254,7 @@ export class CityBuilder extends Action {
         }
 
         if (value.includes(STRUCTURE_TERMINAL)) {
-          this.room.visual.circle(x, y, { radius: 0.5, fill: '#0066cc' })
+          this.room.visual.circle(x, y, { radius: 0.5, fill: '#0066cc', stroke: 'blue' })
         }
 
         if (value.includes(STRUCTURE_LAB)) {
