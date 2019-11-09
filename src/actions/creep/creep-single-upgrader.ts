@@ -78,7 +78,8 @@ export class CreepSingleUpgraderGetEnergy extends Action {
     }
 
     const resource = creep.room.controller.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {
-      filter: r => r.resourceType === RESOURCE_ENERGY
+      filter: r => r.resourceType === RESOURCE_ENERGY,
+      ignoreCreeps: true
     })
 
     if (resource == null || creep.room.controller.pos.getRangeTo(resource) > 3) {
