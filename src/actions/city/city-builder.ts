@@ -250,7 +250,13 @@ export class CityBuilder extends Action {
         }
 
         if (value.includes(STRUCTURE_LINK)) {
-          this.room.visual.circle(x, y, { radius: 0.5, fill: '#cccc00' })
+          this.room.visual.poly([
+            [x, y - 0.5],
+            [x + 0.4, y],
+            [x, y + 0.5],
+            [x - 0.4, y],
+            [x, y - 0.5]
+          ], { fill: '#ffff00', stroke: 'green' })
         }
 
         if (value.includes(STRUCTURE_TERMINAL)) {
