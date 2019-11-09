@@ -222,29 +222,35 @@ export class CityPlanner extends Action {
   }
 
   private placeStorage() {
+    // place storage in the center
+    this.placeStructure(this.center, STRUCTURE_STORAGE, true)
+
+    // place rounds around storage
     utils.getEmptySpacesAroundPosition(this.center)
       .forEach(pos => this.setPos(pos.x, pos.y, [STRUCTURE_ROAD]))
-
-    this.placeStructure(this.center, STRUCTURE_STORAGE, true)
   }
 
   private placeExtensions() {
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][8]; i++) {
       const pos = this.findSuitablePlaceForStructure(STRUCTURE_EXTENSION)
 
-      if (pos) {
-        this.placeStructure(pos, STRUCTURE_EXTENSION)
+      if (pos == null) {
+        break
       }
+
+      this.placeStructure(pos, STRUCTURE_EXTENSION)
     }
   }
 
   private placeTowers() {
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < CONTROLLER_STRUCTURES[STRUCTURE_TOWER][8]; i++) {
       const pos = this.findSuitablePlaceForStructure(STRUCTURE_TOWER)
 
-      if (pos) {
-        this.placeStructure(pos, STRUCTURE_TOWER)
+      if (pos == null) {
+        break
       }
+
+      this.placeStructure(pos, STRUCTURE_TOWER)
     }
   }
 
@@ -302,24 +308,6 @@ export class CityPlanner extends Action {
       if (neighbors.find(p => this.getPos(p.x, p.y).includes(STRUCTURE_ROAD))) {
         return pos
       }
-
-      // return pos
-
-      // const construtableTiles = utils.getEmptySpacesAroundPosition(pos).map(pos => ({
-      //   pos,
-      //   structureType: this.getPos(pos.x, pos.y),
-      //   cost: this.costMatrix.get(pos.x, pos.y)
-      // }))
-
-      // const emptyTile = construtableTiles.find(tile => tile.structureType == null && tile.cost < 100)
-
-      // if (emptyTile) {
-      //   return emptyTile.pos
-      // }
-
-      // const roads = construtableTiles.filter(tile => tile.structureType === STRUCTURE_ROAD)
-
-      // roads.forEach(road => queue.push(road.pos))
     }
 
     console.log(`can't find a place for ${structureType}`)
