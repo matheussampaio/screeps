@@ -106,10 +106,6 @@ export class CityBuilder extends Action {
       constructionOrder.push(STRUCTURE_STORAGE)
     }
 
-    if (this.controller.level >= 5) {
-      constructionOrder.push(STRUCTURE_LINK)
-    }
-
     if (this.controller.level >= 6) {
       constructionOrder.push(STRUCTURE_SPAWN, STRUCTURE_EXTRACTOR, STRUCTURE_TERMINAL, STRUCTURE_LAB)
     }
@@ -281,6 +277,10 @@ export class CityBuilder extends Action {
 
         if (value.includes(STRUCTURE_OBSERVER)) {
           this.room.visual.circle(x, y, { radius: 0.5, fill: '#006600' })
+        }
+
+        if (value.includes(STRUCTURE_CONTAINER)) {
+          this.room.visual.rect(x - 0.3 , y - 0.4, 0.6, 0.8, { fill: '#ffffff', stroke: 'green' })
         }
       }
     }

@@ -102,8 +102,21 @@ export class CityPlanner extends Action {
         continue
       }
 
-      for (const pos of result.path.slice(1)) {
+      for (const pos of result.path.slice(1, result.path.length - 1)) {
         this.setPos(pos.x, pos.y, [STRUCTURE_ROAD])
+      }
+
+      const lastPos = result.path.pop() as RoomPosition
+
+      this.setPos(lastPos.x, lastPos.y, [STRUCTURE_ROAD, STRUCTURE_CONTAINER])
+
+      const neighbors = utils.getEmptySpacesAroundPosition(lastPos)
+
+      for (const neighbor of neighbors) {
+        if (this.getPos(neighbor.x, neighbor.y).length === 0) {
+          this.setPos(neighbor.x, neighbor.y, [STRUCTURE_LINK])
+          break
+        }
       }
     }
 
@@ -115,8 +128,21 @@ export class CityPlanner extends Action {
         continue
       }
 
-      for (const pos of result.path.slice(1)) {
+      for (const pos of result.path.slice(1, result.path.length - 1)) {
         this.setPos(pos.x, pos.y, [STRUCTURE_ROAD])
+      }
+
+      const lastPos = result.path.pop() as RoomPosition
+
+      this.setPos(lastPos.x, lastPos.y, [STRUCTURE_ROAD, STRUCTURE_CONTAINER])
+
+      const neighbors = utils.getEmptySpacesAroundPosition(lastPos)
+
+      for (const neighbor of neighbors) {
+        if (this.getPos(neighbor.x, neighbor.y).length === 0) {
+          this.setPos(neighbor.x, neighbor.y, [STRUCTURE_LINK])
+          break
+        }
       }
     }
 
@@ -162,7 +188,7 @@ export class CityPlanner extends Action {
         break
       }
 
-      // place rounds around spawner
+      // place roads around spawner
       utils.getEmptySpacesAroundPosition(pos)
         .forEach(pos => this.setPos(pos.x, pos.y, [STRUCTURE_ROAD]))
 
@@ -217,7 +243,9 @@ export class CityPlanner extends Action {
     const flag = Game.flags['reset-plan']
 
     if (flag && flag.room && flag.room.name === this.context.roomName) {
-      flag.remove()
+      if (this.room.name !== 'sim') {
+        flag.remove()
+      }
 
       this.context.planner = null
     }
@@ -227,9 +255,21 @@ export class CityPlanner extends Action {
     // place storage in the center
     this.placeStructure(this.center, STRUCTURE_STORAGE, true)
 
-    // place rounds around storage
+    // place roads around storage
     utils.getEmptySpacesAroundPosition(this.center)
       .forEach(pos => this.setPos(pos.x, pos.y, [STRUCTURE_ROAD]))
+
+    const positions = utils.getEmptySpacesAroundPosition(this.center, 2)
+
+    // place link close to storage
+    for (const pos of positions) {
+      const structures = this.getPos(pos.x, pos.y)
+
+      if (structures.length === 0) {
+        this.setPos(pos.x, pos.y, [STRUCTURE_LINK])
+        break
+      }
+    }
   }
 
   private placeStructureType(structureType: BuildableStructureConstant) {
@@ -289,8 +329,30 @@ export class CityPlanner extends Action {
         continue
       }
 
-      if (structureType === STRUCTURE_SPAWN && utils.getEmptySpacesAroundPosition(pos).length < 8) {
-        continue
+      if (structureType === STRUCTURE_SPAWN) {
+        const positions = utils.getEmptySpacesAroundPosition(pos)
+
+        if (positions.length < 8) {
+          continue
+        }
+
+        const neighborsWillBeAStructure = positions.some(pos => {
+          const structures = this.getPos(pos.x, pos.y)
+
+          if (structures.length === 0) {
+            return false
+          }
+
+          if (structures.length === 1 && structures[0] === STRUCTURE_ROAD) {
+            return false
+          }
+
+          return true
+        })
+
+        if (neighborsWillBeAStructure) {
+          continue
+        }
       }
 
       // if this position has a road connected to it, it's a nice fit
