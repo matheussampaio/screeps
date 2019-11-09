@@ -106,8 +106,20 @@ export class CityBuilder extends Action {
       constructionOrder.push(STRUCTURE_STORAGE)
     }
 
+    if (this.controller.level >= 5) {
+      constructionOrder.push(STRUCTURE_LINK)
+    }
+
     if (this.controller.level >= 6) {
-      constructionOrder.push(STRUCTURE_EXTRACTOR, STRUCTURE_SPAWN)
+      constructionOrder.push(STRUCTURE_SPAWN, STRUCTURE_EXTRACTOR, STRUCTURE_TERMINAL, STRUCTURE_LAB)
+    }
+
+    if (this.controller.level >= 7) {
+      constructionOrder.push(STRUCTURE_FACTORY)
+    }
+
+    if (this.controller.level >= 8) {
+      constructionOrder.push(STRUCTURE_POWER_SPAWN, STRUCTURE_NUKER, STRUCTURE_OBSERVER)
     }
 
     const structures = this.room.find(FIND_STRUCTURES)
