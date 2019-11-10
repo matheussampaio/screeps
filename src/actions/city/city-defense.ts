@@ -24,6 +24,10 @@ export class CityDefense extends City {
       return this.attack(towers, enemies)
     }
 
+    if (this.storage && this.storage.store.getUsedCapacity(RESOURCE_ENERGY) as number <= 10000) {
+      return this.waitNextTick()
+    }
+
     const roads = this.room.find(FIND_STRUCTURES, {
       filter: r => r.structureType === STRUCTURE_ROAD && r.hitsMax - r.hits >= 800
     }) as StructureRoad[]
