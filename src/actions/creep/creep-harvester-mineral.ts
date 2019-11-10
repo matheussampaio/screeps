@@ -18,7 +18,7 @@ export class CreepHarvesterMineral extends Action {
     }
 
     if (!this.creep.pos.isNearTo(mineral)) {
-      this.creep.travelTo(mineral, { range: 1 })
+      this.creep.travelTo(mineral, { range: 1, ignoreCreeps: true })
 
       return this.waitNextTick()
     }
@@ -30,7 +30,17 @@ export class CreepHarvesterMineral extends Action {
     }
 
     if (!extractor.cooldown && mineral.mineralAmount) {
-      const result = this.creep.harvest(mineral)
+      this.creep.harvest(mineral)
+    }
+
+    // try to move on top of container every 10 ticks
+    if (Game.time % 12 === 0 && this.context.containerPos) {
+      const { x, y } =  this.context.containerPos
+      const pos = this.room.getPositionAt(x, y) as RoomPosition
+
+      if (!this.creep.pos.isEqualTo(pos) && !pos.lookFor(LOOK_CREEPS).length) {
+        this.creep.travelTo(pos)
+      }
     }
 
     return this.waitNextTick()
@@ -38,6 +48,10 @@ export class CreepHarvesterMineral extends Action {
 
   private get creep(): Creep {
     return Game.creeps[this.context.creepName]
+  }
+
+  private get room(): Room {
+    return Game.rooms[this.creep.memory.roomName]
   }
 }
 

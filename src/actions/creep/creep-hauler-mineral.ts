@@ -25,7 +25,7 @@ export class CreepHaulerMineral extends Action {
 
     // move to storage
     if (!this.creep.pos.isNearTo(this.storage)) {
-      this.creep.travelTo(this.storage, { range: 1 })
+      this.creep.travelTo(this.storage, { range: 1, ignoreCreeps: true })
       return this.waitNextTick()
     }
 
@@ -92,7 +92,7 @@ export class CreepHaulerGetMineral extends CreepHaulerMineral {
     if (this.creep.pos.isNearTo(resource)) {
       this.creep.pickup(resource)
     } else {
-      this.creep.travelTo(resource, { range: 1 })
+      this.creep.travelTo(resource, { range: 1, ignoreCreeps: true })
     }
 
     return this.waitNextTick()
@@ -106,7 +106,7 @@ export class CreepHaulerGetMineral extends CreepHaulerMineral {
     }
 
     if (!this.creep.pos.isNearTo(container)) {
-      this.creep.travelTo(container, { range: 1 })
+      this.creep.travelTo(container, { range: 1, ignoreCreeps: true })
       return this.waitNextTick()
     }
 
