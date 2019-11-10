@@ -53,6 +53,7 @@ export interface ICityContext {
   roomName?: string
   queue?: ISpawnerItem[]
   emergencyCreep?: string
+  recyclerCreep?: string
   linkCreep?: string
   planner?: Partial<{
     storageLinkPos: {
