@@ -16,13 +16,31 @@ export class CityEmergency extends City {
       return this.sleep(50)
     }
 
+    if (Game.creeps[this.context.emergencyCreep as string]) {
+      return this.sleep(50)
+    }
+
     const foundCreepInTheRoom = Object.values(Game.creeps).find(creep => (
       creep.my && creep.memory.roomName === this.room.name
     ))
 
-    if (foundCreepInTheRoom) {
-      return this.sleep(foundCreepInTheRoom.ticksToLive)
+    if (!foundCreepInTheRoom) {
+      return this.emergency()
     }
+
+    const foundHarvester = this.sources.some(
+      source => source.harvesters.some(creepName => Game.creeps[creepName])
+    )
+
+    if (!foundHarvester) {
+      return this.emergency()
+    }
+
+    return this.waitNextTick()
+  }
+
+  private emergency() {
+    this.context.queue = []
 
     this.createEmergencyCreep()
 
@@ -42,6 +60,8 @@ export class CityEmergency extends City {
       priority: PRIORITY.VERY_HIGH,
       memory: {}
     })
+
+    this.context.emergencyCreep = creepName
   }
 }
 
