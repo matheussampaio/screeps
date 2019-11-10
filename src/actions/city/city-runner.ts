@@ -226,7 +226,7 @@ export class CityRunner extends City {
       .addMoveIfPossible()
       .value(),
       actions: [[CreepCheckStop.name], [CreepSingleBuilder.name]],
-      priority: PRIORITY.NORMAL
+      priority: PRIORITY.LOW
     })
 
     return creepName
@@ -240,7 +240,7 @@ export class CityRunner extends City {
       creepName,
       body: this.upgradersBody,
       actions: [[CreepCheckStop.name], [CreepSingleUpgrader.name]],
-      priority: PRIORITY.NORMAL
+      priority: PRIORITY.LOW
     })
 
     return creepName
@@ -326,6 +326,10 @@ export class CityRunner extends City {
 
     // build sources
     for (let i = 0; i < CONTROLLER_STRUCTURES[STRUCTURE_LINK][this.controller.level]; i++) {
+      if (!positions.length) {
+        break
+      }
+
       const hasPos = positions.shift() as { x: number, y: number }
 
       const link = this.findLink(hasPos)
