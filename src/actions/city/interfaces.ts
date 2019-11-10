@@ -40,6 +40,7 @@ export interface ICityContext {
   roomName?: string
   queue?: ISpawnerItem[]
   emergencyCreep?: string
+  linkCreep?: string
   planner?: Partial<{
     mineralLinkPos: {
       x: number

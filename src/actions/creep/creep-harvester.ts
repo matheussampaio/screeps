@@ -62,7 +62,7 @@ export class CreepHarvester extends Action {
 
     // try to create or find an existing container
     if (link == null) {
-      this.findOrCreateStructure(this.context.linkPos, STRUCTURE_LINK, 'link')
+      this.findStructure(this.context.linkPos, STRUCTURE_LINK, 'link')
       return this.waitNextTick()
     }
 
@@ -84,7 +84,7 @@ export class CreepHarvester extends Action {
 
     // try to create or find an existing container
     if (container == null) {
-      this.findOrCreateStructure(this.context.containerPos, STRUCTURE_CONTAINER, 'container')
+      this.findStructure(this.context.containerPos, STRUCTURE_CONTAINER, 'container', true)
       return this.waitNextTick()
     }
 
@@ -117,7 +117,7 @@ export class CreepHarvester extends Action {
     return this.context.working && this.creep.getActiveBodyparts(WORK) && this.creep.getActiveBodyparts(CARRY) && this.creep.store.getUsedCapacity(RESOURCE_ENERGY)
   }
 
-  private findOrCreateStructure(hasPos: { x: number, y: number }, structureType: BuildableStructureConstant, prop: string): void {
+  private findStructure(hasPos: { x: number, y: number }, structureType: BuildableStructureConstant, prop: string, create: boolean = false): void {
     const pos = this.room.getPositionAt(hasPos.x, hasPos.y) as RoomPosition
 
     const structure = pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === structureType)
@@ -136,6 +136,10 @@ export class CreepHarvester extends Action {
       return
     }
 
-    this.room.createConstructionSite(hasPos.x, hasPos.y, structureType)
+    if (create) {
+      this.room.createConstructionSite(hasPos.x, hasPos.y, structureType)
+    }
+
+    return
   }
 }

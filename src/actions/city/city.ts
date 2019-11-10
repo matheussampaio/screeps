@@ -156,6 +156,10 @@ export class City extends Action {
     return this.room.getPositionAt(x, y) as RoomPosition
   }
 
+  protected isCreepNameInQueue(creepName: string): boolean {
+    return this.queue.some(item => item.creepName === creepName)
+  }
+
   run(context: ICityContext): [ACTIONS_RESULT, ...(string | number)[]] {
     this.context = context
 

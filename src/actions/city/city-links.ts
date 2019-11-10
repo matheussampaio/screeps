@@ -1,0 +1,131 @@
+import * as _ from 'lodash'
+
+import { ActionsRegistry, PRIORITY } from '../../core'
+import { ICityContext } from './interfaces'
+import * as utils from '../../utils'
+import { City } from './city'
+import { CreepCheckStop } from '../creep'
+import { CreepLink } from '../creep'
+import { CreateBody } from '../../utils'
+
+@ActionsRegistry.register
+export class CityLinks extends City {
+  run(context: ICityContext) {
+    this.context = context
+
+    if (!CONTROLLER_STRUCTURES[STRUCTURE_LINK][this.controller.level]) {
+      return this.waitNextTick() // TODO: sleep for 1000
+    }
+
+    if (this.storage == null) {
+      return this.sleep(5)
+    }
+
+    const storageLink = this.getStorageLink()
+
+    if (storageLink == null) {
+      return this.waitNextTick() // TODO: sleep for 500
+    }
+
+    if (this.context.linkCreep == null) {
+      this.createLinkCreep(storageLink.id)
+      return this.sleep(5)
+    }
+
+    const creep = Game.creeps[this.context.linkCreep as string]
+
+    if (creep == null) {
+      if (this.isCreepNameInQueue(this.context.linkCreep)) {
+        return this.sleep(5)
+      }
+
+      this.createLinkCreep(storageLink.id)
+      return this.sleep(5)
+    }
+
+    if (creep.spawning) {
+      return this.sleep(5)
+    }
+
+    if (storageLink.store.getFreeCapacity(RESOURCE_ENERGY) as number <= 10) {
+      return this.waitNextTick()
+    }
+
+    const fullSourceLink = this.getFullSourceLink()
+
+    if (fullSourceLink == null) {
+      return this.waitNextTick()
+    }
+
+    const result = fullSourceLink.transferEnergy(storageLink)
+
+    return this.waitNextTick()
+  }
+
+  private createLinkCreep(storageLinkId: string) {
+    const creepName = utils.getUniqueCreepName('link')
+
+    const memory = {
+      link: storageLinkId
+    }
+
+    const maxParts = {
+      [CARRY]: 16
+    }
+
+    this.queue.push({
+      memory,
+      creepName,
+      body: new CreateBody({
+        maxParts,
+        minimumEnergy: this.room.energyCapacityAvailable,
+        ticksToMove: 4
+      })
+      .add([CARRY], { repeat: true })
+      .value(),
+      actions: [[CreepCheckStop.name], [CreepLink.name]],
+      priority: PRIORITY.NORMAL
+    })
+
+    this.context.linkCreep = creepName
+
+    return creepName
+  }
+
+  private getLink(hasPos: { x: number, y: number } | undefined | null): StructureLink | null {
+    if (hasPos == null) {
+      return null
+    }
+
+    const pos = this.room.getPositionAt(hasPos.x, hasPos.y)
+
+    if (pos == null) {
+      return null
+    }
+
+    const link = pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_LINK) as StructureLink
+
+    return link
+  }
+
+  private getStorageLink(): StructureLink | null {
+    return this.getLink(this.planner.storageLinkPos)
+  }
+
+  private getFullSourceLink(): StructureLink | null {
+    const positions = [
+      ...this.sources.map(s => s.linkPos),
+      this.planner.mineralLinkPos
+    ]
+
+    for (const pos of positions) {
+      const link = this.getLink(pos)
+
+      if (link && !link.cooldown && !link.store.getFreeCapacity(RESOURCE_ENERGY)) {
+        return link
+      }
+    }
+
+    return null
+  }
+}

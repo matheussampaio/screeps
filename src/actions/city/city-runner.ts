@@ -49,6 +49,8 @@ export class CityRunner extends City {
       this.planner.storagers.push(creepName)
     }
 
+    const storageHasLinks = this.findLink(this.planner.storageLinkPos) instanceof StructureLink
+
     for (const source of this.sources) {
       source.harvesters = source.harvesters.filter((creepName: string) => Game.creeps[creepName] != null)
       source.haulers = source.haulers.filter((creepName: string) => Game.creeps[creepName] != null)
@@ -63,9 +65,12 @@ export class CityRunner extends City {
 
       source.desiredCarryParts = energyProduced / CARRY_CAPACITY
 
-      const link = this.findOrCreateLink(source.linkPos)
+      const link = this.findLink(source.linkPos)
+      const sourceHasLinks = link instanceof StructureLink
+      const isHaulerNeeded = !storageHasLinks || !sourceHasLinks
 
-      if (link != null && currentCarryParts * CARRY_CAPACITY < energyProduced) {
+      // only create haulers if we don't have links
+      if (isHaulerNeeded && currentCarryParts * CARRY_CAPACITY < energyProduced) {
         const memory = { source: source.id, containerPos: source.containerPos }
         const creepName = this.createHaulers(memory, { [CARRY]: source.desiredCarryParts + 2 })
 
@@ -322,11 +327,21 @@ export class CityRunner extends City {
 
     // build sources
     for (let i = 0; i < CONTROLLER_STRUCTURES[STRUCTURE_LINK][this.controller.level]; i++) {
-      this.findOrCreateLink(positions.shift() as { x: number, y: number })
+      const hasPos = positions.shift() as { x: number, y: number }
+
+      const link = this.findLink(hasPos)
+
+      if (link == null) {
+        const pos = this.room.getPositionAt(hasPos.x, hasPos.y) as RoomPosition
+
+        this.room.createConstructionSite(pos, STRUCTURE_LINK)
+
+        break
+      }
     }
   }
 
-  private findOrCreateLink(hasPos: { x: number, y: number } | undefined | null): StructureLink | ConstructionSite | null {
+  private findLink(hasPos: { x: number, y: number } | undefined | null): StructureLink | ConstructionSite | null {
     if (hasPos == null) {
       return null
     }
@@ -344,8 +359,6 @@ export class CityRunner extends City {
     if (constructionSite) {
       return constructionSite
     }
-
-    this.room.createConstructionSite(pos, STRUCTURE_LINK)
 
     return null
   }
