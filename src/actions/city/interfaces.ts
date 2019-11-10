@@ -42,10 +42,6 @@ export interface ICityContext {
   emergencyCreep?: string
   linkCreep?: string
   planner?: Partial<{
-    mineralLinkPos: {
-      x: number
-      y: number
-    }
     storageLinkPos: {
       x: number
       y: number

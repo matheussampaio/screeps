@@ -159,16 +159,6 @@ export class CityPlanner extends City {
       const lastPos = result.path[result.path.length - 1] as RoomPosition
 
       this.setPos(lastPos.x, lastPos.y, [STRUCTURE_ROAD, STRUCTURE_CONTAINER])
-
-      const neighbors = utils.getEmptySpacesAroundPosition(lastPos)
-
-      for (const neighbor of neighbors) {
-        if (this.getPos(neighbor.x, neighbor.y).length === 0) {
-          this.planner.mineralLinkPos = neighbor
-          this.setPos(neighbor.x, neighbor.y, [STRUCTURE_LINK])
-          break
-        }
-      }
     }
 
     // block and plan roads to exits

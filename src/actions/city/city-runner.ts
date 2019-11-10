@@ -321,8 +321,7 @@ export class CityRunner extends City {
 
     const positions = [
       this.planner.storageLinkPos,
-      ...this.sources.sort((a, b) => b.distance - a.distance).map(s => s.linkPos),
-      this.planner.mineralLinkPos
+      ...this.sources.sort((a, b) => b.distance - a.distance).map(s => s.linkPos)
     ]
 
     // build sources
