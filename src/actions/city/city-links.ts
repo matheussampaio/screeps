@@ -28,7 +28,7 @@ export class CityLinks extends City {
     }
 
     if (this.context.linkCreep == null) {
-      this.createLinkCreep(storageLink.id)
+      this.createLinkCreep(storageLink.id as string)
       return this.sleep(5)
     }
 
@@ -39,7 +39,7 @@ export class CityLinks extends City {
         return this.sleep(5)
       }
 
-      this.createLinkCreep(storageLink.id)
+      this.createLinkCreep(storageLink.id as string)
       return this.sleep(5)
     }
 

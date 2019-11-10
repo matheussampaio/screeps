@@ -53,7 +53,7 @@ export class CreepSingleHauler extends Action {
 
   findTransferTarget(creep: Creep, context: ICreepContext): StructureExtension | StructureTower | StructureSpawn | StructureStorage | StructureContainer | null {
     if (creep.room.storage && creep.room.storage.isActive() && creep.room.storage.store.getFreeCapacity(RESOURCE_ENERGY)) {
-      context.target = creep.room.storage.id
+      context.target = creep.room.storage.id as string
       return creep.room.storage
     }
 
@@ -72,7 +72,7 @@ export class CreepSingleHauler extends Action {
     const emptyTower = towers.find(tower => tower.store.getUsedCapacity(RESOURCE_ENERGY) as number < 250)
 
     if (emptyTower) {
-      context.target = emptyTower.id
+      context.target = emptyTower.id as string
 
       return emptyTower
     }
@@ -84,7 +84,7 @@ export class CreepSingleHauler extends Action {
     }) as StructureExtension | null
 
     if (extension) {
-      context.target = extension.id
+      context.target = extension.id as string
       return extension
     }
 
@@ -93,7 +93,7 @@ export class CreepSingleHauler extends Action {
     })
 
     if (spawn) {
-      context.target = spawn.id
+      context.target = spawn.id as string
       return spawn
     }
 
@@ -104,7 +104,7 @@ export class CreepSingleHauler extends Action {
     if (towers.length) {
       const tower = towers[0]
 
-      context.target = tower.id
+      context.target = tower.id as string
 
       return tower
     }
@@ -117,7 +117,7 @@ export class CreepSingleHauler extends Action {
       if (containers.length) {
         const container = containers[0]
 
-        context.target = container.id
+        context.target = container.id as string
 
         return container
       }
@@ -131,7 +131,7 @@ export class CreepSingleHauler extends Action {
 export class CreepSingleHaulerTransfer extends Action {
   run(context: ICreepContext): [ACTIONS_RESULT, ...string[]] {
     const creep: Creep | undefined = Game.creeps[context.creepName]
-    const target: StructureSpawn | StructureExtension | StructureStorage | StructureTower | null = Game.getObjectById(context.target)
+    const target: StructureSpawn | StructureExtension | StructureStorage | StructureTower | null = Game.getObjectById(context.target as string)
 
     if (target == null || !target.store.getFreeCapacity(RESOURCE_ENERGY)) {
       delete context.target
@@ -174,7 +174,7 @@ export class CreepSingleHaulerGetEnergy extends Action {
   }
 
   pickUpEnergy(context: ICreepContext): [ACTIONS_RESULT, ...string[]] | null {
-    const source: Source | null = Game.getObjectById(context.source)
+    const source: Source | null = Game.getObjectById(context.source as string)
 
     if (source == null) {
       return this.shiftAndStop()

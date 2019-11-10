@@ -54,7 +54,7 @@ export class CreepHauler extends Action {
     }) as StructureExtension | null
 
     if (extension) {
-      context.target = extension.id
+      context.target = extension.id as string
       return extension
     }
 
@@ -63,7 +63,7 @@ export class CreepHauler extends Action {
     })
 
     if (spawn) {
-      context.target = spawn.id
+      context.target = spawn.id as string
       return spawn
     }
 

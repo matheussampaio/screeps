@@ -56,7 +56,7 @@ export class CreepBuilder extends Action {
       return null
     }
 
-    context.target = targets[0].id
+    context.target = targets[0].id as string
 
     return targets[0]
   }

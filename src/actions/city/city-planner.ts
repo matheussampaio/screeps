@@ -129,7 +129,7 @@ export class CityPlanner extends City {
 
       _.defaultsDeep(this.planner, {
         sources: {
-          [source.id]: {
+          [source.id as string]: {
             linkPos,
             id: source.id,
             harvesters: [],
@@ -162,7 +162,7 @@ export class CityPlanner extends City {
 
       _.defaultsDeep(this.planner, {
         minerals: {
-          [mineral.id]: {
+          [mineral.id as string]: {
             id: mineral.id,
             harvesters: [],
             haulers: [],

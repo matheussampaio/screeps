@@ -96,7 +96,7 @@ export class CreepGetEnergy extends Action {
         return this.waitNextTick()
       }
 
-      context.source = source.id
+      context.source = source.id as string
     }
 
     const source: Source | null = Game.getObjectById(context.source)
