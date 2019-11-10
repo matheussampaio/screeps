@@ -19,15 +19,10 @@ export class CreepSingleUpgrader extends Action {
       return this.waitNextTick()
     }
 
-    if (!creep.pos.inRangeTo(controller, 3)) {
-      creep.travelTo(controller, { range: 3 })
-      return this.waitNextTick()
-    }
-
     const storage = creep.room.storage
 
-    if (storage && !creep.pos.isNearTo(storage)) {
-      creep.travelTo(storage, { range: 1 })
+    if (!creep.pos.inRangeTo(controller, 3)) {
+      creep.travelTo(controller, { range: 3, ignoreCreeps: true })
       return this.waitNextTick()
     }
 
@@ -72,7 +67,7 @@ export class CreepSingleUpgraderGetEnergy extends Action {
         return this.shiftAndStop()
       }
 
-      creep.travelTo(storage, { range: 1 })
+      creep.travelTo(storage, { range: 1, ignoreCreeps: true })
 
       return this.waitNextTick()
     }
@@ -92,7 +87,7 @@ export class CreepSingleUpgraderGetEnergy extends Action {
       return this.shiftAndStop()
     }
 
-    creep.travelTo(resource, { range: 1 })
+    creep.travelTo(resource, { range: 1, ignoreCreeps: true})
 
     return this.waitNextTick()
   }
