@@ -38,7 +38,7 @@ export class CreepStorager extends Action {
     }
 
     const towers: StructureTower[] = creep.room.find(FIND_MY_STRUCTURES, {
-      filter: s => s.structureType === STRUCTURE_TOWER && s.isActive() && s.store.getFreeCapacity(RESOURCE_ENERGY)
+      filter: s => s.structureType === STRUCTURE_TOWER && s.isActive() && s.store.getFreeCapacity(RESOURCE_ENERGY) as number >= 250
     }) as StructureTower[]
 
     const emptyTower = towers.find(tower => tower.store.getUsedCapacity(RESOURCE_ENERGY) as number < 250)
@@ -108,6 +108,13 @@ export class CreepStoragerTransfer extends Action {
     if (target == null || !target.store.getFreeCapacity(RESOURCE_ENERGY)) {
       delete context.target
       return this.shiftAndContinue()
+    }
+
+    const storage = creep.room.storage
+
+    // refill if close to storage
+    if (storage && creep.store.getFreeCapacity(RESOURCE_ENERGY) && creep.pos.isNearTo(storage) && storage.store.getUsedCapacity(RESOURCE_ENERGY)) {
+      creep.withdraw(storage, RESOURCE_ENERGY)
     }
 
     if (!creep.pos.isNearTo(target)) {
