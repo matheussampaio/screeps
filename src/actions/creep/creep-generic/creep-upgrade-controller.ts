@@ -9,20 +9,27 @@ export class CreepUpgradeController extends Action {
     const creep: Creep | undefined = Game.creeps[context.creepName]
 
     if (creep == null) {
-      return [ACTIONS_RESULT.SHIFT_AND_STOP]
+      return this.shiftAndStop()
     }
 
     const isEmpty = _.sum(_.values(creep.carry)) === 0
 
     if (isEmpty) {
-      return [ACTIONS_RESULT.SHIFT_AND_CONTINUE]
+      return this.shiftAndContinue()
     }
 
-    const controller: StructureController | undefined = creep.room.controller
+    const room = Game.rooms[creep.memory.roomName]
+
+    if (room == null) {
+      return this.waitNextTick()
+    }
+
+    const controller: StructureController | undefined = room.controller
+
     // we should always find the controler...
     if (controller == null) {
       this.logger.error(`Can't find controller`, context.creepName)
-      return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+      return this.waitNextTick()
     }
 
     if (controller.sign == null) {
@@ -32,7 +39,7 @@ export class CreepUpgradeController extends Action {
         creep.travelTo(controller);
       }
 
-      return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+      return this.waitNextTick()
     }
 
     if (context.rangeToController == null) {
@@ -45,6 +52,6 @@ export class CreepUpgradeController extends Action {
       creep.travelTo(controller)
     }
 
-    return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+    return this.waitNextTick()
   }
 }

@@ -9,7 +9,7 @@ export class CreepGetEnergy extends Action {
     const creep: Creep | undefined = Game.creeps[context.creepName]
 
     if (creep == null) {
-      return [ACTIONS_RESULT.SHIFT_AND_STOP]
+      return this.shiftAndStop()
     }
 
     if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
@@ -36,7 +36,7 @@ export class CreepGetEnergy extends Action {
       return result
     }
 
-    return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+    return this.waitNextTick()
   }
 
   pickUpEnergy(context: ICreepGenericContext): [ACTIONS_RESULT, ...string[]] | null {
@@ -62,7 +62,13 @@ export class CreepGetEnergy extends Action {
   withdrawEnergy(context: ICreepGenericContext): [ACTIONS_RESULT, ...string[]] | null {
     const creep: Creep = Game.creeps[context.creepName]
 
-    const storage = creep.room.storage
+    const room = Game.rooms[creep.memory.roomName]
+
+    if (room == null) {
+      return null
+    }
+
+    const storage = room.storage
 
     if (storage && storage.isActive() && storage.store.getUsedCapacity(RESOURCE_ENERGY)) {
       if (creep.pos.isNearTo(storage)) {

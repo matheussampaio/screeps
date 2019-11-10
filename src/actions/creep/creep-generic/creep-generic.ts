@@ -11,15 +11,15 @@ export class CreepGeneric extends Action {
     const creep: Creep | undefined = Game.creeps[context.creepName]
 
     if (creep.spawning) {
-      return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+      return this.waitNextTick()
     }
 
     const isEmpty = _.sum(_.values(creep.carry)) === 0
 
     if (isEmpty) {
-      return [ACTIONS_RESULT.UNSHIFT_AND_CONTINUE, CreepGetEnergy.name]
+      return this.unshiftAndContinue(CreepGetEnergy.name)
     }
 
-    return [ACTIONS_RESULT.UNSHIFT_AND_CONTINUE, CreepHauler.name]
+    return this.unshiftAndContinue(CreepHauler.name)
   }
 }

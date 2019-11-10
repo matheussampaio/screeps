@@ -10,32 +10,32 @@ export class CreepHauler extends Action {
     const creep: Creep | undefined = Game.creeps[context.creepName]
 
     if (creep == null) {
-      return [ACTIONS_RESULT.SHIFT_AND_STOP]
+      return this.shiftAndStop()
     }
 
     const isEmpty = _.sum(_.values(creep.carry)) === 0
 
     if (isEmpty) {
-      return [ACTIONS_RESULT.SHIFT_AND_CONTINUE]
+      return this.shiftAndContinue()
     }
 
     const target: StructureSpawn | StructureExtension | null = this.getHaulerTarget(creep, context)
 
     if (target == null) {
       this.logger.debug(`Can't find a target, trying to build sites`, context.creepName)
-      return [ACTIONS_RESULT.SHIFT_UNSHIFT_AND_CONTINUE, CreepBuilder.name]
+      return this.shiftUnshitAndContinue(CreepBuilder.name)
     }
 
     if (!creep.pos.isNearTo(target)) {
       creep.travelTo(target)
-      return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+      return this.waitNextTick()
     }
 
     creep.transfer(target, RESOURCE_ENERGY)
 
     delete context.target
 
-    return [ACTIONS_RESULT.SHIFT_AND_STOP]
+    return this.shiftAndStop()
   }
 
   getHaulerTarget(creep: Creep, context: ICreepGenericContext): StructureExtension | StructureSpawn | null {

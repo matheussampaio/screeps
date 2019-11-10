@@ -10,20 +10,20 @@ export class CreepBuilder extends Action {
     const creep: Creep | undefined = Game.creeps[context.creepName]
 
     if (creep == null) {
-      return [ACTIONS_RESULT.SHIFT_AND_STOP]
+      return this.shiftAndStop()
     }
 
     const isEmpty = _.sum(_.values(creep.carry)) === 0
 
     if (isEmpty) {
-      return [ACTIONS_RESULT.SHIFT_AND_CONTINUE]
+      return this.shiftAndContinue()
     }
 
     const target: any = this.getConstructionTarget(creep, context)
 
     if (target == null) {
       this.logger.debug(`Can't find a construction target, trying to upgrade contoler.`, context.creepName)
-      return [ACTIONS_RESULT.SHIFT_UNSHIFT_AND_CONTINUE, CreepUpgradeController.name]
+      return this.shiftUnshitAndContinue(CreepUpgradeController.name)
     }
 
     if (creep.pos.inRangeTo(target, 3)) {
@@ -32,7 +32,7 @@ export class CreepBuilder extends Action {
       creep.travelTo(target)
     }
 
-    return [ACTIONS_RESULT.WAIT_NEXT_TICK]
+    return this.waitNextTick()
   }
 
   getConstructionTarget(creep: Creep, context: ICreepGenericContext): any {
@@ -44,7 +44,13 @@ export class CreepBuilder extends Action {
       }
     }
 
-    const targets = creep.room.find(FIND_MY_CONSTRUCTION_SITES).sort((c1, c2) => c2.progress - c1.progress);
+    const room = Game.rooms[creep.memory.roomName]
+
+    if (room == null) {
+      return null
+    }
+
+    const targets = room.find(FIND_MY_CONSTRUCTION_SITES).sort((c1, c2) => c2.progress - c1.progress);
 
     if (targets.length === 0) {
       return null
