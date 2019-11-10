@@ -14,17 +14,17 @@ export class CityLinks extends City {
     this.context = context
 
     if (!CONTROLLER_STRUCTURES[STRUCTURE_LINK][this.controller.level]) {
-      return this.waitNextTick() // TODO: sleep for 1000
+      return this.sleep(1000)
     }
 
     if (this.storage == null) {
-      return this.sleep(5)
+      return this.sleep(100)
     }
 
     const storageLink = this.getStorageLink()
 
     if (storageLink == null) {
-      return this.waitNextTick() // TODO: sleep for 500
+      return this.sleep(500)
     }
 
     if (this.context.linkCreep == null) {
