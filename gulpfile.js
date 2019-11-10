@@ -15,7 +15,8 @@ function getOptions() {
       host: 'localhost',
       port: 21025,
       password: process.env.SCREEPS_PASSWORD,
-      email: process.env.SCREEPS_EMAIL
+      email: process.env.SCREEPS_EMAIL,
+      branch: process.env.SCREEPS_BRANCH || 'default'
     }
   }
 
