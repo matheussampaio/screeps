@@ -127,17 +127,19 @@ export class CityPlanner extends City {
         }
       }
 
-      _.defaultsDeep(this.planner.sources, {
-        [source.id]: {
-          linkPos,
-          id: source.id,
-          harvesters: [],
-          haulers: [],
-          containerPos: lastPos,
-          distance: result.path.length,
-          emptySpaces: utils.getEmptySpacesAroundPosition(source.pos).length,
-          desiredWorkParts: 0,
-          desiredCarryParts: 0
+      _.defaultsDeep(this.planner, {
+        sources: {
+          [source.id]: {
+            linkPos,
+            id: source.id,
+            harvesters: [],
+            haulers: [],
+            containerPos: lastPos,
+            distance: result.path.length,
+            emptySpaces: utils.getEmptySpacesAroundPosition(source.pos).length,
+            desiredWorkParts: 0,
+            desiredCarryParts: 0
+          }
         }
       })
     }
