@@ -57,7 +57,7 @@ export class CityLinks extends City {
       return this.waitNextTick()
     }
 
-    const result = fullSourceLink.transferEnergy(storageLink)
+    fullSourceLink.transferEnergy(storageLink)
 
     return this.waitNextTick()
   }
@@ -78,13 +78,14 @@ export class CityLinks extends City {
       creepName,
       body: new CreateBody({
         maxParts,
-        minimumEnergy: this.room.energyCapacityAvailable,
+        minimumEnergy: 300,
+        energyAvailable: this.room.energyAvailable,
         ticksToMove: 4
       })
       .add([CARRY], { repeat: true })
       .value(),
       actions: [[CreepCheckStop.name], [CreepLink.name]],
-      priority: PRIORITY.NORMAL
+      priority: PRIORITY.HIGH
     })
 
     this.context.linkCreep = creepName
@@ -114,8 +115,7 @@ export class CityLinks extends City {
 
   private getFullSourceLink(): StructureLink | null {
     const positions = [
-      ...this.sources.map(s => s.linkPos),
-      this.planner.mineralLinkPos
+      ...this.sources.map(s => s.linkPos)
     ]
 
     for (const pos of positions) {
