@@ -1,58 +1,62 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry, Action, ACTIONS_RESULT, PRIORITY } from '../../core'
+import { ActionsRegistry, PRIORITY } from '../../core'
 import { CreateBody } from '../../utils/create-body'
 import { CreepCheckStop, CreepGeneric } from '../creep'
 import { ICityContext, IPlanSource } from './interfaces'
+import { City } from './city'
 import * as utils from '../../utils'
 
 @ActionsRegistry.register
-export class CityEmergency extends Action {
-  run(context: ICityContext): [ACTIONS_RESULT, ...string[]] {
-    const creep = Game.creeps[context.emergencyCreep]
+export class CityEmergency extends City {
+  run(context: ICityContext) {
+    this.context = context
+
+    const creep = Game.creeps[this.emergencyCreep]
 
     // already in emergency
     if (creep) {
+      console.log('emergency', creep.ticksToLive)
       return this.waitNextTick()
     }
 
-    let hasHarvesters = false
-    let hasHaulers = false
+    let enableEmergencyCreep = true
 
-    const sources: IPlanSource[] = _.get(context, 'plan.sources', [])
-
-    for (const source of sources) {
+    for (const source of this.sources) {
       const foundOneHarvesterAlive = source.harvesters.some(creepName => Game.creeps[creepName])
       const foundOneHaulerAlive = source.haulers.some(creepName => Game.creeps[creepName])
 
-      if (foundOneHarvesterAlive) {
-        hasHarvesters = true
+      if (foundOneHarvesterAlive && foundOneHaulerAlive) {
+        enableEmergencyCreep = false
+        break
       }
 
-      if (foundOneHaulerAlive) {
-        hasHaulers = true
-      }
+      // if (source.linkPos) {
+      //   const pos = this.room.getPositionAt(source.linkPos.x, source.linkPos.y) as RoomPosition
+
+      //   const link = pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_LINK) as StructureLink
+
+      //   if (foundOneHarvesterAlive && link) {
+      //     enableEmergencyCreep = false
+      //     break
+      //   }
+      // }
     }
 
-    const enableEmergencyCreep = !hasHaulers || !hasHarvesters
-
-    if (enableEmergencyCreep) {
-      context.queue = []
-
+    if (enableEmergencyCreep && this.room.energyAvailable >= 300) {
       this.createEmergencyCreep(context)
     }
 
-    return this.waitNextTick()
+    return this.sleep(100)
   }
 
   private createEmergencyCreep(context: ICityContext) {
-    const room: Room = Game.rooms[context.roomName]
-    const body: BodyPartConstant[] = new CreateBody({ minimumEnergy: 300, energyAvailable: room.energyAvailable })
+    const body: BodyPartConstant[] = new CreateBody({ minimumEnergy: 300, energyAvailable: this.room.energyAvailable })
         .add([WORK, CARRY], { repeat: true, withMove: true })
         .value()
     const creepName = utils.getUniqueCreepName('emergency')
 
-    context.queue.push({
+    this.queue.push({
       body,
       creepName,
       actions: [[CreepCheckStop.name], [CreepGeneric.name]],

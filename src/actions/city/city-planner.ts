@@ -1,47 +1,53 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry, Action } from '../../core'
+import { ActionsRegistry } from '../../core'
 import * as utils from '../../utils'
 import { RectCoordinates, MinCut, Coordinates } from '../../utils/min-cut'
-
-const cms: any = {}
+import { ICityContext } from './interfaces'
+import { City } from './city'
 
 @ActionsRegistry.register
-export class CityPlanner extends Action {
-  private context: any
-
-  run(context: any) {
+export class CityPlanner extends City {
+  run(context: ICityContext) {
     this.context = context
 
     this.resetPlanIfFlag()
 
-    if (this.mem.plannedAt == null) {
+    if (this.planner.plannedAt == null) {
       this.replan()
+    }
+
+    const maxWorkPartAllowedByEnergyCapacity = this.getMaxWorkPartAllowedByEnergyCapacity()
+
+    if (this.planner.energyCapacityAvailable !== this.room.energyCapacityAvailable) {
+      this.planner.energyCapacityAvailable = this.room.energyCapacityAvailable
+
+      for (const sourceId in this.planner.sources) {
+        const source: Source | null = Game.getObjectById(sourceId)
+        const sourcePlan = this.planner.sources[sourceId]
+
+        if (source == null) {
+          continue
+        }
+
+        const desiredWorkParts = Math.min(this.OPTIMUM_WORK_PARTS_PER_SOURCE, maxWorkPartAllowedByEnergyCapacity * sourcePlan.emptySpaces)
+
+        sourcePlan.desiredWorkParts = desiredWorkParts
+      }
     }
 
     return this.waitNextTick()
     // return this.sleep(5)
   }
 
-  private get costMatrix(): CostMatrix {
-    const cm = cms[this.context.roomName] || (cms[this.context.roomName] = {})
-
-    if (cm.time !== Game.time) {
-      cm.time = Game.time
-      cm.matrix = new PathFinder.CostMatrix()
-
-      const roads = this.room.find(FIND_STRUCTURES, {
-        filter: s => s.structureType === STRUCTURE_ROAD
-      })
-
-      roads.forEach(road => cm.matrix.set(road.pos.x, road.pos.y, 1))
-    }
-
-    return cm.matrix
+  private getMaxWorkPartAllowedByEnergyCapacity(): number {
+    return Math.floor(
+      (this.room.energyCapacityAvailable - BODYPART_COST[MOVE] - BODYPART_COST[CARRY]) / BODYPART_COST[WORK]
+    )
   }
 
   private replan() {
-    this.mem.plannedAt = Game.time
+    this.planner.plannedAt = Game.time
 
     const exits = [
       FIND_EXIT_TOP,
@@ -106,18 +112,34 @@ export class CityPlanner extends Action {
         this.setPos(pos.x, pos.y, [STRUCTURE_ROAD])
       }
 
-      const lastPos = result.path.pop() as RoomPosition
+      const lastPos = result.path[result.path.length - 1] as RoomPosition
 
       this.setPos(lastPos.x, lastPos.y, [STRUCTURE_ROAD, STRUCTURE_CONTAINER])
 
       const neighbors = utils.getEmptySpacesAroundPosition(lastPos)
+      let linkPos
 
       for (const neighbor of neighbors) {
         if (this.getPos(neighbor.x, neighbor.y).length === 0) {
           this.setPos(neighbor.x, neighbor.y, [STRUCTURE_LINK])
+          linkPos = neighbor
           break
         }
       }
+
+      _.defaultsDeep(this.planner.sources, {
+        [source.id]: {
+          linkPos,
+          id: source.id,
+          harvesters: [],
+          haulers: [],
+          containerPos: lastPos,
+          distance: result.path.length,
+          emptySpaces: utils.getEmptySpacesAroundPosition(source.pos).length,
+          desiredWorkParts: 0,
+          desiredCarryParts: 0
+        }
+      })
     }
 
     // block and plan roads to minerals
@@ -132,7 +154,7 @@ export class CityPlanner extends Action {
         this.setPos(pos.x, pos.y, [STRUCTURE_ROAD])
       }
 
-      const lastPos = result.path.pop() as RoomPosition
+      const lastPos = result.path[result.path.length - 1] as RoomPosition
 
       this.setPos(lastPos.x, lastPos.y, [STRUCTURE_ROAD, STRUCTURE_CONTAINER])
 
@@ -140,6 +162,7 @@ export class CityPlanner extends Action {
 
       for (const neighbor of neighbors) {
         if (this.getPos(neighbor.x, neighbor.y).length === 0) {
+          this.planner.mineralLinkPos = neighbor
           this.setPos(neighbor.x, neighbor.y, [STRUCTURE_LINK])
           break
         }
@@ -226,7 +249,7 @@ export class CityPlanner extends Action {
     // Boundary Array for Maximum Range
     const bounds: RectCoordinates = { x1: 0, y1: 0, x2: 49, y2: 49 }
 
-    const positions: Coordinates[] = MinCut.GetCutTiles(this.context.roomName, protectedArea, bounds)
+    const positions: Coordinates[] = MinCut.GetCutTiles(this.room.name, protectedArea, bounds)
 
     for (const pos of positions) {
       const value = this.getPos(pos.x, pos.y)
@@ -247,7 +270,7 @@ export class CityPlanner extends Action {
         flag.remove()
       }
 
-      this.context.planner = null
+      delete this.context.planner
     }
   }
 
@@ -266,6 +289,7 @@ export class CityPlanner extends Action {
       const structures = this.getPos(pos.x, pos.y)
 
       if (structures.length === 0) {
+        this.planner.storageLinkPos = pos
         this.setPos(pos.x, pos.y, [STRUCTURE_LINK])
         break
       }
@@ -371,23 +395,6 @@ export class CityPlanner extends Action {
     this.setPos(pos.x, pos.y, [structureType], force)
   }
 
-  private get map(): BuildableStructureConstant[][] {
-    return this.mem.map || (this.mem.map = Array(50 * 50).fill([]))
-  }
-
-  private getPos(x: number, y: number): BuildableStructureConstant[] {
-    return this.map[y * 50 + x]
-  }
-
-  private setPos(x: number, y: number, value: BuildableStructureConstant[], force: boolean = false) {
-    const idx = y * 50 + x
-
-    if (this.map[idx].length === 0 || force) {
-      this.map[y * 50 + x] = value
-      this.costMatrix.set(x, y, value.includes(STRUCTURE_ROAD) ? 1 : Infinity)
-    }
-  }
-
   private search(pos: RoomPosition | RoomPosition[], range = 1): PathFinderPath {
     const opts: PathFinderOpts = {
       roomCallback: (roomName: string): boolean | CostMatrix => {
@@ -406,51 +413,6 @@ export class CityPlanner extends Action {
     const goals = positions.map(pos => ({ pos, range }))
 
     return PathFinder.search(this.center, goals, opts)
-  }
-
-  private get room(): Room {
-    return Game.rooms[this.context.roomName]
-  }
-
-  private get controller(): StructureController {
-    return this.room.controller as StructureController
-  }
-
-  private get mem(): any {
-    if (this.context.planner == null) {
-      this.context.planner = {
-        nextPrune: Game.time + 1,
-        nextConstruction: Game.time + 2,
-      }
-    }
-
-    return this.context.planner
-  }
-
-  private get center(): RoomPosition {
-    if (this.mem.center) {
-      const { x, y } = this.mem.center
-
-      return this.room.getPositionAt(x, y) as RoomPosition
-    }
-
-    const queue = utils.getEmptySpacesAroundPosition(this.controller.pos, 3)
-
-    queue.sort((p1, p2) => {
-      const ep1 = utils.getEmptySpacesAroundPosition(p1).length
-      const ep2 = utils.getEmptySpacesAroundPosition(p2).length
-
-      return ep2 - ep1
-    })
-
-    const center = _.head(queue) || this.controller.pos
-
-    this.mem.center = {
-      x: center.x,
-      y: center.y
-    }
-
-    return center
   }
 }
 

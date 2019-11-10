@@ -1,5 +1,3 @@
-import { ISleepContext } from '../sleep'
-
 declare global {
   interface Memory {
     counters?: {
@@ -28,24 +26,46 @@ export interface IPlanSource {
   emptySpaces: number
   desiredWorkParts: number
   desiredCarryParts: number
+  linkPos: {
+    x: number
+    y: number
+  } | null
   containerPos: {
     x: number
     y: number
   } | null
 }
 
-export interface ICityContext extends ISleepContext {
-  roomName: string
-  queue: ISpawnerItem[]
-  emergencyCreep: string
-  plan: {
-    time: number
+export interface ICityContext {
+  roomName?: string
+  queue?: ISpawnerItem[]
+  emergencyCreep?: string
+  planner?: Partial<{
+    mineralLinkPos: {
+      x: number
+      y: number
+    }
+    storageLinkPos: {
+      x: number
+      y: number
+    }
+    center: {
+      x: number
+      y: number
+    }
+    energyCapacityAvailable: number
     rcl: number
-    energyCapacity: number
-    sources: IPlanSource[]
+    time: number
+    sources: {
+      [sourceId: string]: IPlanSource
+    }
     builders: string[]
     upgraders: string[]
     storagers: string[]
     upgradersBody: BodyPartConstant[]
-  }
+    map: BuildableStructureConstant[][]
+    nextPrune: number
+    nextConstruction: number
+    plannedAt: number
+  }>
 }

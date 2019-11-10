@@ -1,17 +1,17 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry, Action } from '../../core'
+import { ActionsRegistry, ACTIONS_RESULT } from '../../core'
 import * as utils from '../../utils'
+import { ICityContext } from './interfaces'
+import { City } from './city'
 
 @ActionsRegistry.register
-export class CityBuilder extends Action {
-  private context: any
-
-  run(context: any) {
+export class CityBuilder extends City {
+  run(context: ICityContext): [ACTIONS_RESULT, ...string[]] {
     this.context = context
 
-    if (this.mem.map == null) {
-      return this.sleep(5)
+    if (this.map == null) {
+      return this.waitNextTick()
     }
 
     if (_.size(Game.constructionSites) >= MAX_CONSTRUCTION_SITES) {
@@ -172,26 +172,6 @@ export class CityBuilder extends Action {
     }
 
     return positions
-  }
-
-  private get map(): BuildableStructureConstant[][] {
-    return this.mem.map
-  }
-
-  private getPos(x: number, y: number): BuildableStructureConstant[] {
-    return this.map[y * 50 + x]
-  }
-
-  private get room(): Room {
-    return Game.rooms[this.context.roomName]
-  }
-
-  private get controller(): StructureController {
-    return this.room.controller as StructureController
-  }
-
-  private get mem(): any {
-    return this.context.planner
   }
 
   private visualize() {

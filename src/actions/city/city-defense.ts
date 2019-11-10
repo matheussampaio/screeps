@@ -1,29 +1,30 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry, Action, ACTIONS_RESULT } from '../../core'
+import { ActionsRegistry, ACTIONS_RESULT } from '../../core'
 import { ICityContext } from './interfaces'
 import * as utils from '../../utils'
+import { City } from './city'
 
 @ActionsRegistry.register
-export class CityDefense extends Action {
+export class CityDefense extends City {
   run(context: ICityContext): [ACTIONS_RESULT, ...string[]] {
-    const room: Room = Game.rooms[context.roomName]
+    this.context = context
 
-    const enemies: Creep[] = room.find(FIND_HOSTILE_CREEPS) as Creep[]
+    const enemies: Creep[] = this.room.find(FIND_HOSTILE_CREEPS) as Creep[]
 
-    const towers: StructureTower[] = room.find(FIND_MY_STRUCTURES, {
+    const towers: StructureTower[] = this.room.find(FIND_MY_STRUCTURES, {
       filter: t => t.structureType === STRUCTURE_TOWER && t.store.getCapacity(RESOURCE_ENERGY) as number >= 10
     }) as StructureTower[]
 
     if (enemies.length && !towers.length) {
-      return this.enableSafeMode(context)
+      return this.enableSafeMode()
     }
 
     if (enemies.length && towers.length) {
       return this.attack(towers, enemies)
     }
 
-    const roads = room.find(FIND_STRUCTURES, {
+    const roads = this.room.find(FIND_STRUCTURES, {
       filter: r => r.structureType === STRUCTURE_ROAD && r.hitsMax - r.hits >= 800
     }) as StructureRoad[]
 
@@ -42,9 +43,9 @@ export class CityDefense extends Action {
       8: 200000
     }
 
-    const controller = room.controller as StructureController
+    const controller = this.room.controller as StructureController
 
-    const walls = room.find(FIND_STRUCTURES, {
+    const walls = this.room.find(FIND_STRUCTURES, {
       filter: r => r.structureType === STRUCTURE_WALL && r.hits < wallsHP[controller.level]
     }) as StructureWall[]
 
@@ -52,7 +53,7 @@ export class CityDefense extends Action {
       return this.repair(towers, walls)
     }
 
-    const ramparts = room.find(FIND_STRUCTURES, {
+    const ramparts = this.room.find(FIND_STRUCTURES, {
       filter: r => r.structureType === STRUCTURE_RAMPART && r.hits < wallsHP[controller.level]
     }) as StructureRampart[]
 
@@ -74,15 +75,14 @@ export class CityDefense extends Action {
     return this.waitNextTick()
   }
 
-  enableSafeMode(context: ICityContext): [ACTIONS_RESULT.WAIT_NEXT_TICK] {
-    const room: Room = Game.rooms[context.roomName]
-
-    if (room.controller && room.controller.safeMode) {
+  enableSafeMode(): [ACTIONS_RESULT.WAIT_NEXT_TICK] {
+    if (this.controller.safeMode) {
       return this.waitNextTick()
     }
 
-    if (room.controller && room.controller.safeModeAvailable) {
-      room.controller.activateSafeMode()
+    if (this.controller.safeModeAvailable) {
+      this.controller.activateSafeMode()
+
       return this.waitNextTick()
     }
 
