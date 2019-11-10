@@ -24,7 +24,7 @@ export class CityDefense extends City {
       return this.attack(towers, enemies)
     }
 
-    if (this.storage && this.storage.store.getUsedCapacity(RESOURCE_ENERGY) as number <= 10000) {
+    if (this.storage && this.storage.store.getUsedCapacity(RESOURCE_ENERGY) as number <= 5000) {
       return this.waitNextTick()
     }
 
@@ -50,25 +50,19 @@ export class CityDefense extends City {
     const controller = this.room.controller as StructureController
 
     const walls = this.room.find(FIND_STRUCTURES, {
-      filter: r => r.structureType === STRUCTURE_WALL && r.hits < wallsHP[controller.level]
-    }) as StructureWall[]
+      filter: r => (r.structureType === STRUCTURE_WALL || r.structureType === STRUCTURE_RAMPART) && r.hits < wallsHP[controller.level]
+    }) as (StructureWall | StructureRampart)[]
 
     if (walls.length) {
       return this.repair(towers, walls)
     }
 
-    const ramparts = this.room.find(FIND_STRUCTURES, {
-      filter: r => r.structureType === STRUCTURE_RAMPART && r.hits < wallsHP[controller.level]
-    }) as StructureRampart[]
-
-    if (ramparts.length) {
-      return this.repair(towers, ramparts)
-    }
-
     return this.waitNextTick()
   }
 
-  repair(towers: StructureTower[], structures: StructureRoad[] | StructureWall[] | StructureRampart[]): [ACTIONS_RESULT.WAIT_NEXT_TICK] {
+  repair(towers: StructureTower[], structures: StructureRoad[] | (StructureWall | StructureRampart)[]): [ACTIONS_RESULT.WAIT_NEXT_TICK] {
+    structures.sort((a: any, b: any) => a.hits - b.hits)
+
     while(towers.length && structures.length) {
       const structure = structures.shift() as StructureRoad | StructureWall | StructureRampart
       const tower = towers.shift() as StructureTower
