@@ -159,6 +159,20 @@ export class CityPlanner extends City {
       const lastPos = result.path[result.path.length - 1] as RoomPosition
 
       this.setPos(lastPos.x, lastPos.y, [STRUCTURE_ROAD, STRUCTURE_CONTAINER])
+
+      _.defaultsDeep(this.planner, {
+        minerals: {
+          [mineral.id]: {
+            id: mineral.id,
+            harvesters: [],
+            haulers: [],
+            containerPos: lastPos,
+            distance: result.path.length,
+            emptySpaces: utils.getEmptySpacesAroundPosition(mineral.pos).length,
+            desiredCarryParts: 0
+          }
+        }
+      })
     }
 
     // block and plan roads to exits

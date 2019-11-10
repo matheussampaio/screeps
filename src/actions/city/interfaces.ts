@@ -36,6 +36,19 @@ export interface IPlanSource {
   } | null
 }
 
+export interface IPlanMineral {
+  id: string
+  harvesters: string[]
+  haulers: string[]
+  distance: number
+  emptySpaces: number
+  desiredCarryParts: number
+  containerPos: {
+    x: number
+    y: number
+  } | null
+}
+
 export interface ICityContext {
   roomName?: string
   queue?: ISpawnerItem[]
@@ -55,6 +68,9 @@ export interface ICityContext {
     time: number
     sources: {
       [sourceId: string]: IPlanSource
+    }
+    minerals: {
+      [mineralId: string]: IPlanMineral
     }
     builders: string[]
     upgraders: string[]
