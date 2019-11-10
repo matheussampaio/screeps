@@ -45,6 +45,9 @@ export class CityBuilder extends City {
       this.prune(STRUCTURE_EXTENSION, 1) ||
       this.prune(STRUCTURE_TOWER, 1) ||
       this.prune(STRUCTURE_STORAGE, 1) ||
+      this.prune(STRUCTURE_LINK, 1) ||
+      this.prune(STRUCTURE_TERMINAL, 1) ||
+      this.prune(STRUCTURE_LAB, 1) ||
       this.prune(STRUCTURE_WALL, 50) ||
       this.prune(STRUCTURE_RAMPART, 50)
   }
