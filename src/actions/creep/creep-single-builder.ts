@@ -1,48 +1,56 @@
 import * as _ from 'lodash'
 
 import { ActionsRegistry, Action, ACTIONS_RESULT } from '../../core'
-import { ICreepContext } from './interfaces'
 
 @ActionsRegistry.register
 export class CreepSingleBuilder extends Action {
-  run(context: any) {
-    const creep: Creep | undefined = Game.creeps[context.creepName]
+  private context: any
 
-    if (creep == null) {
+  private get creep(): Creep {
+    return Game.creeps[this.context.creepName]
+  }
+
+  private get room(): Room {
+    return Game.rooms[this.creep.memory.roomName]
+  }
+  run(context: any) {
+    this.context = context
+
+    if (this.creep == null) {
       return this.halt()
     }
 
-    if (creep.store.getUsedCapacity() === 0) {
+    if (this.creep.store.getUsedCapacity() === 0) {
       return this.unshiftAndContinue(CreepSingleBuilderGetEnergy.name)
     }
 
-    const target: any = this.getConstructionTarget(creep, context)
+    const target: any = this.getConstructionTarget()
 
     if (target == null) {
       return this.sleep(10)
     }
 
-    if (creep.pos.inRangeTo(target, 3)) {
-      creep.build(target)
+    if (this.creep.pos.inRangeTo(target, 3)) {
+      this.creep.build(target)
     } else {
-      creep.travelTo(target, { range: 3 })
+      this.creep.travelTo(target, { range: 3 })
     }
 
     return this.waitNextTick()
   }
 
-  getConstructionTarget(creep: Creep, context: any): any {
-    if (context.buildTarget) {
-      const target: any = Game.getObjectById(context.buildTarget)
+  getConstructionTarget(): any {
+    if (this.context.buildTarget) {
+      const target: any = Game.getObjectById(this.context.buildTarget)
 
       if (target) {
         return target
       }
 
-      delete context.buildTarget
+      delete this.context.buildTarget
     }
 
-    const targets = creep.room.find(FIND_MY_CONSTRUCTION_SITES).sort((c1, c2) => {
+    const targets = this.room.find(FIND_MY_CONSTRUCTION_SITES).sort((c1, c2) => {
       // build smaller contructions first
       if (c1.progressTotal !== c2.progressTotal) {
         return c1.progressTotal - c2.progressTotal
@@ -53,27 +61,14 @@ export class CreepSingleBuilder extends Action {
         return c2.progress - c1.progress
       }
 
-      const storage = creep.room.storage
-
-      // build constructions close to storage first
-      if (storage) {
-        return c1.pos.getRangeTo(storage) - c2.pos.getRangeTo(storage)
-      }
-
-      const controller = creep.room.controller
-
-      if (controller) {
-        return c1.pos.getRangeTo(controller) - c2.pos.getRangeTo(controller)
-      }
-
-      return c1.pos.getRangeTo(creep) - c2.pos.getRangeTo(creep)
+      return c1.pos.getRangeTo(this.creep) - c2.pos.getRangeTo(this.creep)
     })
 
     if (targets.length === 0) {
       return null
     }
 
-    context.buildTarget = targets[0].id
+    this.context.buildTarget = targets[0].id
 
     return targets[0]
   }
