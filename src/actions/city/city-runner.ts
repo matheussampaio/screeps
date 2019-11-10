@@ -272,7 +272,7 @@ export class CityRunner extends City {
       .add([CARRY], { repeat: true })
       .value(),
       actions: [[CreepCheckStop.name], [CreepSingleHauler.name]],
-      priority: PRIORITY.NORMAL
+      priority: PRIORITY.HIGH
     })
 
     return creepName
@@ -289,7 +289,7 @@ export class CityRunner extends City {
       .addMoveIfPossible()
       .value(),
       actions: [[CreepCheckStop.name], [CreepHarvester.name]],
-      priority: PRIORITY.NORMAL,
+      priority: PRIORITY.HIGH
     })
 
     return creepName
