@@ -23,13 +23,31 @@ export class CityRecycler extends City {
     const creep = Game.creeps[this.context.recyclerCreep as string]
 
     if (creep) {
-      return this.sleep(creep.ticksToLive)
+      return this.sleep(50)
     }
 
-    const tombstoneWithResource = this.room.find(FIND_TOMBSTONES).some(t => t.store.getUsedCapacity() >= 100)
+    const tombstoneWithResource = this.room.find(FIND_TOMBSTONES).some(t => {
+      if (t.store.getUsedCapacity(RESOURCE_ENERGY) >= 300) {
+        return true
+      }
+
+      return t.store.getUsedCapacity() - t.store.getUsedCapacity(RESOURCE_ENERGY)
+    })
 
     if (tombstoneWithResource) {
       this.createRecyclerCreep()
+
+      return this.sleep(50)
+    }
+
+    const resources = this.room.find(FIND_DROPPED_RESOURCES, {
+      filter: r => (r.resourceType === RESOURCE_ENERGY && r.amount >= 300) || (r.resourceType !== RESOURCE_ENERGY && r.amount >= 100)
+    })
+
+    if (resources.length) {
+      this.createRecyclerCreep()
+
+      return this.sleep(50)
     }
 
     return this.sleep(50)
