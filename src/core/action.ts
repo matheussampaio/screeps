@@ -26,54 +26,54 @@ export class Action {
     return ActionTreeRunner.getProcessByPID(PID)
   }
 
-  protected halt(): [ACTIONS_RESULT.HALT] {
+  protected halt(): [ACTIONS_RESULT, ...(string | number)[]] {
     return [ACTIONS_RESULT.HALT]
   }
 
-  protected shiftAndContinue(): [ACTIONS_RESULT.SHIFT_AND_CONTINUE] {
+  protected shiftAndContinue(): [ACTIONS_RESULT, ...(string | number)[]] {
     return [ACTIONS_RESULT.SHIFT_AND_CONTINUE]
   }
 
-  protected shiftAndStop(): [ACTIONS_RESULT.SHIFT_AND_STOP] {
+  protected shiftAndStop(): [ACTIONS_RESULT, ...(string | number)[]] {
     return [ACTIONS_RESULT.SHIFT_AND_STOP]
   }
 
-  protected waitNextTick(): [ACTIONS_RESULT.WAIT_NEXT_TICK] {
+  protected waitNextTick(): [ACTIONS_RESULT, ...(string | number)[]] {
     return [ACTIONS_RESULT.WAIT_NEXT_TICK]
   }
 
-  protected unshiftAndContinue(...actions: string[]): [ACTIONS_RESULT.UNSHIFT_AND_CONTINUE, ...string[]] {
+  protected unshiftAndContinue(...actions: string[]): [ACTIONS_RESULT, ...(string | number)[]] {
     return [ACTIONS_RESULT.UNSHIFT_AND_CONTINUE, ...actions]
   }
 
-  protected unshiftAndStop(...actions: string[]): [ACTIONS_RESULT.UNSHIFT_AND_STOP, ...string[]] {
+  protected unshiftAndStop(...actions: string[]): [ACTIONS_RESULT, ...(string | number)[]] {
     return [ACTIONS_RESULT.UNSHIFT_AND_STOP, ...actions]
   }
 
-  protected shiftUnshitAndContinue(...actions: string[]): [ACTIONS_RESULT.SHIFT_UNSHIFT_AND_CONTINUE, ...string[]] {
+  protected shiftUnshitAndContinue(...actions: string[]): [ACTIONS_RESULT, ...(string | number)[]] {
     return [ACTIONS_RESULT.SHIFT_UNSHIFT_AND_CONTINUE, ...actions]
   }
 
-  protected shiftUnshitAndStop(...actions: string[]): [ACTIONS_RESULT.SHIFT_UNSHIFT_AND_STOP, ...string[]] {
+  protected shiftUnshitAndStop(...actions: string[]): [ACTIONS_RESULT, ...(string | number)[]] {
     return [ACTIONS_RESULT.SHIFT_UNSHIFT_AND_STOP, ...actions]
   }
 
-  protected waitNextTickAll(): [ACTIONS_RESULT.WAIT_NEXT_TICK_ALL] {
+  protected waitNextTickAll(): [ACTIONS_RESULT, ...(string | number)[]] {
     return [ACTIONS_RESULT.WAIT_NEXT_TICK_ALL]
   }
 
-  protected retry(): [ACTIONS_RESULT.RETRY] {
-   return [ACTIONS_RESULT.RETRY]
+  protected retry(): [ACTIONS_RESULT, ...(string | number)[]] {
+    return [ACTIONS_RESULT.RETRY]
   }
 
-  protected sleep(ticks: number = 5): [ACTIONS_RESULT.UNSHIFT_AND_STOP, string, number] {
+  protected sleep(ticks: number = 5): [ACTIONS_RESULT, ...(string | number)[]] {
     return [ACTIONS_RESULT.UNSHIFT_AND_STOP, 'Sleep', ticks]
   }
 }
 
 @ActionsRegistry.register
 export class Sleep extends Action {
-  run(context: any): [ACTIONS_RESULT, ...string[]] {
+  run(context: any) {
     if (context.wakeAt == null && context.sleepFor == null) {
 
       return this.shiftAndStop()

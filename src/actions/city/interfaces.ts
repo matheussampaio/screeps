@@ -49,12 +49,25 @@ export interface IPlanMineral {
   } | null
 }
 
+export interface IPlanRemote {
+  remoteRoomName: string
+  sources: {
+    [sourceId: string]: IPlanSource
+  }
+  pid: number
+}
+
 export interface ICityContext {
   roomName?: string
   queue?: ISpawnerItem[]
   emergencyCreep?: string
   recyclerCreep?: string
   linkCreep?: string
+  scoutRoom: string
+  scoutCreep: string
+  remotes: {
+    [roomName: string]: IPlanRemote
+  }
   planner?: Partial<{
     storageLinkPos: {
       x: number
