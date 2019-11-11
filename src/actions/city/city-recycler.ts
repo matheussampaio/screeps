@@ -26,6 +26,10 @@ export class CityRecycler extends City {
       return this.sleep(50)
     }
 
+    if (this.isCreepNameInQueue(this.context.recyclerCreep as string)) {
+      return this.sleep(50)
+    }
+
     const tombstoneWithResource = this.room.find(FIND_TOMBSTONES).some(t => {
       if (t.store.getUsedCapacity(RESOURCE_ENERGY) >= 300) {
         return true
