@@ -4,7 +4,9 @@ import * as dotenv from 'dotenv'
 async function main() {
   dotenv.config()
 
-  const screeps = new ScreepsAPI(getOptions())
+  const options = getOptions()
+
+  const screeps = new ScreepsAPI(options)
 
   await screeps.auth()
 
@@ -22,7 +24,8 @@ async function main() {
 function getOptions() {
   if (process.env.SCREEPS_PRIVATE_SERVER) {
     return {
-      host: 'localhost',
+      protocol: 'http',
+      hostname: 'localhost',
       port: 21025,
       password: process.env.SCREEPS_PASSWORD,
       email: process.env.SCREEPS_EMAIL,
