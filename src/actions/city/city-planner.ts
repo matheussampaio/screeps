@@ -246,7 +246,7 @@ export class CityPlanner extends City {
       for (let y = 0; y < 50; y++) {
         const value = this.getPos(x, y)
 
-        if (value.length && !value.includes(STRUCTURE_ROAD)) {
+        if (value.length && !value.includes(STRUCTURE_ROAD) && !value.includes(STRUCTURE_LINK) &&!value.includes(STRUCTURE_CONTAINER) && !value.includes(STRUCTURE_EXTRACTOR)) {
           protectedArea.push({ x1: x - 1, y1: y - 1, x2: x + 1, y2: y + 1})
         }
       }
@@ -336,6 +336,14 @@ export class CityPlanner extends City {
 
       // if it is a border position, skip it
       if (pos.x === 0 || pos.y === 0 || pos.x === 49 || pos.y === 49) {
+        continue
+      }
+
+      const neighborsToExit = utils.getEmptySpacesAroundPosition(pos).some(pos => (
+        pos.x === 0 || pos.y === 0 || pos.x === 49 || pos.y === 49
+      ))
+
+      if (neighborsToExit) {
         continue
       }
 

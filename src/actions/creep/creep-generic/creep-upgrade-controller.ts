@@ -5,10 +5,14 @@ import { ICreepGenericContext } from './interfaces'
 
 @ActionsRegistry.register
 export class CreepUpgradeController extends Action {
-  run(context: ICreepGenericContext): [ACTIONS_RESULT, ...string[]] {
+  run(context: ICreepGenericContext) {
     const creep: Creep | undefined = Game.creeps[context.creepName]
 
     if (creep == null) {
+      return this.shiftAndStop()
+    }
+
+    if (creep.room.controller && creep.room.controller.level === 8 && CONTROLLER_DOWNGRADE[8] - creep.room.controller.ticksToDowngrade <= 200) {
       return this.shiftAndStop()
     }
 

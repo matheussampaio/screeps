@@ -1,11 +1,11 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry, Action, ACTIONS_RESULT } from '../../core'
+import { ActionsRegistry, Action } from '../../core'
 import { ICreepContext } from './interfaces'
 
 @ActionsRegistry.register
 export class CreepSingleUpgrader extends Action {
-  run(context: ICreepContext): [ACTIONS_RESULT, ...string[]] {
+  run(context: ICreepContext) {
     const creep: Creep | undefined = Game.creeps[context.creepName]
 
     if (creep == null) {
@@ -19,7 +19,9 @@ export class CreepSingleUpgrader extends Action {
       return this.waitNextTick()
     }
 
-    const storage = creep.room.storage
+    if (controller.level === 8 && CONTROLLER_DOWNGRADE[8] - controller.ticksToDowngrade <= 200) {
+      return this.waitNextTick()
+    }
 
     if (!creep.pos.inRangeTo(controller, 3)) {
       creep.travelTo(controller, { range: 3, ignoreCreeps: true })
@@ -42,7 +44,7 @@ export class CreepSingleUpgrader extends Action {
 
 @ActionsRegistry.register
 export class CreepSingleUpgraderGetEnergy extends Action {
-  run(context: ICreepContext): [ACTIONS_RESULT, ...string[]] {
+  run(context: ICreepContext) {
     const creep: Creep = Game.creeps[context.creepName]
 
     if (creep == null) {
@@ -54,13 +56,14 @@ export class CreepSingleUpgraderGetEnergy extends Action {
     }
 
     if (creep.room.controller == null) {
-      this.logger.info('cant find controller, stopping', context.creepName)
       return this.waitNextTick()
     }
 
     const storage = creep.room.storage
+    const controller = creep.room.controller
+    const lowEnergyLimit = (controller && controller.level === 8) ? 100 : 1000
 
-    if (storage && storage.isActive() && storage.store.getUsedCapacity(RESOURCE_ENERGY) as number > 10000) {
+    if (storage && storage.isActive() && storage.store.getUsedCapacity(RESOURCE_ENERGY) as number > lowEnergyLimit) {
       if (creep.pos.isNearTo(storage)) {
         creep.withdraw(storage, RESOURCE_ENERGY)
 

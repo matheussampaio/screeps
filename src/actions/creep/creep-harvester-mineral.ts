@@ -6,10 +6,17 @@ import { ActionsRegistry, Action, ACTIONS_RESULT } from '../../core'
 export class CreepHarvesterMineral extends Action {
   private context: any
 
-  run(context: any): [ACTIONS_RESULT, ...string[]] {
+  run(context: any) {
     this.context = context
 
     const mineral: Mineral | null = Game.getObjectById(this.context.mineral)
+
+    // if storage is full, wait
+    if (this.storage == null || this.storage.store.getUsedCapacity() >= STORAGE_CAPACITY * 0.8) {
+      this.creep.suicide()
+
+      return this.halt()
+    }
 
     if (mineral == null) {
       this.logger.error(`CreepHarvesterMineral:${this.context.creepName}: mineral does not exists`)
@@ -52,6 +59,10 @@ export class CreepHarvesterMineral extends Action {
 
   private get room(): Room {
     return Game.rooms[this.creep.memory.roomName]
+  }
+
+  private get storage(): StructureStorage | undefined {
+    return this.room.storage
   }
 }
 

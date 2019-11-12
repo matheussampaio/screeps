@@ -15,20 +15,6 @@ export class CityRunner extends City {
   run(context: ICityContext) {
     this.context = context
 
-    console.log(
-      `L=${this.controller.level}`,
-      `P=${(this.controller.progress / this.controller.progressTotal * 100).toFixed(2)}%`,
-      `E=${this.room.energyAvailable}`,
-      `Q=${this.queue.length}`,
-      `B=${this.builders.length}`,
-      `U=${this.upgraders.length}`,
-      `H=${this.sources.reduce((sum, source) => source.harvesters.length + sum, 0)}`,
-      `C=${this.sources.reduce((sum, source) => source.haulers.length + sum, 0)}`,
-      `S=${(this.storage as StructureStorage).store.getUsedCapacity(RESOURCE_ENERGY)}`,
-      `CS=${this.room.find(FIND_MY_CONSTRUCTION_SITES).length}`
-    )
-
-
     if (this.queue.length) {
       return this.waitNextTick()
     }
@@ -238,7 +224,7 @@ export class CityRunner extends City {
     this.queue.push({
       memory: {},
       creepName,
-      body: this.upgradersBody,
+      body: this.controller.level === 8 ? [MOVE, MOVE, CARRY, WORK] : this.upgradersBody,
       actions: [[CreepCheckStop.name], [CreepSingleUpgrader.name]],
       priority: PRIORITY.LOW
     })

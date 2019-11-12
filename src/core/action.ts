@@ -70,26 +70,3 @@ export class Action {
     return [ACTIONS_RESULT.UNSHIFT_AND_STOP, 'Sleep', ticks]
   }
 }
-
-@ActionsRegistry.register
-export class Sleep extends Action {
-  run(context: any) {
-    if (context.wakeAt == null && context.sleepFor == null) {
-
-      return this.shiftAndStop()
-    }
-
-    if (context.wakeAt == null) {
-      context.wakeAt = Game.time + context.sleepFor
-      delete context.sleepFor
-    }
-
-    if (Game.time >= context.wakeAt) {
-      delete context.wakeAt
-
-      return this.shiftAndStop()
-    }
-
-    return this.waitNextTick()
-  }
-}

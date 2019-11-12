@@ -7,7 +7,7 @@ import { City } from './city'
 
 @ActionsRegistry.register
 export class CityBuilder extends City {
-  run(context: ICityContext): [ACTIONS_RESULT, ...string[]] {
+  run(context: ICityContext) {
     this.context = context
 
     if (this.map == null) {
@@ -23,21 +23,18 @@ export class CityBuilder extends City {
     const constructionSites = this.room.find(FIND_MY_CONSTRUCTION_SITES).length
 
     if (constructionSites) {
-      return this.waitNextTick()
-      // return this.sleep(5)
+      return this.sleep(50)
     }
 
     if (this.createConstructionSites()) {
       return this.waitNextTick()
     }
 
-    if (!this.pruneStructuresMissplaced()) {
-      return this.waitNextTick()
-      // return this.sleep(5)
+    if (this.pruneStructuresMissplaced()) {
+      return this.sleep(5)
     }
 
-    return this.waitNextTick()
-    // return this.sleep(5)
+    return this.sleep(100)
   }
 
   private pruneStructuresMissplaced(): boolean {
@@ -61,7 +58,6 @@ export class CityBuilder extends City {
       const desiredStructures = this.getPos(structure.pos.x, structure.pos.y)
 
       if (!desiredStructures.includes(structure.structureType as any)) {
-        console.log(`prune: destroying STRUCTURE. it should be ${desiredStructures}, but it is ${structure.structureType}`)
 
         structure.destroy()
         maxPrune--
@@ -80,8 +76,6 @@ export class CityBuilder extends City {
       const desiredConstruction = this.getPos(constructionSite.pos.x, constructionSite.pos.y)
 
       if (!desiredConstruction.includes(structureType)) {
-        console.log(`prune: destroying CONSTRUCTION. it should be ${desiredConstruction}, but it is ${constructionSite.structureType}`)
-
         constructionSite.remove()
         maxPrune--
 
@@ -157,15 +151,9 @@ export class CityBuilder extends City {
             continue
           }
 
-          const isThereAStructure = result.find(item => item.structure)
+          const alreadyConstructed = result.find(item => item.structure && item.structure.structureType === structureType)
 
-          if (isThereAStructure && structureType !== STRUCTURE_RAMPART) {
-            continue
-          }
-
-          const isThereARampart = result.find(item => item.structure && item.structure.structureType === STRUCTURE_RAMPART)
-
-          if (isThereARampart && structureType === STRUCTURE_RAMPART) {
+          if (alreadyConstructed) {
             continue
           }
 

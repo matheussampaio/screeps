@@ -1,71 +1,101 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry, Action, ACTIONS_RESULT } from '../../core'
+import { ActionsRegistry, Action } from '../../core'
 
 @ActionsRegistry.register
 export class CreepStorager extends Action {
-  run(context: any) {
-    const creep = Game.creeps[context.creepName]
+  protected context: any
 
-    if (creep.room.storage == null) {
+  protected get creep(): Creep {
+    return Game.creeps[this.context.creepName]
+  }
+
+  protected get room(): Room {
+    return Game.rooms[this.creep.memory.roomName]
+  }
+
+  protected get controller(): StructureController | undefined {
+    return this.room.controller
+  }
+
+  protected get storage(): StructureStorage | undefined {
+    return this.room.storage
+  }
+
+  protected get terminal(): StructureTerminal | undefined {
+    return this.room.terminal
+  }
+
+  run(context: any) {
+    this.context = context
+
+    if (this.storage == null) {
       return this.halt()
     }
 
-    if (!creep.store.getUsedCapacity(RESOURCE_ENERGY)) {
+    if (!this.creep.store.getUsedCapacity(RESOURCE_ENERGY)) {
       return this.unshiftAndContinue(CreepStoragerGetEnergy.name)
     }
 
-    const target: StructureSpawn | StructureExtension | StructureStorage | StructureTower | StructureContainer | null = this.findTransferTarget(creep, context)
+    const target: StructureSpawn | StructureExtension | StructureStorage | StructureTower | StructureContainer | null = this.findTransferTarget()
 
     if (target) {
       return this.unshiftAndContinue(CreepStoragerTransfer.name)
     }
 
-    if (creep.store.getFreeCapacity(RESOURCE_ENERGY)) {
+    if (this.creep.store.getFreeCapacity(RESOURCE_ENERGY)) {
       return this.unshiftAndContinue(CreepStoragerGetEnergy.name)
+    }
+
+    if (
+      this.terminal &&
+      this.terminal.store.getUsedCapacity() <= TERMINAL_CAPACITY * 0.75 &&
+      this.storage.store.getUsedCapacity() - this.storage.store.getUsedCapacity(RESOURCE_ENERGY)
+    ) {
+      return this.unshiftAndContinue(CreepStoragerTransferResourcesToTerminal.name)
     }
 
     return this.sleep(5)
   }
 
-  findTransferTarget(creep: Creep, context: any): StructureExtension | StructureTower | StructureSpawn | StructureContainer | null {
-    if (context.target) {
-      const target: StructureSpawn | StructureExtension | null = Game.getObjectById(context.target)
+  findTransferTarget(): StructureExtension | StructureTower | StructureSpawn | StructureContainer | null {
+    if (this.context.target) {
+      const target: StructureSpawn | StructureExtension | null = Game.getObjectById(this.context.target)
 
       if (target && target.isActive() && target.store.getFreeCapacity(RESOURCE_ENERGY)) {
         return target
       }
     }
 
-    const towers: StructureTower[] = creep.room.find(FIND_MY_STRUCTURES, {
-      filter: s => s.structureType === STRUCTURE_TOWER && s.isActive() && s.store.getFreeCapacity(RESOURCE_ENERGY) as number >= 250
+    const towers: StructureTower[] = this.room.find(FIND_MY_STRUCTURES, {
+      filter: s => s.structureType === STRUCTURE_TOWER && s.isActive() && s.store.getUsedCapacity(RESOURCE_ENERGY) as number < 500
     }) as StructureTower[]
 
     const emptyTower = towers.find(tower => tower.store.getUsedCapacity(RESOURCE_ENERGY) as number < 250)
 
     if (emptyTower) {
-      context.target = emptyTower.id
+      this.context.target = emptyTower.id
 
       return emptyTower
     }
 
-    const extension: StructureExtension | null = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+    const extension: StructureExtension | null = this.creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
       filter: (s: StructureExtension) => {
         return s.structureType === STRUCTURE_EXTENSION && s.isActive() && s.store.getFreeCapacity(RESOURCE_ENERGY)
       }
     }) as StructureExtension | null
 
     if (extension) {
-      context.target = extension.id
+      this.context.target = extension.id
       return extension
     }
 
-    const spawn: StructureSpawn | null = creep.pos.findClosestByPath(FIND_MY_SPAWNS, {
+    const spawn: StructureSpawn | null = this.creep.pos.findClosestByPath(FIND_MY_SPAWNS, {
       filter: (s: StructureSpawn) => s.isActive() && s.store.getFreeCapacity(RESOURCE_ENERGY)
     })
 
     if (spawn) {
-      context.target = spawn.id
+      this.context.target = spawn.id
       return spawn
     }
 
@@ -76,20 +106,20 @@ export class CreepStorager extends Action {
     if (towers.length) {
       const tower = towers[0]
 
-      context.target = tower.id
+      this.context.target = tower.id
 
       return tower
     }
 
-    if (creep.room.controller) {
-      const containers: StructureContainer[] = creep.room.controller.pos.findInRange(FIND_STRUCTURES, 3, {
+    if (this.room.controller) {
+      const containers: StructureContainer[] = this.room.controller.pos.findInRange(FIND_STRUCTURES, 3, {
         filter: s => s.structureType === STRUCTURE_CONTAINER && s.store.getFreeCapacity(RESOURCE_ENERGY)
       }) as StructureContainer[]
 
       if (containers.length) {
         const container = containers[0]
 
-        context.target = container.id
+        this.context.target = container.id
 
         return container
       }
@@ -100,29 +130,28 @@ export class CreepStorager extends Action {
 }
 
 @ActionsRegistry.register
-export class CreepStoragerTransfer extends Action {
-  run(context: any): [ACTIONS_RESULT, ...string[]] {
-    const creep: Creep | undefined = Game.creeps[context.creepName]
+export class CreepStoragerTransfer extends CreepStorager {
+  run(context: any) {
+    this.context = context
+
     const target: StructureSpawn | StructureExtension | StructureTower | null = Game.getObjectById(context.target)
 
     if (target == null || !target.store.getFreeCapacity(RESOURCE_ENERGY)) {
-      delete context.target
+      delete this.context.target
       return this.shiftAndContinue()
     }
 
-    const storage = creep.room.storage
-
     // refill if close to storage
-    if (storage && creep.store.getFreeCapacity(RESOURCE_ENERGY) && creep.pos.isNearTo(storage) && storage.store.getUsedCapacity(RESOURCE_ENERGY)) {
-      creep.withdraw(storage, RESOURCE_ENERGY)
+    if (this.storage && this.creep.store.getFreeCapacity(RESOURCE_ENERGY) && this.creep.pos.isNearTo(this.storage) && this.storage.store.getUsedCapacity(RESOURCE_ENERGY)) {
+      this.creep.withdraw(this.storage, RESOURCE_ENERGY)
     }
 
-    if (!creep.pos.isNearTo(target)) {
-      creep.travelTo(target, { range: 1 })
+    if (!this.creep.pos.isNearTo(target)) {
+      this.creep.travelTo(target, { range: 1 })
       return this.waitNextTick()
     }
 
-    creep.transfer(target, RESOURCE_ENERGY)
+    this.creep.transfer(target, RESOURCE_ENERGY)
 
     delete context.target
 
@@ -131,27 +160,74 @@ export class CreepStoragerTransfer extends Action {
 }
 
 @ActionsRegistry.register
-export class CreepStoragerGetEnergy extends Action {
-  run(context: any): [ACTIONS_RESULT, ...string[]] {
-    const creep: Creep = Game.creeps[context.creepName]
-    const storage = creep.room.storage
+export class CreepStoragerGetEnergy extends CreepStorager {
+  run(context: any) {
+    this.context = context
 
-    if (!creep.store.getFreeCapacity(RESOURCE_ENERGY)) {
+    if (!this.creep.store.getFreeCapacity(RESOURCE_ENERGY)) {
       return this.shiftAndContinue()
     }
 
-    if (storage == null || !storage.isActive() || !storage.store.getUsedCapacity(RESOURCE_ENERGY)) {
+    if (this.storage == null || !this.storage.isActive() || !this.storage.store.getUsedCapacity(RESOURCE_ENERGY)) {
       return this.waitNextTick()
     }
 
-    if (creep.pos.isNearTo(storage)) {
-      creep.withdraw(storage, RESOURCE_ENERGY)
+    if (this.creep.pos.isNearTo(this.storage)) {
+      this.creep.withdraw(this.storage, RESOURCE_ENERGY)
     } else {
-      creep.travelTo(storage, { range: 1 })
+      this.creep.travelTo(this.storage, { range: 1 })
     }
 
     return this.waitNextTick()
   }
 }
 
+@ActionsRegistry.register
+export class CreepStoragerTransferResourcesToTerminal extends CreepStorager {
+  run(context: any) {
+    this.context = context
+
+    if (this.storage == null || this.terminal == null) {
+      return this.shiftAndStop()
+    }
+
+    if (this.creep.store.getUsedCapacity(RESOURCE_ENERGY)) {
+      if (this.creep.pos.isNearTo(this.storage)) {
+        this.creep.transfer(this.storage, RESOURCE_ENERGY)
+      } else {
+        this.creep.travelTo(this.storage)
+      }
+
+      return this.waitNextTick()
+    }
+
+    if (!this.creep.store.getUsedCapacity()) {
+      if (this.creep.pos.isNearTo(this.storage)) {
+        for (const resource in this.storage.store) {
+          if (resource === RESOURCE_ENERGY) {
+            continue
+          }
+
+          this.creep.withdraw(this.storage, resource as ResourceConstant)
+        }
+      } else {
+        this.creep.travelTo(this.storage)
+      }
+
+      return this.waitNextTick()
+    }
+
+    if (this.creep.pos.isNearTo(this.terminal)) {
+      for (const resource in this.creep.store) {
+        this.creep.transfer(this.terminal, resource as ResourceConstant)
+
+        return this.shiftAndStop()
+      }
+    } else {
+      this.creep.travelTo(this.terminal, { range: 1 })
+    }
+
+    return this.waitNextTick()
+  }
+}
 

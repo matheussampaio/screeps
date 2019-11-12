@@ -19,8 +19,10 @@ export class CreepHaulerMineral extends Action {
     }
 
     // if storage is full, wait
-    if (!this.storage.store.getFreeCapacity()) {
-      return this.waitNextTick()
+    if (this.storage.store.getUsedCapacity() >= STORAGE_CAPACITY * 0.8) {
+      this.creep.suicide()
+
+      return this.halt()
     }
 
     // move to storage

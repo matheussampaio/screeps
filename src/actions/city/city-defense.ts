@@ -1,19 +1,19 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry, ACTIONS_RESULT } from '../../core'
+import { ActionsRegistry } from '../../core'
 import { ICityContext } from './interfaces'
 import * as utils from '../../utils'
 import { City } from './city'
 
 @ActionsRegistry.register
 export class CityDefense extends City {
-  run(context: ICityContext): [ACTIONS_RESULT, ...string[]] {
+  run(context: ICityContext) {
     this.context = context
 
     const enemies: Creep[] = this.room.find(FIND_HOSTILE_CREEPS) as Creep[]
 
     const towers: StructureTower[] = this.room.find(FIND_MY_STRUCTURES, {
-      filter: t => t.structureType === STRUCTURE_TOWER && t.store.getCapacity(RESOURCE_ENERGY) as number >= 10
+      filter: t => t.structureType === STRUCTURE_TOWER && t.store.getUsedCapacity(RESOURCE_ENERGY) as number >= 10
     }) as StructureTower[]
 
     if (enemies.length && !towers.length) {
@@ -22,6 +22,12 @@ export class CityDefense extends City {
 
     if (enemies.length && towers.length) {
       return this.attack(towers, enemies)
+    }
+
+    const towersWithEnoughEnergyForRepair = towers.filter(t => t.store.getUsedCapacity(RESOURCE_ENERGY) as number >= 500)
+
+    if (!towersWithEnoughEnergyForRepair.length) {
+      return this.waitNextTick()
     }
 
     if (this.storage && this.storage.store.getUsedCapacity(RESOURCE_ENERGY) as number <= 5000) {
@@ -33,7 +39,7 @@ export class CityDefense extends City {
     }) as StructureRoad[]
 
     if (roads.length) {
-      return this.repair(towers, roads)
+      return this.repair(towersWithEnoughEnergyForRepair, roads)
     }
 
     const wallsHP: { [level: number]: number } = {
@@ -54,13 +60,13 @@ export class CityDefense extends City {
     }) as (StructureWall | StructureRampart)[]
 
     if (walls.length) {
-      return this.repair(towers, walls)
+      return this.repair(towersWithEnoughEnergyForRepair, walls)
     }
 
     return this.waitNextTick()
   }
 
-  repair(towers: StructureTower[], structures: StructureRoad[] | (StructureWall | StructureRampart)[]): [ACTIONS_RESULT.WAIT_NEXT_TICK] {
+  repair(towers: StructureTower[], structures: StructureRoad[] | (StructureWall | StructureRampart)[]) {
     structures.sort((a: any, b: any) => a.hits - b.hits)
 
     while(towers.length && structures.length) {
@@ -73,7 +79,7 @@ export class CityDefense extends City {
     return this.waitNextTick()
   }
 
-  enableSafeMode(): [ACTIONS_RESULT.WAIT_NEXT_TICK] {
+  enableSafeMode() {
     if (this.controller.safeMode) {
       return this.waitNextTick()
     }
@@ -87,7 +93,7 @@ export class CityDefense extends City {
     return this.waitNextTick()
   }
 
-  attack(towers: StructureTower[], enemies: Creep[]): [ACTIONS_RESULT.WAIT_NEXT_TICK] {
+  attack(towers: StructureTower[], enemies: Creep[]) {
     enemies.sort((e1: Creep, e2: Creep) => {
       const enemy1AttackParts = utils.getActiveBodyPartsFromCreep(e1, ATTACK)
       const enemy2AttackParts = utils.getActiveBodyPartsFromCreep(e2, ATTACK)

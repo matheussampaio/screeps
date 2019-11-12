@@ -1,6 +1,6 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry, Action, ACTIONS_RESULT } from '../../core'
+import { ActionsRegistry, Action } from '../../core'
 
 @ActionsRegistry.register
 export class CreepSingleBuilder extends Action {
@@ -13,6 +13,7 @@ export class CreepSingleBuilder extends Action {
   private get room(): Room {
     return Game.rooms[this.creep.memory.roomName]
   }
+
   run(context: any) {
     this.context = context
 
@@ -27,7 +28,9 @@ export class CreepSingleBuilder extends Action {
     const target: any = this.getConstructionTarget()
 
     if (target == null) {
-      return this.sleep(10)
+      this.creep.suicide()
+
+      return this.halt()
     }
 
     if (this.creep.pos.inRangeTo(target, 3)) {
@@ -76,7 +79,7 @@ export class CreepSingleBuilder extends Action {
 
 @ActionsRegistry.register
 export class CreepSingleBuilderGetEnergy extends Action {
-  run(context: any): [ACTIONS_RESULT, ...string[]] {
+  run(context: any) {
     const creep: Creep = Game.creeps[context.creepName]
 
     if (creep == null) {

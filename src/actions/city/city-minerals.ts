@@ -20,8 +20,9 @@ export class CityMinerals extends City {
       return this.sleep(1000)
     }
 
-    if (this.storage == null) {
-      return this.sleep(100)
+    // if storage is full, wait
+    if (this.storage == null || this.storage.store.getUsedCapacity() >= STORAGE_CAPACITY * 0.8) {
+      return this.sleep(50)
     }
 
     if (this.planner.minerals == null) {
