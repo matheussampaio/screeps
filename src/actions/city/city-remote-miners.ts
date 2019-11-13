@@ -102,8 +102,6 @@ export class CityRemoteMinersScout extends CityRemoteMiners {
           }
         }
       })
-
-      console.log(this.remotes[this.context.scoutRoom].sources)
     }
 
     creep.suicide()

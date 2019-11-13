@@ -1,7 +1,8 @@
 import * as _ from 'lodash'
 
-export function getEmptySpacesAroundPosition(pos: RoomPosition, range: number = 1): RoomPosition[] {
-  const positions = getNeighborsPositions(pos, range)
+export function getEmptySpacesAroundPosition(pos: RoomPosition, { range = 1, closeToExits = true }: { range?: number, closeToExits?: boolean } = {}): RoomPosition[] {
+
+  const positions = getNeighborsPositions(pos, { range, closeToExits })
 
   const terrain: RoomTerrain = new Room.Terrain(pos.roomName)
 
@@ -10,7 +11,7 @@ export function getEmptySpacesAroundPosition(pos: RoomPosition, range: number = 
   return positions.filter(p => terrain.get(p.x, p.y) === TERRAIN_MASK_SWAMP || terrain.get(p.x, p.y) === TERRAIN_MASK_PLAIN)
 }
 
-export function getNeighborsPositions(pos: RoomPosition, range: number = 1): RoomPosition[] {
+export function getNeighborsPositions(pos: RoomPosition, { range = 1, closeToExits = true }: { range?: number, closeToExits?: boolean } = {}): RoomPosition[] {
   const coords = getNeighborsCoords(pos.x, pos.y, range)
 
   const room: Room = Game.rooms[pos.roomName]
@@ -19,7 +20,30 @@ export function getNeighborsPositions(pos: RoomPosition, range: number = 1): Roo
     .map(coord => room.getPositionAt(coord.x, coord.y))
     .filter(p => p != null) as RoomPosition[]
 
-  return positions
+  if (closeToExits) {
+    return positions
+  }
+
+  return positions.filter(pos => !isPositionCloseToExit(pos))
+}
+
+export function isExitPosition(pos: RoomPosition | { x: number, y: number }): boolean {
+  return pos.x === 0 || pos.y === 0 || pos.x === 49 || pos.y === 49
+}
+
+export function isPositionCloseToExit(pos: RoomPosition | { x: number, y: number }): boolean {
+  if (isExitPosition(pos)) {
+    return true
+  }
+
+  // if pos is not close to the borders (i.e., in the center of the room), its not close to exit
+  if (pos.x > 1 && pos.y > 1 && pos.x < 48 && pos.y < 48) {
+    return false
+  }
+
+  const neighbors = getNeighborsCoords(pos.x, pos.y, 1)
+
+  return neighbors.some(p => isExitPosition(p))
 }
 
 export function getNeighborsCoords(x: number, y: number, range: number = 1): { x: number, y: number}[] {

@@ -115,7 +115,7 @@ export class CityPlanner extends City {
 
       this.setPos(lastPos.x, lastPos.y, [STRUCTURE_ROAD, STRUCTURE_CONTAINER])
 
-      const neighbors = utils.getEmptySpacesAroundPosition(lastPos)
+      const neighbors = utils.getEmptySpacesAroundPosition(lastPos, { closeToExits: false })
       let linkPos
 
       for (const neighbor of neighbors) {
@@ -287,7 +287,7 @@ export class CityPlanner extends City {
     utils.getEmptySpacesAroundPosition(this.center)
       .forEach(pos => this.setPos(pos.x, pos.y, [STRUCTURE_ROAD]))
 
-    const positions = utils.getEmptySpacesAroundPosition(this.center, 2)
+    const positions = utils.getEmptySpacesAroundPosition(this.center, { range: 2, closeToExits: false })
 
     // place link close to storage
     for (const pos of positions) {
@@ -330,19 +330,12 @@ export class CityPlanner extends City {
       visited[idx] = 1
 
       // queue their neighbors to the be visited
-      const neighbors = utils.getNeighborsPositions(pos)
+      const neighbors = utils.getNeighborsPositions(pos, { closeToExits: false })
+
       queue.push(...neighbors)
 
       // if it is a border position, skip it
-      if (pos.x === 0 || pos.y === 0 || pos.x === 49 || pos.y === 49) {
-        continue
-      }
-
-      const neighborsToExit = utils.getEmptySpacesAroundPosition(pos).some(pos => (
-        pos.x === 0 || pos.y === 0 || pos.x === 49 || pos.y === 49
-      ))
-
-      if (neighborsToExit) {
+      if (utils.isPositionCloseToExit(pos)) {
         continue
       }
 
@@ -367,7 +360,7 @@ export class CityPlanner extends City {
       }
 
       if (structureType === STRUCTURE_SPAWN) {
-        const positions = utils.getEmptySpacesAroundPosition(pos)
+        const positions = utils.getEmptySpacesAroundPosition(pos, { closeToExits: false })
 
         if (positions.length < 8) {
           continue

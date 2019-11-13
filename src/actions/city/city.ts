@@ -133,7 +133,7 @@ export class City extends Action {
 
   protected get center(): RoomPosition {
     if (this.planner.center == null) {
-      const queue = utils.getEmptySpacesAroundPosition(this.controller.pos, 3)
+      const queue = utils.getEmptySpacesAroundPosition(this.controller.pos, { range: 3, closeToExits: false })
 
       queue.sort((p1, p2) => {
         const ep1 = utils.getEmptySpacesAroundPosition(p1).length
