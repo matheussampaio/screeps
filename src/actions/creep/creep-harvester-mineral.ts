@@ -1,6 +1,6 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry, Action, ACTIONS_RESULT } from '../../core'
+import { ActionsRegistry, Action } from '../../core'
 
 @ActionsRegistry.register
 export class CreepHarvesterMineral extends Action {

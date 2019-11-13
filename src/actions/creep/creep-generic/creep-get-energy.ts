@@ -1,11 +1,11 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry, Action, ACTIONS_RESULT } from '../../../core'
+import { ActionsRegistry, Action } from '../../../core'
 import { ICreepGenericContext } from './interfaces'
 
 @ActionsRegistry.register
 export class CreepGetEnergy extends Action {
-  run(context: ICreepGenericContext): [ACTIONS_RESULT, ...string[]] {
+  run(context: ICreepGenericContext) {
     const creep: Creep | undefined = Game.creeps[context.creepName]
 
     if (creep == null) {
@@ -39,7 +39,7 @@ export class CreepGetEnergy extends Action {
     return this.waitNextTick()
   }
 
-  pickUpEnergy(context: ICreepGenericContext): [ACTIONS_RESULT, ...string[]] | null {
+  pickUpEnergy(context: ICreepGenericContext) {
     const creep: Creep = Game.creeps[context.creepName]
 
     const resource = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {
@@ -59,7 +59,7 @@ export class CreepGetEnergy extends Action {
     return this.waitNextTick()
   }
 
-  withdrawEnergy(context: ICreepGenericContext): [ACTIONS_RESULT, ...string[]] | null {
+  withdrawEnergy(context: ICreepGenericContext) {
     const creep: Creep = Game.creeps[context.creepName]
 
     const room = Game.rooms[creep.memory.roomName]
@@ -83,7 +83,7 @@ export class CreepGetEnergy extends Action {
     return null
   }
 
-  harvest(context: ICreepGenericContext): [ACTIONS_RESULT, ...string[]] | null {
+  harvest(context: ICreepGenericContext) {
     const creep: Creep = Game.creeps[context.creepName]
 
     if (context.source == null) {

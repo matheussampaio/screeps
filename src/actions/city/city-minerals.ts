@@ -1,7 +1,7 @@
 import * as _ from 'lodash'
 
 import { ActionsRegistry, PRIORITY } from '../../core'
-import { ICityContext } from './interfaces'
+import { ICityContext, IPlanMineral } from './interfaces'
 import { City } from './city'
 import { CreepCheckStop, CreepHaulerMineral, CreepHarvesterMineral } from '../creep'
 import * as utils from '../../utils'
@@ -29,7 +29,7 @@ export class CityMinerals extends City {
       return this.waitNextTick()
     }
 
-    const mineralPlan = _.head(Object.values(this.planner.minerals))
+    const mineralPlan = _.head(Object.values(this.planner.minerals)) as IPlanMineral
 
     if (mineralPlan == null) {
       return this.waitNextTick()

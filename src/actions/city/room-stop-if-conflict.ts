@@ -1,8 +1,8 @@
-import { ActionsRegistry, Action, Process, ACTIONS_RESULT } from '../../core'
+import { ActionsRegistry, Action, Process } from '../../core'
 
 @ActionsRegistry.register
 export class RoomStopIfConflict extends Action {
-  run(context: any, process: Process): [ACTIONS_RESULT, ...string[]] {
+  run(context: any, process: Process) {
     const room = Game.rooms[context.roomName]
 
     // stop if we lose access to this room

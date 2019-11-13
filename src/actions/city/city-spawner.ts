@@ -1,13 +1,13 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry, ACTIONS_RESULT } from '../../core'
+import { ActionsRegistry } from '../../core'
 import { ISpawnerItem, ICityContext } from './interfaces'
 import { getUniqueCreepName } from '../../utils'
 import { City } from './city'
 
 @ActionsRegistry.register
 export class CitySpawner extends City {
-  run(context: ICityContext): [ACTIONS_RESULT, ...string[]] {
+  run(context: ICityContext) {
     this.context = context
 
     if (this.queue.length === 0) {

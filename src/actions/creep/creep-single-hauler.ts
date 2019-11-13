@@ -1,11 +1,11 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry, Action, ACTIONS_RESULT } from '../../core'
+import { ActionsRegistry, Action } from '../../core'
 import { ICreepContext } from './interfaces'
 
 @ActionsRegistry.register
 export class CreepSingleHauler extends Action {
-  run(context: ICreepContext): [ACTIONS_RESULT, ...string[]] {
+  run(context: ICreepContext) {
     const creep = Game.creeps[context.creepName]
 
     if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
@@ -129,7 +129,7 @@ export class CreepSingleHauler extends Action {
 
 @ActionsRegistry.register
 export class CreepSingleHaulerTransfer extends Action {
-  run(context: ICreepContext): [ACTIONS_RESULT, ...string[]] {
+  run(context: ICreepContext) {
     const creep: Creep | undefined = Game.creeps[context.creepName]
     const target: StructureSpawn | StructureExtension | StructureStorage | StructureTower | null = Game.getObjectById(context.target as string)
 
@@ -153,7 +153,7 @@ export class CreepSingleHaulerTransfer extends Action {
 
 @ActionsRegistry.register
 export class CreepSingleHaulerGetEnergy extends Action {
-  run(context: any): [ACTIONS_RESULT, ...string[]] {
+  run(context: any) {
     const creep: Creep = Game.creeps[context.creepName]
 
     if (creep == null) {
@@ -173,7 +173,7 @@ export class CreepSingleHaulerGetEnergy extends Action {
     return this.withdrawContainers(context)
   }
 
-  pickUpEnergy(context: ICreepContext): [ACTIONS_RESULT, ...string[]] | null {
+  pickUpEnergy(context: ICreepContext) {
     const source: Source | null = Game.getObjectById(context.source as string)
 
     if (source == null) {
@@ -203,7 +203,7 @@ export class CreepSingleHaulerGetEnergy extends Action {
     return this.waitNextTick()
   }
 
-  withdrawContainers(context: any): [ACTIONS_RESULT, ...string[]] {
+  withdrawContainers(context: any) {
     const creep: Creep = Game.creeps[context.creepName]
 
     const container = this.getContainer(context)

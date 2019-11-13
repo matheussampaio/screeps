@@ -1,6 +1,6 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry, Action, ACTIONS_RESULT } from '../../core'
+import { ActionsRegistry, Action } from '../../core'
 
 @ActionsRegistry.register
 export class CreepHarvester extends Action {
@@ -14,7 +14,7 @@ export class CreepHarvester extends Action {
     return Game.rooms[this.creep.memory.roomName]
   }
 
-  run(context: any): [ACTIONS_RESULT, ...string[]] {
+  run(context: any) {
     this.context = context
 
     const source: Source | null = Game.getObjectById(this.context.source)
@@ -57,7 +57,7 @@ export class CreepHarvester extends Action {
     return this.waitNextTick()
   }
 
-  private maintainLink(): [ACTIONS_RESULT, ...string[]] | null {
+  private maintainLink() {
     const link: StructureLink | ConstructionSite | null = Game.getObjectById(this.context.link)
 
     // try to create or find an existing container
@@ -79,7 +79,7 @@ export class CreepHarvester extends Action {
     return null
   }
 
-  private maintainContainer(): [ACTIONS_RESULT, ...string[]] | null {
+  private maintainContainer() {
     const container: StructureContainer | ConstructionSite | null = Game.getObjectById(this.context.container)
 
     // try to create or find an existing container
