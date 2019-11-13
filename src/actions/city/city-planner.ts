@@ -36,8 +36,7 @@ export class CityPlanner extends City {
       }
     }
 
-    return this.waitNextTick()
-    // return this.sleep(5)
+    return this.sleep(5)
   }
 
   private getMaxWorkPartAllowedByEnergyCapacity(): number {
