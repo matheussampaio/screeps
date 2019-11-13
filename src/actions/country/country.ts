@@ -1,7 +1,7 @@
 import * as _ from 'lodash'
 
 import { ActionsRegistry, Action, ACTIONS_RESULT } from '../../core'
-import { CityRunner, RoomStopIfConflict, CitySpawner, ICityContext, CityDefense, CityEmergency, CityPlanner, CityLinks, CityMinerals, CityRecycler, CityRemoteMiners } from '../city'
+import { CityRunner, RoomStopIfConflict, CitySpawner, ICityContext, CityDefense, CityEmergency, CityPlanner, CityLinks, CityMinerals, CityRecycler, CityRemoteMiners, CityVisuals } from '../city'
 import { CityBuilder } from '../city/city-builder'
 import { ICountryContext } from './interfaces'
 
@@ -28,7 +28,7 @@ export class Country extends Action {
 
         const PID: number = this.fork({
           memory,
-          actions: [[RoomStopIfConflict.name], [CityEmergency.name], [CityRunner.name], [CityDefense.name], [CitySpawner.name], [CityPlanner.name], [CityBuilder.name], [CityLinks.name], [CityMinerals.name], [CityRecycler.name], [CityRemoteMiners.name]],
+          actions: [[RoomStopIfConflict.name], [CityEmergency.name], [CityRunner.name], [CityDefense.name], [CitySpawner.name], [CityPlanner.name], [CityBuilder.name], [CityLinks.name], [CityMinerals.name], [CityRecycler.name], [CityRemoteMiners.name], [CityVisuals.name]],
           name: `City-${roomName}`
         })
 
