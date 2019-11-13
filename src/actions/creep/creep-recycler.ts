@@ -28,6 +28,16 @@ export class CreepRecycler extends Action {
       return this.unshiftAndContinue(CreepRecyclerGetResourceFromTombstone.name)
     }
 
+    const ruin = this.creep.pos.findClosestByPath(FIND_RUINS, {
+      filter: r => r.store.getUsedCapacity()
+    })
+
+    if (ruin) {
+      this.context.target = ruin.id as string
+
+      return this.unshiftAndContinue(CreepRecyclerGetResourceFromTombstone.name)
+    }
+
     const resource = this.creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES)
 
     if (resource) {

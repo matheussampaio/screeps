@@ -44,6 +44,14 @@ export class CityRecycler extends City {
       return this.sleep(50)
     }
 
+    const ruinsWithResource = this.room.find(FIND_RUINS).some(r => r.store.getUsedCapacity())
+
+    if (ruinsWithResource) {
+      this.createRecyclerCreep()
+
+      return this.sleep(50)
+    }
+
     const resources = this.room.find(FIND_DROPPED_RESOURCES, {
       filter: r => (r.resourceType === RESOURCE_ENERGY && r.amount >= 300) || (r.resourceType !== RESOURCE_ENERGY && r.amount >= 100)
     })
