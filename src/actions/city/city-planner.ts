@@ -11,9 +11,9 @@ export class CityPlanner extends City {
   run(context: ICityContext) {
     this.context = context
 
-    this.resetPlanIfFlag()
+    this.resetMapIfFlag()
 
-    if (this.planner.plannedAt == null) {
+    if (this.planner.map == null) {
       this.replan()
     }
 
@@ -267,15 +267,15 @@ export class CityPlanner extends City {
     }
   }
 
-  private resetPlanIfFlag() {
-    const flag = Game.flags['reset-plan']
+  private resetMapIfFlag() {
+    const flag = Game.flags['reset-map']
 
     if (flag && flag.room && flag.room.name === this.context.roomName) {
       if (this.room.name !== 'sim') {
         flag.remove()
       }
 
-      delete this.context.planner
+      delete this.context.planner.map
     }
   }
 
