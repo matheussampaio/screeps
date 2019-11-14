@@ -113,7 +113,8 @@ export class CityPlanner extends City {
 
       const lastPos = result.path[result.path.length - 1] as RoomPosition
 
-      this.setPos(lastPos.x, lastPos.y, [STRUCTURE_ROAD, STRUCTURE_CONTAINER])
+      this.setPos(lastPos.x, lastPos.y, [STRUCTURE_CONTAINER])
+      this.costMatrix.set(lastPos.x, lastPos.y, Infinity)
 
       const neighbors = utils.getEmptySpacesAroundPosition(lastPos, { closeToExits: false })
       let linkPos
@@ -157,7 +158,8 @@ export class CityPlanner extends City {
 
       const lastPos = result.path[result.path.length - 1] as RoomPosition
 
-      this.setPos(lastPos.x, lastPos.y, [STRUCTURE_ROAD, STRUCTURE_CONTAINER])
+      this.setPos(lastPos.x, lastPos.y, [STRUCTURE_CONTAINER])
+      this.costMatrix.set(lastPos.x, lastPos.y, Infinity)
 
       _.defaultsDeep(this.planner, {
         minerals: {
