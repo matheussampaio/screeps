@@ -93,7 +93,7 @@ export class CityBuilder extends City {
     }
 
     if (this.controller.level >= 3) {
-      constructionOrder.push(STRUCTURE_ROAD, STRUCTURE_TOWER, STRUCTURE_WALL, STRUCTURE_RAMPART)
+      constructionOrder.push(STRUCTURE_TOWER, STRUCTURE_ROAD, STRUCTURE_WALL, STRUCTURE_RAMPART)
     }
 
     if (this.controller.level >= 4) {
