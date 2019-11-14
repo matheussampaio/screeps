@@ -90,7 +90,7 @@ export class CreepRecyclerGetResource extends CreepRecycler {
     }
 
     if (!this.creep.pos.isNearTo(target)) {
-      this.creep.travelTo(target)
+      this.creep.travelTo(target, { range: 1, ignoreCreeps: true })
       return this.waitNextTick()
     }
 
@@ -123,7 +123,7 @@ export class CreepRecyclerGetResourceFromTombstone extends CreepRecycler {
     }
 
     if (!this.creep.pos.isNearTo(target)) {
-      this.creep.travelTo(target)
+      this.creep.travelTo(target, { range: 1, ignoreCreeps: true })
       return this.waitNextTick()
     }
 
@@ -151,7 +151,7 @@ export class CreepRecyclerTransfer extends CreepRecycler {
     }
 
     if (!this.creep.pos.isNearTo(this.storage)) {
-      this.creep.travelTo(this.storage)
+      this.creep.travelTo(this.storage, { range: 1, ignoreCreeps: true })
       return this.waitNextTick()
     }
 

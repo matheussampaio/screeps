@@ -81,7 +81,7 @@ export class CreepLinkMoveToPosition extends CreepLink {
       return this.waitNextTick()
     }
 
-    this.creep.moveTo(pos)
+    this.creep.travelTo(pos, { ignoreCreeps: true })
 
     return this.waitNextTick()
   }
@@ -102,7 +102,6 @@ export class CreepLinkMoveToPosition extends CreepLink {
     if (this.link == null || this.storage == null) {
       return null
     }
-
     const neighborsToLink = utils.getNeighborsCoords(this.link.pos.x, this.link.pos.y)
     const neighborsToStorage = utils.getNeighborsCoords(this.storage.pos.x, this.storage.pos.y)
 

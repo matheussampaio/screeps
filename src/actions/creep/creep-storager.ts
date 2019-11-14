@@ -147,7 +147,7 @@ export class CreepStoragerTransfer extends CreepStorager {
     }
 
     if (!this.creep.pos.isNearTo(target)) {
-      this.creep.travelTo(target, { range: 1 })
+      this.creep.travelTo(target, { range: 1, ignoreCreeps: true })
       return this.waitNextTick()
     }
 
@@ -175,7 +175,7 @@ export class CreepStoragerGetEnergy extends CreepStorager {
     if (this.creep.pos.isNearTo(this.storage)) {
       this.creep.withdraw(this.storage, RESOURCE_ENERGY)
     } else {
-      this.creep.travelTo(this.storage, { range: 1 })
+      this.creep.travelTo(this.storage, { range: 1, ignoreCreeps: true })
     }
 
     return this.waitNextTick()
@@ -195,7 +195,7 @@ export class CreepStoragerTransferResourcesToTerminal extends CreepStorager {
       if (this.creep.pos.isNearTo(this.storage)) {
         this.creep.transfer(this.storage, RESOURCE_ENERGY)
       } else {
-        this.creep.travelTo(this.storage)
+        this.creep.travelTo(this.storage, { range: 1, ignoreCreeps: true })
       }
 
       return this.waitNextTick()
@@ -211,7 +211,7 @@ export class CreepStoragerTransferResourcesToTerminal extends CreepStorager {
           this.creep.withdraw(this.storage, resource as ResourceConstant)
         }
       } else {
-        this.creep.travelTo(this.storage)
+        this.creep.travelTo(this.storage, { range: 1, ignoreCreeps: true })
       }
 
       return this.waitNextTick()
@@ -224,7 +224,7 @@ export class CreepStoragerTransferResourcesToTerminal extends CreepStorager {
         return this.shiftAndStop()
       }
     } else {
-      this.creep.travelTo(this.terminal, { range: 1 })
+      this.creep.travelTo(this.terminal, { range: 1, ignoreCreeps: true })
     }
 
     return this.waitNextTick()
