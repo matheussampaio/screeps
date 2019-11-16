@@ -1,19 +1,10 @@
 import * as _ from 'lodash'
 
 import { ActionsRegistry, Action } from '../../core'
+import { CreepAction } from './creep-action'
 
 @ActionsRegistry.register
-export class CreepHarvester extends Action {
-  private context: any
-
-  private get creep(): Creep {
-    return Game.creeps[this.context.creepName]
-  }
-
-  private get room(): Room {
-    return Game.rooms[this.creep.memory.roomName]
-  }
-
+export class CreepHarvester extends CreepAction {
   run(context: any) {
     this.context = context
 
@@ -51,6 +42,14 @@ export class CreepHarvester extends Action {
 
       if (result != null) {
         return result
+      }
+    }
+
+    if (this.context.link) {
+      const container = this.creep.pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_CONTAINER) as StructureContainer
+
+      if (container && container.store.getUsedCapacity(RESOURCE_ENERGY) && this.creep.store.getFreeCapacity(RESOURCE_ENERGY)) {
+        this.creep.withdraw(container, RESOURCE_ENERGY)
       }
     }
 
