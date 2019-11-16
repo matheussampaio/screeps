@@ -76,12 +76,10 @@ export class CreepLinkMoveToPosition extends CreepLink {
     const pos = this.getTargetPosition()
 
     if (pos == null) {
-      this.logger.error(`Can't find a position closer to Link and Storager`)
-
       return this.waitNextTick()
     }
 
-    this.creep.travelTo(pos, { ignoreCreeps: true })
+    this.creep.travelTo(pos, { range: 0, ignoreCreeps: true })
 
     return this.waitNextTick()
   }
