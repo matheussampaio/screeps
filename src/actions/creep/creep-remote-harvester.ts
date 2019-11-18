@@ -4,24 +4,21 @@ import { ActionsRegistry } from '../../core'
 import { CreepAction } from './creep-action'
 
 @ActionsRegistry.register
-export class CreepHarvester extends CreepAction {
+export class CreepRemoteHarvester extends CreepAction {
   run(context: any) {
     this.context = context
 
     const source: Source | null = Game.getObjectById(this.context.source)
 
-    // if source doesn't exist, something is really wrong. :(
+    if (this.context.remoteRoom && this.context.remoteRoom !== this.creep.room.name) {
+      const pos = new RoomPosition(25, 25, this.context.remoteRoom)
+
+      this.creep.travelTo(pos, { ignoreCreeps: true, range: 23 })
+
+      return this.waitNextTick()
+    }
+
     if (source == null) {
-      if (this.context.remoteRoom && this.context.remoteRoom !== this.creep.room.name) {
-        const pos = new RoomPosition(25, 25, this.context.remoteRoom)
-
-        this.creep.travelTo(pos, { ignoreCreeps: true, range: 23 })
-
-        return this.waitNextTick()
-      }
-
-      this.logger.error(`CreepHarvester:${this.context.creepName}: source does not exists`)
-
       this.creep.suicide()
 
       return this.halt()
@@ -36,15 +33,7 @@ export class CreepHarvester extends CreepAction {
 
     // harvest the source
     if (source.energy) {
-      this.context.working = this.creep.harvest(source) === OK
-    }
-
-    if (this.context.linkPos != null) {
-      const result = this.maintainLink()
-
-      if (result != null) {
-        return result
-      }
+      this.creep.harvest(source)
     }
 
     if (this.context.containerPos != null) {
@@ -55,37 +44,7 @@ export class CreepHarvester extends CreepAction {
       }
     }
 
-    if (this.context.link) {
-      const container = this.creep.pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_CONTAINER) as StructureContainer
-
-      if (container && container.store.getUsedCapacity(RESOURCE_ENERGY) && this.creep.store.getFreeCapacity(RESOURCE_ENERGY)) {
-        this.creep.withdraw(container, RESOURCE_ENERGY)
-      }
-    }
-
     return this.waitNextTick()
-  }
-
-  private maintainLink() {
-    const link: StructureLink | ConstructionSite | null = Game.getObjectById(this.context.link)
-
-    // try to create or find an existing container
-    if (link == null) {
-      this.findStructure(this.context.linkPos, STRUCTURE_LINK, 'link')
-      return this.waitNextTick()
-    }
-
-    // try to build link every 13 tick
-    if (Game.time % 13 === 0 && link instanceof ConstructionSite && this.canBuildStructures()) {
-      try { this.creep.cancelOrder('harvest') } catch {}
-      this.creep.build(link)
-    }
-
-    if (link instanceof StructureLink && this.creep.pos.isNearTo(link) && link.store.getFreeCapacity(RESOURCE_ENERGY) && this.creep.store.getFreeCapacity() as number < this.creep.getActiveBodyparts(WORK) * 2) {
-      this.creep.transfer(link, RESOURCE_ENERGY)
-    }
-
-    return null
   }
 
   private maintainContainer() {
@@ -98,18 +57,18 @@ export class CreepHarvester extends CreepAction {
     }
 
     // try to build container every 11th tick
-    if (Game.time % 11 === 0 && container instanceof ConstructionSite && this.canBuildStructures()) {
+    if (Game.time % 3 === 0 && container instanceof ConstructionSite && this.canBuildStructures()) {
       try { this.creep.cancelOrder('harvest') } catch {}
       this.creep.build(container)
     }
 
     // try to move on top of container every 10 ticks
-    if (Game.time % 12 === 0 && !this.creep.pos.isEqualTo(container) && !container.pos.lookFor(LOOK_CREEPS).length) {
+    if (Game.time % 5 === 0 && !this.creep.pos.isEqualTo(container) && !container.pos.lookFor(LOOK_CREEPS).length) {
       this.creep.travelTo(container)
     }
 
     // repair container every 95 ticks
-    if (Game.time % 43 === 0 && container instanceof StructureContainer && container.hits < container.hitsMax - 5000 && this.canBuildStructures()) {
+    if (Game.time % 7 === 0 && container instanceof StructureContainer && container.hits < container.hitsMax - 5000 && this.canBuildStructures()) {
       try { this.creep.cancelOrder('harvest') } catch {}
       this.creep.repair(container)
     }
@@ -122,8 +81,14 @@ export class CreepHarvester extends CreepAction {
     return null
   }
 
-  private canBuildStructures() {
-    return this.context.working && this.creep.getActiveBodyparts(WORK) && this.creep.getActiveBodyparts(CARRY) && this.creep.store.getUsedCapacity(RESOURCE_ENERGY)
+  private canBuildStructures(): boolean {
+    const energyNeeded = Math.min(this.creep.store.getCapacity(), this.creep.getActiveBodyparts(WORK) * BUILD_POWER)
+
+    return !!(
+      this.creep.getActiveBodyparts(WORK) &&
+      this.creep.getActiveBodyparts(CARRY) &&
+      this.creep.store.getUsedCapacity(RESOURCE_ENERGY) >= energyNeeded
+    )
   }
 
   private findStructure(hasPos: { x: number, y: number }, structureType: BuildableStructureConstant, prop: string, create: boolean = false): void {

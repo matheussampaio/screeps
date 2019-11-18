@@ -1,9 +1,10 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry, PRIORITY } from '../../core'
-import { ICityContext } from './interfaces'
+import { ActionsRegistry, PRIORITY, ActionResult } from '../../core'
+import { ICityContext, IPlanSource } from './interfaces'
 import { City } from './city'
-import { CreepCheckStop } from '../creep'
+import { CreepCheckStop, CreepRemoteHarvester, CreepRemoteHauler, CreepRemoteReserver } from '../creep'
+import { CreateBody } from '../../utils/create-body'
 import * as utils from '../../utils'
 
 @ActionsRegistry.register
@@ -11,37 +12,124 @@ export class CityRemoteMiners extends City {
   run(context: ICityContext) {
     this.context = context
 
-    for (const roomName in this.remotes) {
-      const remote = this.remotes[roomName]
-
-      if (remote.sources == null) {
-        this.context.scoutRoom = roomName
-        return this.unshiftAndContinue(CityRemoteMinersScout.name)
-      }
+    if (this.queue.length) {
+      return this.waitNextTick()
     }
 
-    return this.waitNextTick()
+    if (this.context.remotes == null) {
+      return this.unshiftAndContinue(CityRemoteMinersScout.name)
+    }
+
+    this.createCreeps()
+
+    return this.sleep(10)
   }
 
-  protected get remotes() {
-    if (this.context.remotes == null) {
-      this.context.remotes = {} as any
+  private createCreeps() {
+    for (const roomName in this.context.remotes) {
+      const remote = this.context.remotes[roomName]
+      const sourcePlans = Object.values(remote.sources) as IPlanSource[]
 
-      const exits = Game.map.describeExits(this.room.name)
+      for (const sourcePlan of sourcePlans) {
+        sourcePlan.harvesters = sourcePlan.harvesters.filter((creepName: string) => Game.creeps[creepName] != null)
+        sourcePlan.haulers = sourcePlan.haulers.filter((creepName: string) => Game.creeps[creepName] != null)
 
-      for (const roomName of Object.values(exits)) {
-        if (roomName == null) {
-          continue
+        const source = Game.getObjectById(sourcePlan.id) as Source
+        const maximumSourceEnergy = source ? source.energyCapacity : SOURCE_ENERGY_NEUTRAL_CAPACITY
+        const optimumWorkParts = Math.ceil(maximumSourceEnergy / ENERGY_REGEN_TIME / HARVEST_POWER + 1)
+
+        sourcePlan.desiredWorkParts = Math.min(optimumWorkParts, this.getMaxWorkPartAllowedByEnergyCapacity() * sourcePlan.emptySpaces)
+
+        const currentWorkParts: number = Math.min(sourcePlan.desiredWorkParts, utils.getActiveBodyPartsFromName(sourcePlan.harvesters, WORK))
+        const currentCarryParts: number = utils.getActiveBodyPartsFromName(sourcePlan.haulers, CARRY)
+
+        // While the Hauler is traveling from source to storage and back, the
+        // Harvester should produce: WORK_PARTS * HARVEST_POWER * DISTANCE * 2
+        // Our Haulers should have enough CARRY parts to carry all that energy.
+        const energyProduced = sourcePlan.distance * currentWorkParts * HARVEST_POWER * 2
+
+        sourcePlan.desiredCarryParts = energyProduced / CARRY_CAPACITY
+
+        // only create haulers if we don't have links
+        if (currentCarryParts < sourcePlan.desiredCarryParts) {
+          const memory = { source: sourcePlan.id, containerPos: sourcePlan.containerPos, remoteRoom: sourcePlan.roomName }
+          const creepName = this.createHaulers(memory, { [CARRY]: sourcePlan.desiredCarryParts + 2 })
+
+          sourcePlan.haulers.push(creepName)
         }
 
-        this.context.remotes[roomName] = {
-          remoteRoomName: roomName,
-          pid: -1
-        } as any
+        if (sourcePlan.harvesters.length < sourcePlan.emptySpaces && currentWorkParts < sourcePlan.desiredWorkParts) {
+          const memory: any = {
+            source: sourcePlan.id,
+            remoteRoom: sourcePlan.roomName,
+            containerPos: sourcePlan.containerPos
+          }
+
+          const creepName = this.createHarvester(memory, { [WORK]: sourcePlan.desiredWorkParts })
+
+          sourcePlan.harvesters.push(creepName)
+        }
+      }
+
+      if (Game.creeps[remote.reserver] == null && !this.isCreepNameInQueue(remote.reserver)) {
+        remote.reserver = this.createReserverCreep(roomName)
       }
     }
+  }
 
-    return this.context.remotes
+  private createHaulers(memory: any, maxParts: Partial<Record<BodyPartConstant, any>>): string {
+    const creepName = utils.getUniqueCreepName('hauler-remote')
+
+    this.queue.push({
+      memory,
+      creepName,
+      body: new CreateBody({ minimumEnergy: 300, energyAvailable: this.room.energyCapacityAvailable, maxParts, hasRoads: false })
+      .add([CARRY], { repeat: true })
+      .value(),
+      actions: [[CreepCheckStop.name], [CreepRemoteHauler.name]],
+      priority: PRIORITY.NORMAL - 1
+    })
+
+    return creepName
+  }
+
+  private createHarvester(memory: any, maxParts: Partial<Record<BodyPartConstant, any>>): string {
+    const creepName = utils.getUniqueCreepName('harvester-remote')
+
+    this.queue.push({
+      memory,
+      creepName,
+      body: new CreateBody({ minimumEnergy: 300, energyAvailable: this.room.energyCapacityAvailable, ticksToMove: 3, maxParts, hasRoads: false  })
+      .add([CARRY])
+      .add([WORK], { repeat: true })
+      .addMoveIfPossible()
+      .value(),
+      actions: [[CreepCheckStop.name], [CreepRemoteHarvester.name]],
+      priority: PRIORITY.NORMAL - 1
+    })
+
+    return creepName
+  }
+
+  private createReserverCreep(roomName: string) {
+    const creepName = utils.getUniqueCreepName('reserver')
+
+    const body = new CreateBody({ minimumEnergy: 650, energyAvailable: this.room.energyCapacityAvailable, hasRoads: false, maxParts: { [CLAIM]: 2 } })
+      .add([CLAIM], { repeat: true })
+      .addMoveIfPossible()
+      .value()
+
+    this.queue.push({
+      memory: {
+        remoteRoom: roomName
+      },
+      creepName,
+      body,
+      actions: [[CreepCheckStop.name], [CreepRemoteReserver.name]],
+      priority: PRIORITY.VERY_LOW
+    })
+
+   return creepName
   }
 }
 
@@ -50,8 +138,15 @@ export class CityRemoteMinersScout extends CityRemoteMiners {
   run(context: ICityContext) {
     this.context = context
 
-    if (this.context.scoutRoom == null) {
-      return this.shiftAndContinue()
+    if (this.context.scoutRooms == null) {
+      this.context.scoutRooms = Object.values(Game.map.describeExits(this.room.name))
+    }
+
+    if (!this.context.scoutRooms.length) {
+      delete this.context.scoutRooms
+      delete this.context.scoutCreep
+
+      return this.shiftAndStop()
     }
 
     const creep = Game.creeps[this.context.scoutCreep]
@@ -68,7 +163,9 @@ export class CityRemoteMinersScout extends CityRemoteMiners {
       return this.waitNextTick()
     }
 
-    const pos = new RoomPosition(25, 25, this.context.scoutRoom)
+    const roomName = this.context.scoutRooms[0]
+
+    const pos = new RoomPosition(25, 25, roomName)
 
     if (creep.pos.getRangeTo(pos) > 23) {
       creep.travelTo(pos)
@@ -76,8 +173,6 @@ export class CityRemoteMinersScout extends CityRemoteMiners {
     }
 
     const sources = creep.room.find(FIND_SOURCES)
-
-    this.remotes[this.context.scoutRoom].sources = {} as any
 
     for (const source of sources) {
       const result = PathFinder.search(this.center, { pos: source.pos, range: 1 })
@@ -88,25 +183,35 @@ export class CityRemoteMinersScout extends CityRemoteMiners {
 
       const lastPos = result.path[result.path.length - 1] as RoomPosition
 
-      _.defaultsDeep(this.remotes[this.context.scoutRoom], {
-        sources: {
-          [source.id as string]: {
-            id: source.id,
-            harvesters: [],
-            haulers: [],
-            containerPos: lastPos,
-            distance: result.path.length,
-            emptySpaces: 1,
-            desiredWorkParts: 0,
-            desiredCarryParts: 0
-          }
+      if (this.context.remotes == null) {
+        this.context.remotes = {}
+      }
+
+      if (this.context.remotes[roomName] == null) {
+        this.context.remotes[roomName] = {
+          reserver: '',
+          sources: {}
         }
-      })
+      }
+
+      this.context.remotes[roomName].sources[source.id as string] = {
+        id: source.id,
+        roomName: source.room.name,
+        harvesters: [],
+        haulers: [],
+        containerPos: lastPos,
+        distance: result.path.length,
+        emptySpaces: 1,
+        desiredWorkParts: 0,
+        desiredCarryParts: 0
+      }
     }
 
     creep.suicide()
 
-    return this.shiftAndStop()
+    this.context.scoutRooms.shift()
+
+    return this.waitNextTick()
   }
 
   private createScoutCreep() {

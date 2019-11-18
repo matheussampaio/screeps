@@ -39,12 +39,6 @@ export class CityPlanner extends City {
     return this.sleep(5)
   }
 
-  private getMaxWorkPartAllowedByEnergyCapacity(): number {
-    return Math.floor(
-      (this.room.energyCapacityAvailable - BODYPART_COST[MOVE] - BODYPART_COST[CARRY]) / BODYPART_COST[WORK]
-    )
-  }
-
   private replan() {
     this.planner.plannedAt = Game.time
 

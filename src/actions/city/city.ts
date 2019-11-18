@@ -164,4 +164,14 @@ export class City extends Action {
 
     return this.waitNextTick()
   }
+
+  protected getMaxWorkPartAllowedByEnergyCapacity(): number {
+    return Math.floor(
+      (this.room.energyCapacityAvailable - BODYPART_COST[MOVE] - BODYPART_COST[CARRY]) / BODYPART_COST[WORK]
+    )
+  }
+
+  protected isSpawningCreep(creepNames: string[]): boolean {
+    return creepNames.some(creepName => this.isCreepNameInQueue(creepName) || (Game.creeps[creepName] && Game.creeps[creepName].spawning))
+  }
 }

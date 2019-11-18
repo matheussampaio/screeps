@@ -23,4 +23,20 @@ export class CreepAction extends Action {
   protected get storage(): StructureStorage | undefined {
     return this.room.storage
   }
+
+  protected get controller(): StructureController | undefined {
+    return this.room.controller
+  }
+
+  protected get remoteRoom(): Room {
+    return Game.rooms[this.context.remoteRoomName]
+  }
+
+  protected get remoteController(): StructureController | undefined {
+    if (this.remoteRoom) {
+      return this.remoteRoom.controller
+    }
+
+    return undefined
+  }
 }

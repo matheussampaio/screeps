@@ -1,99 +1,84 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry, Action } from '../../core'
+import { ActionsRegistry } from '../../core'
 import { ICreepContext } from './interfaces'
+import { CreepAction } from './creep-action'
 
 @ActionsRegistry.register
-export class CreepSingleHauler extends Action {
+export class CreepSingleHauler extends CreepAction {
   run(context: ICreepContext) {
-    const creep = Game.creeps[context.creepName]
+    this.context = context
 
-    if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+    if (this.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
       return this.unshiftAndContinue(CreepSingleHaulerGetEnergy.name)
     }
 
-    const target: StructureSpawn | StructureExtension | StructureStorage | StructureTower | StructureContainer | null = this.findTransferTarget(creep, context)
+    const target: StructureSpawn | StructureExtension | StructureStorage | StructureTower | StructureContainer | null = this.findTransferTarget()
 
     if (target) {
       return this.unshiftAndContinue(CreepSingleHaulerTransfer.name)
     }
 
-    if (creep.store.getFreeCapacity(RESOURCE_ENERGY)) {
+    if (this.creep.store.getFreeCapacity(RESOURCE_ENERGY)) {
       return this.unshiftAndStop(CreepSingleHaulerGetEnergy.name)
     }
 
-    if (creep.room.controller == null) {
+    if (this.controller == null) {
       return this.waitNextTick()
     }
 
-    if (creep.pos.inRangeTo(creep.room.controller, 2)) {
-      creep.drop(RESOURCE_ENERGY)
+    if (this.creep.pos.inRangeTo(this.controller, 2)) {
+      this.creep.drop(RESOURCE_ENERGY)
     } else {
-      creep.travelTo(creep.room.controller, { range: 1 })
+      this.creep.travelTo(this.controller, { range: 1 })
     }
 
     return this.waitNextTick()
   }
 
-  getSpawn(context: ICreepContext): StructureSpawn | undefined {
-    const creep = Game.creeps[context.creepName]
-
-    let spawn: StructureSpawn | undefined = Game.spawns[context.spawn as string]
-
-    if (spawn == null) {
-      spawn = _.head(creep.room.find(FIND_MY_SPAWNS))
+  findTransferTarget(): StructureExtension | StructureTower | StructureSpawn | StructureStorage | StructureContainer | null {
+    if (this.storage && this.storage.isActive() && this.storage.store.getFreeCapacity(RESOURCE_ENERGY)) {
+      this.context.target = this.storage.id as string
+      return this.storage
     }
 
-    if (spawn) {
-      context.spawn = spawn.name
-    }
-
-    return spawn
-  }
-
-  findTransferTarget(creep: Creep, context: ICreepContext): StructureExtension | StructureTower | StructureSpawn | StructureStorage | StructureContainer | null {
-    if (creep.room.storage && creep.room.storage.isActive() && creep.room.storage.store.getFreeCapacity(RESOURCE_ENERGY)) {
-      context.target = creep.room.storage.id as string
-      return creep.room.storage
-    }
-
-    if (context.target) {
-      const target: StructureSpawn | StructureExtension | StructureStorage | null = Game.getObjectById(context.target)
+    if (this.context.target) {
+      const target: StructureSpawn | StructureExtension | StructureStorage | null = Game.getObjectById(this.context.target)
 
       if (target && target.isActive() && target.store.getFreeCapacity(RESOURCE_ENERGY)) {
         return target
       }
     }
 
-    const towers: StructureTower[] = creep.room.find(FIND_MY_STRUCTURES, {
+    const towers: StructureTower[] = this.room.find(FIND_MY_STRUCTURES, {
       filter: s => s.structureType === STRUCTURE_TOWER && s.isActive() && s.store.getFreeCapacity(RESOURCE_ENERGY)
     }) as StructureTower[]
 
     const emptyTower = towers.find(tower => tower.store.getUsedCapacity(RESOURCE_ENERGY) as number < 250)
 
     if (emptyTower) {
-      context.target = emptyTower.id as string
+      this.context.target = emptyTower.id as string
 
       return emptyTower
     }
 
-    const extension: StructureExtension | null = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+    const extension: StructureExtension | null = this.creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
       filter: (s: StructureExtension) => {
         return s.structureType === STRUCTURE_EXTENSION && s.isActive() && s.store.getFreeCapacity(RESOURCE_ENERGY)
       }
     }) as StructureExtension | null
 
     if (extension) {
-      context.target = extension.id as string
+      this.context.target = extension.id as string
       return extension
     }
 
-    const spawn: StructureSpawn | null = creep.pos.findClosestByPath(FIND_MY_SPAWNS, {
+    const spawn: StructureSpawn | null = this.creep.pos.findClosestByPath(FIND_MY_SPAWNS, {
       filter: (s: StructureSpawn) => s.isActive() && s.store.getFreeCapacity(RESOURCE_ENERGY)
     })
 
     if (spawn) {
-      context.target = spawn.id as string
+      this.context.target = spawn.id as string
       return spawn
     }
 
@@ -104,20 +89,20 @@ export class CreepSingleHauler extends Action {
     if (towers.length) {
       const tower = towers[0]
 
-      context.target = tower.id as string
+      this.context.target = tower.id as string
 
       return tower
     }
 
-    if (creep.room.controller) {
-      const containers: StructureContainer[] = creep.room.controller.pos.findInRange(FIND_STRUCTURES, 3, {
+    if (this.controller) {
+      const containers: StructureContainer[] = this.controller.pos.findInRange(FIND_STRUCTURES, 3, {
         filter: s => s.structureType === STRUCTURE_CONTAINER && s.store.getFreeCapacity(RESOURCE_ENERGY)
       }) as StructureContainer[]
 
       if (containers.length) {
         const container = containers[0]
 
-        context.target = container.id as string
+        this.context.target = container.id as string
 
         return container
       }
@@ -128,53 +113,54 @@ export class CreepSingleHauler extends Action {
 }
 
 @ActionsRegistry.register
-export class CreepSingleHaulerTransfer extends Action {
+export class CreepSingleHaulerTransfer extends CreepSingleHauler {
   run(context: ICreepContext) {
-    const creep: Creep | undefined = Game.creeps[context.creepName]
-    const target: StructureSpawn | StructureExtension | StructureStorage | StructureTower | null = Game.getObjectById(context.target as string)
+    this.context = context
+
+    const target: StructureSpawn | StructureExtension | StructureStorage | StructureTower | null = Game.getObjectById(this.context.target as string)
 
     if (target == null || !target.store.getFreeCapacity(RESOURCE_ENERGY)) {
-      delete context.target
+      delete this.context.target
       return this.shiftAndContinue()
     }
 
-    if (!creep.pos.isNearTo(target)) {
-      creep.travelTo(target, { range: 1 })
+    if (!this.creep.pos.isNearTo(target)) {
+      this.creep.travelTo(target, { range: 1 })
       return this.waitNextTick()
     }
 
-    creep.transfer(target, RESOURCE_ENERGY)
+    this.creep.transfer(target, RESOURCE_ENERGY)
 
-    delete context.target
+    delete this.context.target
 
     return this.shiftAndStop()
   }
 }
 
 @ActionsRegistry.register
-export class CreepSingleHaulerGetEnergy extends Action {
+export class CreepSingleHaulerGetEnergy extends CreepSingleHauler {
   run(context: any) {
-    const creep: Creep = Game.creeps[context.creepName]
+    this.context = context
 
-    if (creep == null) {
+    if (this.creep == null) {
       return this.shiftAndStop()
     }
 
-    if (!creep.store.getFreeCapacity(RESOURCE_ENERGY)) {
+    if (!this.creep.store.getFreeCapacity(RESOURCE_ENERGY)) {
       return this.shiftAndContinue()
     }
 
-    let result = this.pickUpEnergy(context)
+    let result = this.pickUpEnergy()
 
     if (result) {
       return result
     }
 
-    return this.withdrawContainers(context)
+    return this.withdrawContainers()
   }
 
-  pickUpEnergy(context: ICreepContext) {
-    const source: Source | null = Game.getObjectById(context.source as string)
+  pickUpEnergy() {
+    const source: Source | null = Game.getObjectById(this.context.source as string)
 
     if (source == null) {
       return this.shiftAndStop()
@@ -192,60 +178,55 @@ export class CreepSingleHaulerGetEnergy extends Action {
       return null
     }
 
-    const creep: Creep = Game.creeps[context.creepName]
-
-    if (creep.pos.isNearTo(resource)) {
-      creep.pickup(resource)
+    if (this.creep.pos.isNearTo(resource)) {
+      this.creep.pickup(resource)
     } else {
-      creep.travelTo(resource, { range: 1 })
+      this.creep.travelTo(resource, { range: 1 })
     }
 
     return this.waitNextTick()
   }
 
-  withdrawContainers(context: any) {
-    const creep: Creep = Game.creeps[context.creepName]
-
-    const container = this.getContainer(context)
+  withdrawContainers() {
+    const container = this.getContainer()
 
     if (container == null) {
       return this.waitNextTick()
     }
 
-    if (!creep.pos.isNearTo(container)) {
-      creep.travelTo(container, { range: 1 })
+    if (!this.creep.pos.isNearTo(container)) {
+      this.creep.travelTo(container, { range: 1 })
       return this.waitNextTick()
     }
 
     const containerUsedCapacity = container.store.getUsedCapacity(RESOURCE_ENERGY) as number
     const containerFreeCapacity = container.store.getFreeCapacity(RESOURCE_ENERGY) as number
-    const creepFreeCapacity = creep.store.getFreeCapacity(RESOURCE_ENERGY) as number
+    const creepFreeCapacity = this.creep.store.getFreeCapacity(RESOURCE_ENERGY) as number
 
     if (containerFreeCapacity && containerUsedCapacity < creepFreeCapacity) {
       return this.waitNextTick()
     }
 
-    creep.withdraw(container, RESOURCE_ENERGY)
+    this.creep.withdraw(container, RESOURCE_ENERGY)
 
     return this.waitNextTick()
   }
 
-  getContainer(context: any): StructureContainer | null {
-    let container: StructureContainer | null = Game.getObjectById(context.container)
+  getContainer(): StructureContainer | null {
+    let container: StructureContainer | null = Game.getObjectById(this.context.container)
 
     if (container != null) {
       return container
     }
 
-    const creep = Game.creeps[context.creepName]
-    const { x, y } = context.containerPos
+    const { x, y, roomName } = this.context.containerPos
 
-    const pos = creep.room.getPositionAt(x, y) as RoomPosition
+    const pos = new RoomPosition(x, y, roomName)
 
     container = pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_CONTAINER) as StructureContainer
 
     if (container) {
-      context.container = container.id
+      this.context.container = container.id
     }
 
     return container

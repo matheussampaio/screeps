@@ -26,6 +26,7 @@ export interface IPlanSource {
   emptySpaces: number
   desiredWorkParts: number
   desiredCarryParts: number
+  roomName?: string
   linkPos: {
     x: number
     y: number
@@ -49,24 +50,21 @@ export interface IPlanMineral {
   } | null
 }
 
-export interface IPlanRemote {
-  remoteRoomName: string
-  sources: {
-    [sourceId: string]: IPlanSource
-  }
-  pid: number
-}
-
 export interface ICityContext {
   roomName?: string
   queue?: ISpawnerItem[]
   emergencyCreep?: string
   recyclerCreep?: string
   linkCreep?: string
-  scoutRoom: string
-  scoutCreep: string
+  scoutRoom?: string
+  scoutCreep?: string
   remotes: {
-    [roomName: string]: IPlanRemote
+    [roomName: string]: {
+      sources: {
+        [sourceId: string]: IPlanSource
+      }
+      reserver: string
+    }
   }
   planner?: Partial<{
     storageLinkPos: {

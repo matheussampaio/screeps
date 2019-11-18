@@ -28,7 +28,20 @@ export class Country extends Action {
 
         const PID: number = this.fork({
           memory,
-          actions: [[RoomStopIfConflict.name], [CityEmergency.name], [CityRunner.name], [CityDefense.name], [CitySpawner.name], [CityPlanner.name], [CityBuilder.name], [CityLinks.name], [CityMinerals.name], [CityRecycler.name], [CityRemoteMiners.name], [CityVisuals.name]],
+          actions: [
+            [RoomStopIfConflict.name],
+            [CityEmergency.name],
+            [CityRunner.name],
+            [CityDefense.name],
+            [CityLinks.name],
+            [CityMinerals.name],
+            [CityRemoteMiners.name],
+            [CityRecycler.name],
+            [CitySpawner.name],
+            [CityPlanner.name],
+            [CityBuilder.name],
+            [CityVisuals.name]
+          ],
           name: `City-${roomName}`
         })
 

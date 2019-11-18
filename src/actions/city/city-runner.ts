@@ -1,6 +1,6 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry, PRIORITY } from '../../core'
+import { ActionsRegistry, PRIORITY, ActionResult } from '../../core'
 import { City } from './city'
 import { CreepCheckStop, CreepHarvester, CreepSingleHauler  } from '../creep'
 import { CreateBody } from '../../utils/create-body'
@@ -15,120 +15,13 @@ export class CityRunner extends City {
   run(context: ICityContext) {
     this.context = context
 
-    if (this.queue.length) {
-      return this.waitNextTick()
-    }
-
-    const extensionConstructed = this.room.energyCapacityAvailable !== this.planner.energyCapacityAvailable
-    const rclChanged = this.planner.rcl !== this.controller.level
-    const time = Game.time - (this.planner.time || 0) >= 1000
-
-    if (extensionConstructed || rclChanged || time) {
-      this.plan()
-    }
-
-    this.planner.storagers = this.storagers.filter((creepName: string) => Game.creeps[creepName] != null)
-
-    if (this.storage && this.storage.isActive() && !this.planner.storagers.length) {
-      const creepName = this.createStoragers()
-
-      this.planner.storagers.push(creepName)
-    }
-
-    const storageHasLinks = this.findLink(this.planner.storageLinkPos) instanceof StructureLink
-
-    for (const source of this.sources) {
-      source.harvesters = source.harvesters.filter((creepName: string) => Game.creeps[creepName] != null)
-      source.haulers = source.haulers.filter((creepName: string) => Game.creeps[creepName] != null)
-
-      const currentWorkParts: number = Math.min(this.OPTIMUM_WORK_PARTS_PER_SOURCE, utils.getActiveBodyPartsFromName(source.harvesters, WORK))
-      const currentCarryParts: number = utils.getActiveBodyPartsFromName(source.haulers, CARRY)
-
-      // While the Hauler is traveling from source to storage and back, the
-      // Harvester should produce: WORK_PARTS * HARVEST_POWER * DISTANCE * 2
-      // Our Haulers should have enough CARRY parts to carry all that energy.
-      const energyProduced = source.distance * currentWorkParts * HARVEST_POWER * 2
-
-      source.desiredCarryParts = energyProduced / CARRY_CAPACITY
-
-      const link = this.findLink(source.linkPos)
-      const sourceHasLinks = link instanceof StructureLink
-      const isHaulerNeeded = !storageHasLinks || !sourceHasLinks
-
-      // only create haulers if we don't have links
-      if (isHaulerNeeded && currentCarryParts * CARRY_CAPACITY < energyProduced) {
-        const memory = { source: source.id, containerPos: source.containerPos }
-        const creepName = this.createHaulers(memory, { [CARRY]: source.desiredCarryParts + 2 })
-
-        source.haulers.push(creepName)
-      }
-
-      if (source.harvesters.length < source.emptySpaces && currentWorkParts < source.desiredWorkParts) {
-        const memory: any = { source: source.id }
-
-        if (link) {
-          memory.linkPos = source.linkPos
-        } else {
-          memory.containerPos = source.containerPos
-        }
-
-        const creepName = this.createHarvester(memory, { [WORK]: source.desiredWorkParts })
-
-        source.harvesters.push(creepName)
-      }
-    }
-
-    this.planner.upgraders = this.upgraders.filter((creepName: string) => Game.creeps[creepName] != null)
-
-    if (this.planner.upgraders.length === 0) {
-      const creepName = this.createUpgrader()
-
-      this.planner.upgraders.push(creepName)
-
-      return this.waitNextTick()
-    }
-
-    this.planner.builders = this.builders.filter((creepName: string) => Game.creeps[creepName] != null)
-
-    if (this.planner.builders.length === 0 && this.room.find(FIND_MY_CONSTRUCTION_SITES).length) {
-      const creepName = this.createBuilder()
-
-      this.planner.builders.push(creepName)
-
-      return this.waitNextTick()
-    }
-
-    const energyProduced = Object.values(this.sources).reduce((sum: number, source: any) => {
-      const currentWorkParts = utils.getActiveBodyPartsFromName(source.harvesters, WORK)
-
-      return sum + (currentWorkParts * HARVEST_POWER * 1500)
-    }, 0)
-
-    const creepsConsumingEnergy = this.planner.upgraders.concat(this.planner.builders)
-    const energyConsumed = creepsConsumingEnergy.reduce((sum: number, creepName: string) => {
-      const currentWorkParts = utils.getActiveBodyPartsFromName(creepName, WORK)
-
-      return sum + (currentWorkParts * HARVEST_POWER * 1500)
-    }, 0)
-    const energyConsumedByWalls = 0
-
-    const creepsInRoom: Creep[] = _.filter(Game.creeps, creep => creep.memory.roomName === this.room.name)
-    const totalCreepsCost = utils.getCreepsCost(creepsInRoom)
-
-    const total = energyProduced - energyConsumedByWalls - energyConsumed - totalCreepsCost
-
-    const workParts = this.upgradersBody.filter((part: string) => part === WORK).length
-    const consumeByUpgrader = workParts * HARVEST_POWER * 1500 + (_.sum(this.upgradersBody.map((p: BodyPartConstant) => BODYPART_COST[p])))
-
-    if (total >= consumeByUpgrader) {
-      const creepName = this.createUpgrader()
-
-      this.planner.upgraders.push(creepName)
-
-      return this.waitNextTick()
-    }
-
-    return this.waitNextTick()
+    return this.replanIfNecessary() ||
+      this.maintainStoragers() ||
+      this.maintainHarvestersAndHaulers() ||
+      this.maintainUpgraders() ||
+      this.maintainBuilders() ||
+      this.optimizeUpgraders() ||
+      this.waitNextTick()
   }
 
   private calculateEficiency({ distance, work, move, carry }: { distance: number, work: number, move: number, carry: number }): number {
@@ -242,7 +135,7 @@ export class CityRunner extends City {
       .add([CARRY], { repeat: true })
       .value(),
       actions: [[CreepCheckStop.name], [CreepStorager.name]],
-      priority: PRIORITY.NORMAL
+      priority: PRIORITY.NORMAL + 2
     })
 
     return creepName
@@ -347,6 +240,165 @@ export class CityRunner extends City {
 
     if (constructionSite) {
       return constructionSite
+    }
+
+    return null
+  }
+
+  private maintainUpgraders(): ActionResult | null {
+    if (this.isSpawningCreep(this.planner.upgraders)) {
+      return this.waitNextTick()
+    }
+
+    this.planner.upgraders = this.upgraders.filter((creepName: string) => Game.creeps[creepName] != null || this.isCreepNameInQueue(creepName))
+
+    if (this.planner.upgraders.length === 0) {
+      const creepName = this.createUpgrader()
+
+      this.planner.upgraders.push(creepName)
+
+      return this.waitNextTick()
+    }
+
+    return null
+  }
+
+  private maintainStoragers(): ActionResult | null {
+    if (this.isSpawningCreep(this.planner.storagers)) {
+      return this.waitNextTick()
+    }
+
+    this.planner.storagers = this.storagers.filter((creepName: string) => Game.creeps[creepName] != null || this.isCreepNameInQueue(creepName))
+
+    if (this.storage && this.storage.isActive() && !this.planner.storagers.length) {
+      const creepName = this.createStoragers()
+
+      this.planner.storagers.push(creepName)
+
+      return this.waitNextTick()
+    }
+
+    return null
+  }
+
+  private replanIfNecessary(): null {
+    const extensionConstructed = this.room.energyCapacityAvailable !== this.planner.energyCapacityAvailable
+    const rclChanged = this.planner.rcl !== this.controller.level
+    const time = Game.time - (this.planner.time || 0) >= 1000
+
+    if (extensionConstructed || rclChanged || time) {
+      this.plan()
+    }
+
+    return null
+  }
+
+  private maintainBuilders(): ActionResult | null {
+    if (this.isSpawningCreep(this.planner.builders)) {
+      return this.waitNextTick()
+    }
+
+    this.planner.builders = this.builders.filter((creepName: string) => Game.creeps[creepName] != null || this.isCreepNameInQueue(creepName))
+
+    if (this.planner.builders.length === 0 && this.room.find(FIND_MY_CONSTRUCTION_SITES).length) {
+      const creepName = this.createBuilder()
+
+      this.planner.builders.push(creepName)
+
+      return this.waitNextTick()
+    }
+
+    return null
+  }
+
+  private optimizeUpgraders() {
+    if (this.isSpawningCreep(this.planner.upgraders)) {
+      return this.waitNextTick()
+    }
+
+    const energyProduced = Object.values(this.sources).reduce((sum: number, source: any) => {
+      const currentWorkParts = utils.getActiveBodyPartsFromName(source.harvesters, WORK)
+
+      return sum + (currentWorkParts * HARVEST_POWER * 1500)
+    }, 0)
+
+    const creepsConsumingEnergy = this.planner.upgraders.concat(this.planner.builders)
+    const energyConsumed = creepsConsumingEnergy.reduce((sum: number, creepName: string) => {
+      const currentWorkParts = utils.getActiveBodyPartsFromName(creepName, WORK)
+
+      return sum + (currentWorkParts * HARVEST_POWER * 1500)
+    }, 0)
+    const energyConsumedByWalls = 0
+
+    const creepsInRoom: Creep[] = _.filter(Game.creeps, creep => creep.memory.roomName === this.room.name)
+    const totalCreepsCost = utils.getCreepsCost(creepsInRoom)
+
+    const total = energyProduced - energyConsumedByWalls - energyConsumed - totalCreepsCost
+
+    const workParts = this.upgradersBody.filter((part: string) => part === WORK).length
+    const consumeByUpgrader = workParts * HARVEST_POWER * 1500 + (_.sum(this.upgradersBody.map((p: BodyPartConstant) => BODYPART_COST[p])))
+
+    if (total >= consumeByUpgrader) {
+      const creepName = this.createUpgrader()
+
+      this.planner.upgraders.push(creepName)
+
+      return this.waitNextTick()
+    }
+
+    return null
+  }
+
+  private maintainHarvestersAndHaulers(): ActionResult | null {
+    const storageHasLinks = this.findLink(this.planner.storageLinkPos) instanceof StructureLink
+
+    for (const source of this.sources) {
+      source.harvesters = source.harvesters.filter((creepName: string) => Game.creeps[creepName] != null || this.isCreepNameInQueue(creepName))
+      source.haulers = source.haulers.filter((creepName: string) => Game.creeps[creepName] != null || this.isCreepNameInQueue(creepName))
+
+      if (this.isSpawningCreep(source.harvesters) || this.isSpawningCreep(source.haulers)) {
+        continue
+      }
+
+      const currentWorkParts: number = Math.min(this.OPTIMUM_WORK_PARTS_PER_SOURCE, utils.getActiveBodyPartsFromName(source.harvesters, WORK))
+      const currentCarryParts: number = utils.getActiveBodyPartsFromName(source.haulers, CARRY)
+
+      // While the Hauler is traveling from source to storage and back, the
+      // Harvester should produce: WORK_PARTS * HARVEST_POWER * DISTANCE * 2
+      // Our Haulers should have enough CARRY parts to carry all that energy.
+      const energyProduced = source.distance * currentWorkParts * HARVEST_POWER * 2
+
+      source.desiredCarryParts = energyProduced / CARRY_CAPACITY
+
+      const link = this.findLink(source.linkPos)
+      const sourceHasLinks = link instanceof StructureLink
+      const isHaulerNeeded = !storageHasLinks || !sourceHasLinks
+
+      // only create haulers if we don't have links
+      if (isHaulerNeeded && currentCarryParts * CARRY_CAPACITY < energyProduced) {
+        const memory = { source: source.id, containerPos: source.containerPos }
+        const creepName = this.createHaulers(memory, { [CARRY]: source.desiredCarryParts + 2 })
+
+        source.haulers.push(creepName)
+
+        return this.waitNextTick()
+      }
+
+      if (source.harvesters.length < source.emptySpaces && currentWorkParts < source.desiredWorkParts) {
+        const memory: any = { source: source.id }
+
+        if (link) {
+          memory.linkPos = source.linkPos
+        } else {
+          memory.containerPos = source.containerPos
+        }
+
+        const creepName = this.createHarvester(memory, { [WORK]: source.desiredWorkParts })
+
+        source.harvesters.push(creepName)
+
+        return this.waitNextTick()
+      }
     }
 
     return null

@@ -85,7 +85,7 @@ export class CityLinks extends City {
       .add([CARRY], { repeat: true })
       .value(),
       actions: [[CreepCheckStop.name], [CreepLink.name]],
-      priority: PRIORITY.HIGH
+      priority: PRIORITY.NORMAL + 1
     })
 
     this.context.linkCreep = creepName
