@@ -44,7 +44,7 @@ export class CreepGuard extends CreepAction {
       return this.waitNextTick()
     }
 
-    return this.waitNextTick()
+    return this.sleep(5)
   }
 
   protected get roomsToGuard(): string[] {
