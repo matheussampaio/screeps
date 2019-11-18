@@ -1,3 +1,4 @@
+import * as _ from 'lodash'
 import { ScreepsAPI } from 'screeps-api'
 import * as dotenv from 'dotenv'
 
@@ -14,7 +15,9 @@ async function main() {
 
   screeps.socket.on('connected', () => {
     screeps.socket.on('console', (events) => {
-      events.data.messages.log.forEach((log) => console.log(log))
+      const messages = _.get(events, 'data.messages.log', [])
+
+      messages.forEach((log: any) => console.log(log))
     })
 
     screeps.socket.subscribe('console')
