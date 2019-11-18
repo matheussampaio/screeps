@@ -80,7 +80,7 @@ export class CreateBody {
     return newFatigueGeneratedAfterMoving / newFatigueDecreacedPerTick
   }
 
-  get moveRatio(): number {
+  private get moveRatio(): number {
     if (this.fatigueDecreasedPerTick === 0) {
       return Infinity
     }
@@ -102,7 +102,7 @@ export class CreateBody {
   }
 
   private canAddPart(parts: BodyPartConstant[]): boolean {
-    const reachedPartLimit = parts.some(part => 
+    const reachedPartLimit = parts.some(part =>
       this.maxParts[part] && this.currentCreepBody[part] >= this.maxParts[part]
     )
 

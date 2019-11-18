@@ -623,7 +623,7 @@ export class Traveler {
 const REPORT_CPU_THRESHOLD = Infinity
 
 const DEFAULT_MAXOPS = 20000
-const DEFAULT_STUCK_VALUE = 3
+const DEFAULT_STUCK_VALUE = 5
 const STATE_PREV_X = 0
 const STATE_PREV_Y = 1
 const STATE_STUCK = 2
