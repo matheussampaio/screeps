@@ -3,7 +3,7 @@ import * as _ from 'lodash'
 import { ActionsRegistry } from '../../core'
 import { ICityContext, IPlanSource } from './interfaces'
 import { City } from './city'
-import { CreepCheckStop, CreepRemoteHarvester, CreepRemoteHauler, CreepRemoteReserver } from '../creep'
+import { CreepFlee, CreepCheckStop, CreepRemoteHarvester, CreepRemoteHauler, CreepRemoteReserver } from '../creep'
 import { CreateBody, CREEP_PRIORITY } from '../../utils'
 import * as utils from '../../utils'
 
@@ -98,7 +98,7 @@ export class CityRemoteMiners extends City {
       body: new CreateBody({ minimumEnergy: 300, energyAvailable: this.room.energyCapacityAvailable, maxParts, hasRoads: false })
       .add([CARRY], { repeat: true })
       .value(),
-      actions: [[CreepCheckStop.name], [CreepRemoteHauler.name]],
+      actions: [[CreepCheckStop.name], [CreepFlee.name], [CreepRemoteHauler.name]],
       priority: CREEP_PRIORITY.REMOTE_HAULER
     })
 
@@ -116,7 +116,7 @@ export class CityRemoteMiners extends City {
       .add([WORK], { repeat: true })
       .addMoveIfPossible()
       .value(),
-      actions: [[CreepCheckStop.name], [CreepRemoteHarvester.name]],
+      actions: [[CreepCheckStop.name], [CreepFlee.name], [CreepRemoteHarvester.name]],
       priority: CREEP_PRIORITY.REMOTE_HARVESTER
     })
 
@@ -137,7 +137,7 @@ export class CityRemoteMiners extends City {
       },
       creepName,
       body,
-      actions: [[CreepCheckStop.name], [CreepRemoteReserver.name]],
+      actions: [[CreepCheckStop.name], [CreepFlee.name], [CreepRemoteReserver.name]],
       priority: CREEP_PRIORITY.REMOTE_RESERVER
     })
 

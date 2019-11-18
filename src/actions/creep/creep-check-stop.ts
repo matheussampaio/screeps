@@ -1,28 +1,31 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry, Action, Process } from '../../core'
+import { ActionsRegistry, Process } from '../../core'
 import { ICreepContext } from './interfaces'
+import { CreepAction } from './creep-action'
 
 @ActionsRegistry.register
-export class CreepCheckStop extends Action {
+export class CreepCheckStop extends CreepAction {
   run(context: ICreepContext, process: Process) {
-    const creep: Creep | undefined = Game.creeps[context.creepName]
+    this.context = context
 
     // stop if we lose access to this creep
-    if (creep == null) {
+    if (this.creep == null) {
       return this.halt()
     }
 
-    // stop if another process owns this room
-    if (creep.memory.PID !== process.PID) {
+    // stop if another process owns this creep
+    if (this.creep.memory.PID !== process.PID) {
       return this.halt()
     }
 
-    if (creep.getActiveBodyparts(MOVE) === 0) {
+    if (this.creep.getActiveBodyparts(MOVE) === 0) {
+      this.creep.suicide()
+
       return this.halt()
     }
 
-    if (creep.spawning) {
+    if (this.creep.spawning) {
       return this.waitNextTickAll()
     }
 

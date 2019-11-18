@@ -1,12 +1,12 @@
 import * as _ from 'lodash'
 
-import { Action } from '../../core'
+import { Action, Process } from '../../core'
 import { ICreepContext } from './interfaces'
 
 export class CreepAction extends Action {
   protected context: any
 
-  run(context: ICreepContext) {
+  run(context: ICreepContext, process: Process) {
     this.context = context
 
     return this.waitNextTick()
