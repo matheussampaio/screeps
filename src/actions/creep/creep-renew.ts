@@ -10,7 +10,7 @@ export class CreepRenew extends CreepAction {
 
     // maximum creep, renew
     if (this.context.energy !== this.room.energyCapacityAvailable) {
-      this.waitNextTick()
+      return this.waitNextTick()
     }
 
     const ticksGainedOnRenew = Math.floor(600 / this.creep.body.length)
