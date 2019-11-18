@@ -22,7 +22,9 @@ export class CreepBuilder extends Action {
     const target: any = this.getConstructionTarget(creep, context)
 
     if (target == null) {
-      this.logger.debug(`Can't find a construction target, trying to upgrade contoler.`, context.creepName)
+      // this.logger.debug(`Can't find a construction target, trying to upgrade contoler.`, context.creepName)
+      creep.suicide()
+
       return this.shiftUnshitAndContinue(CreepUpgradeController.name)
     }
 

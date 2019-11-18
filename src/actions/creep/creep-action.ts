@@ -39,4 +39,8 @@ export class CreepAction extends Action {
 
     return undefined
   }
+
+  protected get terminal(): StructureTerminal | undefined {
+    return this.room.terminal
+  }
 }

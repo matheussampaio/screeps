@@ -1,11 +1,11 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry, PRIORITY } from '../../core'
+import { ActionsRegistry } from '../../core'
 import { ICityContext, IPlanMineral } from './interfaces'
 import { City } from './city'
 import { CreepCheckStop, CreepHaulerMineral, CreepHarvesterMineral } from '../creep'
 import * as utils from '../../utils'
-import { CreateBody } from '../../utils'
+import { CreateBody, CREEP_PRIORITY } from '../../utils'
 
 @ActionsRegistry.register
 export class CityMinerals extends City {
@@ -117,7 +117,7 @@ export class CityMinerals extends City {
       .addMoveIfPossible()
       .value(),
       actions: [[CreepCheckStop.name], [CreepHaulerMineral.name]],
-      priority: PRIORITY.LOW
+      priority: CREEP_PRIORITY.HAULER_MINERAL
     })
 
     return creepName
@@ -135,7 +135,7 @@ export class CityMinerals extends City {
       .addMoveIfPossible()
       .value(),
       actions: [[CreepCheckStop.name], [CreepHarvesterMineral.name]],
-      priority: PRIORITY.LOW
+      priority: CREEP_PRIORITY.HARVESTER_MINERAL
     })
 
     return creepName

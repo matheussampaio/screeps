@@ -1,12 +1,11 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry, PRIORITY } from '../../core'
+import { ActionsRegistry } from '../../core'
 import { ICityContext } from './interfaces'
 import * as utils from '../../utils'
 import { City } from './city'
-import { CreepCheckStop } from '../creep'
-import { CreepLink } from '../creep'
-import { CreateBody } from '../../utils'
+import { CreepCheckStop, CreepRenew, CreepLink } from '../creep'
+import { CreateBody, CREEP_PRIORITY } from '../../utils'
 
 @ActionsRegistry.register
 export class CityLinks extends City {
@@ -66,7 +65,8 @@ export class CityLinks extends City {
     const creepName = utils.getUniqueCreepName('link')
 
     const memory = {
-      link: storageLinkId
+      link: storageLinkId,
+      energy: this.room.energyCapacityAvailable
     }
 
     const maxParts = {
@@ -79,13 +79,13 @@ export class CityLinks extends City {
       body: new CreateBody({
         maxParts,
         minimumEnergy: 300,
-        energyAvailable: this.room.energyAvailable,
+        energyAvailable: this.room.energyCapacityAvailable,
         ticksToMove: 4
       })
       .add([CARRY], { repeat: true })
       .value(),
-      actions: [[CreepCheckStop.name], [CreepLink.name]],
-      priority: PRIORITY.NORMAL + 1
+      actions: [[CreepCheckStop.name], [CreepLink.name], [CreepRenew.name]],
+      priority: CREEP_PRIORITY.LINKER
     })
 
     this.context.linkCreep = creepName

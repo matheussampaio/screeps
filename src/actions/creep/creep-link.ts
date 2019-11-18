@@ -24,6 +24,8 @@ export class CreepLink extends Action {
       return this.unshiftAndContinue(CreepLinkMoveToPosition.name)
     }
 
+    this.creep.memory.avoidMoving = true
+
     if (this.creep.store.getUsedCapacity(RESOURCE_ENERGY)) {
       this.creep.transfer(this.storage, RESOURCE_ENERGY)
       return this.waitNextTick()

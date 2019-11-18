@@ -34,6 +34,8 @@ export class CreepHarvester extends CreepAction {
       return this.waitNextTick()
     }
 
+    this.creep.memory.avoidMoving = true
+
     // harvest the source
     if (source.energy) {
       this.context.working = this.creep.harvest(source) === OK

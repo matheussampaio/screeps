@@ -1,31 +1,10 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry, Action } from '../../core'
+import { ActionsRegistry } from '../../core'
+import { CreepAction } from './creep-action'
 
 @ActionsRegistry.register
-export class CreepStorager extends Action {
-  protected context: any
-
-  protected get creep(): Creep {
-    return Game.creeps[this.context.creepName]
-  }
-
-  protected get room(): Room {
-    return Game.rooms[this.creep.memory.roomName]
-  }
-
-  protected get controller(): StructureController | undefined {
-    return this.room.controller
-  }
-
-  protected get storage(): StructureStorage | undefined {
-    return this.room.storage
-  }
-
-  protected get terminal(): StructureTerminal | undefined {
-    return this.room.terminal
-  }
-
+export class CreepStorager extends CreepAction {
   run(context: any) {
     this.context = context
 
@@ -230,4 +209,3 @@ export class CreepStoragerTransferResourcesToTerminal extends CreepStorager {
     return this.waitNextTick()
   }
 }
-

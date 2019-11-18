@@ -208,6 +208,12 @@ export class ActionTreeRunner {
 
         const action: Action = ActionsRegistry.fetch(subtree[0] as string)
 
+        if (action == null) {
+          ActionTreeRunner.logger.error('Action not found', subtree[0])
+
+          break
+        }
+
         try {
           const usedCPUBefore = Game.cpu.getUsed()
 

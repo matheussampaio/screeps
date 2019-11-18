@@ -16,6 +16,7 @@ export interface ISpawnerItem {
   actions: string[][]
   memory: any
   creepName?: string
+  ticksToFulfill?: number
 }
 
 export interface IPlanSource {

@@ -50,6 +50,8 @@ export class CreepHarvesterMineral extends Action {
       }
     }
 
+    this.creep.memory.avoidMoving = true
+
     return this.waitNextTick()
   }
 

@@ -1,4 +1,5 @@
 export * from './creep-check-stop'
+export * from './creep-renew'
 export * from './creep-generic'
 export * from './creep-harvester'
 export * from './creep-harvester-mineral'

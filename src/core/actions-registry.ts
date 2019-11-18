@@ -10,12 +10,6 @@ export class ActionsRegistry {
   }
 
   public static fetch(name: string): Action {
-    const action = ActionsRegistry.registry[name]
-
-    if (action == null) {
-      throw new Error(`Action Not Found: ${name}, [${_.keys(ActionsRegistry.registry)}]`)
-    }
-
-    return action
+    return ActionsRegistry.registry[name]
   }
 }

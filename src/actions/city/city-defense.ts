@@ -80,15 +80,28 @@ export class CityDefense extends City {
   }
 
   enableSafeMode() {
+    // safe mode already enabled
     if (this.controller.safeMode) {
       return this.waitNextTick()
     }
 
-    if (this.controller.safeModeAvailable) {
-      this.controller.activateSafeMode()
-
+    // safe mode in cooldown, we need to wait
+    if (this.controller.safeModeCooldown) {
       return this.waitNextTick()
     }
+
+    // controller blocked, we cant use safe mode while this active
+    if (this.controller.upgradeBlocked) {
+      return this.waitNextTick()
+    }
+
+    // no safe mode available
+    if (!this.controller.safeModeAvailable) {
+      return this.waitNextTick()
+    }
+
+    // enable safe mode
+    this.controller.activateSafeMode()
 
     return this.waitNextTick()
   }

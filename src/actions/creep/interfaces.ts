@@ -11,5 +11,8 @@ declare global {
   interface CreepMemory {
     PID: number
     roomName: string
+    replacementOnTheWay?: boolean
+    renew?: boolean
+    avoidMoving?: boolean
   }
 }

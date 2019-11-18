@@ -14,6 +14,9 @@ export class CitySpawner extends City {
       return this.waitNextTick()
     }
 
+    // remove expired items
+    this.context.queue = this.queue.filter(item => item.ticksToFulfill == null || item.ticksToFulfill--)
+
     this.queue.sort((i1, i2) => i2.priority - i1.priority)
 
     const item: ISpawnerItem = this.queue[0]

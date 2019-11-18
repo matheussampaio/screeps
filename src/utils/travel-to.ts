@@ -145,20 +145,23 @@ export class Traveler {
       if (nextPos) {
         const creepBlocking = creep.room.lookForAt(LOOK_CREEPS, nextPos.x, nextPos.y).find(c => c.my)
 
-        if (creepBlocking && !creepBlocking.fatigue) {
+        if (creepBlocking) {
+          if (creepBlocking.memory.avoidMoving) {
+            state.stuckCount = DEFAULT_STUCK_VALUE
+          } else if (!creepBlocking.fatigue) {
+            const opposite: { [dir: number]: DirectionConstant } = {
+              [TOP]: BOTTOM,
+              [BOTTOM]: TOP,
+              [RIGHT]: LEFT,
+              [LEFT]: RIGHT,
+              [BOTTOM_RIGHT]: TOP_LEFT,
+              [TOP_LEFT]: BOTTOM_RIGHT,
+              [BOTTOM_LEFT]: TOP_RIGHT,
+              [TOP_RIGHT]: BOTTOM_LEFT
+            }
 
-          const opposite: { [dir: number]: DirectionConstant } = {
-            [TOP]: BOTTOM,
-            [BOTTOM]: TOP,
-            [RIGHT]: LEFT,
-            [LEFT]: RIGHT,
-            [BOTTOM_RIGHT]: TOP_LEFT,
-            [TOP_LEFT]: BOTTOM_RIGHT,
-            [BOTTOM_LEFT]: TOP_RIGHT,
-            [TOP_RIGHT]: BOTTOM_LEFT
+            creepBlocking.move(opposite[direction])
           }
-
-          creepBlocking.move(opposite[direction])
         }
       }
     }

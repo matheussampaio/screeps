@@ -1,10 +1,10 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry, PRIORITY, ActionResult } from '../../core'
+import { ActionsRegistry } from '../../core'
 import { ICityContext, IPlanSource } from './interfaces'
 import { City } from './city'
 import { CreepCheckStop, CreepRemoteHarvester, CreepRemoteHauler, CreepRemoteReserver } from '../creep'
-import { CreateBody } from '../../utils/create-body'
+import { CreateBody, CREEP_PRIORITY } from '../../utils'
 import * as utils from '../../utils'
 
 @ActionsRegistry.register
@@ -26,6 +26,8 @@ export class CityRemoteMiners extends City {
   }
 
   private createCreeps() {
+    let createdSomething = false
+
     for (const roomName in this.context.remotes) {
       const remote = this.context.remotes[roomName]
       const sourcePlans = Object.values(remote.sources) as IPlanSource[]
@@ -56,6 +58,8 @@ export class CityRemoteMiners extends City {
           const creepName = this.createHaulers(memory, { [CARRY]: sourcePlan.desiredCarryParts + 2 })
 
           sourcePlan.haulers.push(creepName)
+
+          createdSomething = true
         }
 
         if (sourcePlan.harvesters.length < sourcePlan.emptySpaces && currentWorkParts < sourcePlan.desiredWorkParts) {
@@ -68,11 +72,19 @@ export class CityRemoteMiners extends City {
           const creepName = this.createHarvester(memory, { [WORK]: sourcePlan.desiredWorkParts })
 
           sourcePlan.harvesters.push(creepName)
+
+          createdSomething = true
         }
       }
 
       if (Game.creeps[remote.reserver] == null && !this.isCreepNameInQueue(remote.reserver)) {
         remote.reserver = this.createReserverCreep(roomName)
+
+        createdSomething = true
+      }
+
+      if (createdSomething) {
+        break
       }
     }
   }
@@ -87,7 +99,7 @@ export class CityRemoteMiners extends City {
       .add([CARRY], { repeat: true })
       .value(),
       actions: [[CreepCheckStop.name], [CreepRemoteHauler.name]],
-      priority: PRIORITY.NORMAL - 1
+      priority: CREEP_PRIORITY.REMOTE_HAULER
     })
 
     return creepName
@@ -105,7 +117,7 @@ export class CityRemoteMiners extends City {
       .addMoveIfPossible()
       .value(),
       actions: [[CreepCheckStop.name], [CreepRemoteHarvester.name]],
-      priority: PRIORITY.NORMAL - 1
+      priority: CREEP_PRIORITY.REMOTE_HARVESTER
     })
 
     return creepName
@@ -126,7 +138,7 @@ export class CityRemoteMiners extends City {
       creepName,
       body,
       actions: [[CreepCheckStop.name], [CreepRemoteReserver.name]],
-      priority: PRIORITY.VERY_LOW
+      priority: CREEP_PRIORITY.REMOTE_RESERVER
     })
 
    return creepName
@@ -222,7 +234,7 @@ export class CityRemoteMinersScout extends CityRemoteMiners {
       creepName,
       body: [MOVE],
       actions: [[CreepCheckStop.name]],
-      priority: PRIORITY.VERY_LOW
+      priority: CREEP_PRIORITY.REMOTE_SCOUT
     })
 
     this.context.scoutCreep = creepName

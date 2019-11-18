@@ -1,14 +1,11 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry, PRIORITY, ActionResult } from '../../core'
+import { ActionsRegistry, ActionResult } from '../../core'
 import { City } from './city'
-import { CreepCheckStop, CreepHarvester, CreepSingleHauler  } from '../creep'
-import { CreateBody } from '../../utils/create-body'
+import { CreepCheckStop, CreepHarvester, CreepSingleBuilder, CreepSingleHauler, CreepSingleUpgrader, CreepStorager, CreepRenew } from '../creep'
+import { CreateBody, CREEP_PRIORITY } from '../../utils'
 import { ICityContext } from './interfaces'
 import * as utils from '../../utils'
-import { CreepSingleUpgrader } from '../creep/creep-single-upgrader'
-import { CreepSingleBuilder } from '../creep/creep-single-builder'
-import { CreepStorager } from '../creep/creep-storager'
 
 @ActionsRegistry.register
 export class CityRunner extends City {
@@ -105,7 +102,7 @@ export class CityRunner extends City {
       .addMoveIfPossible()
       .value(),
       actions: [[CreepCheckStop.name], [CreepSingleBuilder.name]],
-      priority: PRIORITY.LOW
+      priority: CREEP_PRIORITY.BUILDER
     })
 
     return creepName
@@ -115,34 +112,45 @@ export class CityRunner extends City {
     const creepName = utils.getUniqueCreepName('upgrader')
 
     this.queue.push({
-      memory: {},
+      memory: {
+        energy: this.room.energyCapacityAvailable
+      },
       creepName,
       body: this.controller.level === 8 ? [MOVE, MOVE, CARRY, WORK] : this.upgradersBody,
-      actions: [[CreepCheckStop.name], [CreepSingleUpgrader.name]],
-      priority: PRIORITY.LOW
+      actions: [[CreepCheckStop.name], [CreepSingleUpgrader.name], [CreepRenew.name]],
+      priority: CREEP_PRIORITY.UPGRADER
     })
 
     return creepName
   }
 
-  private createStoragers(): string {
+  private createStoragers(energyAvailable: number, ticksToFulfill?: number): string {
     const creepName = utils.getUniqueCreepName('storager')
 
     this.queue.push({
-      memory: {},
+      memory: {
+        energy: energyAvailable
+      },
       creepName,
-      body: new CreateBody({ minimumEnergy: 300, energyAvailable: this.room.energyAvailable })
-      .add([CARRY], { repeat: true })
-      .value(),
-      actions: [[CreepCheckStop.name], [CreepStorager.name]],
-      priority: PRIORITY.NORMAL + 2
+      ticksToFulfill,
+      body: this.getStoragersBody(energyAvailable),
+      actions: [[CreepCheckStop.name], [CreepStorager.name], [CreepRenew.name]],
+      priority: CREEP_PRIORITY.STORAGER,
     })
 
     return creepName
+  }
+
+  private getStoragersBody(energyAvailable: number): BodyPartConstant[] {
+    return new CreateBody({ minimumEnergy: 300, energyAvailable })
+      .add([CARRY], { repeat: true })
+      .value()
   }
 
   private createHaulers(memory: any, maxParts: Partial<Record<BodyPartConstant, any>>): string {
     const creepName = utils.getUniqueCreepName('hauler')
+
+    memory.energy = this.room.energyCapacityAvailable
 
     this.queue.push({
       memory,
@@ -150,8 +158,8 @@ export class CityRunner extends City {
       body: new CreateBody({ minimumEnergy: 300, energyAvailable: this.room.energyCapacityAvailable, maxParts })
       .add([CARRY], { repeat: true })
       .value(),
-      actions: [[CreepCheckStop.name], [CreepSingleHauler.name]],
-      priority: PRIORITY.HIGH
+      actions: [[CreepCheckStop.name], [CreepSingleHauler.name], [CreepRenew.name]],
+      priority: CREEP_PRIORITY.HAULER
     })
 
     return creepName
@@ -168,7 +176,7 @@ export class CityRunner extends City {
       .addMoveIfPossible()
       .value(),
       actions: [[CreepCheckStop.name], [CreepHarvester.name]],
-      priority: PRIORITY.HIGH
+      priority: CREEP_PRIORITY.HARVESTER
     })
 
     return creepName
@@ -264,18 +272,52 @@ export class CityRunner extends City {
   }
 
   private maintainStoragers(): ActionResult | null {
+    if (this.storage == null || !this.storage.isActive()) {
+      return null
+    }
+
     if (this.isSpawningCreep(this.planner.storagers)) {
       return this.waitNextTick()
     }
 
     this.planner.storagers = this.storagers.filter((creepName: string) => Game.creeps[creepName] != null || this.isCreepNameInQueue(creepName))
 
-    if (this.storage && this.storage.isActive() && !this.planner.storagers.length) {
-      const creepName = this.createStoragers()
+    if (!this.planner.storagers.length) {
+      const creepName = this.createStoragers(this.room.energyAvailable)
 
       this.planner.storagers.push(creepName)
 
       return this.waitNextTick()
+    }
+
+    if (this.planner.storagers.length === 1) {
+      const storager = Game.creeps[this.planner.storagers[0]]
+
+      if (storager == null || storager.spawning) {
+        return null
+      }
+
+      const currentBody = storager.body.map(p => p.type)
+      const desiredBody = this.getStoragersBody(this.room.energyCapacityAvailable)
+
+      if (!utils.isBodyEqual(currentBody, desiredBody)) {
+        const creepName = this.createStoragers(this.room.energyCapacityAvailable, storager.ticksToLive)
+
+        this.planner.storagers.push(creepName)
+
+        return this.waitNextTick()
+      }
+
+      const ticksToSpawnCreep = desiredBody.length * CREEP_SPAWN_TIME
+      const ticksToFillExtensions = this.room.energyCapacityAvailable / EXTENSION_ENERGY_CAPACITY[this.controller.level]
+
+      if (storager.ticksToLive as number <= ticksToSpawnCreep + ticksToFillExtensions) {
+        const creepName = this.createStoragers(this.room.energyCapacityAvailable, storager.ticksToLive)
+
+        this.planner.storagers.push(creepName)
+
+        return this.waitNextTick()
+      }
     }
 
     return null
@@ -385,6 +427,28 @@ export class CityRunner extends City {
       }
 
       if (source.harvesters.length < source.emptySpaces && currentWorkParts < source.desiredWorkParts) {
+        const memory: any = { source: source.id }
+
+        if (link) {
+          memory.linkPos = source.linkPos
+        } else {
+          memory.containerPos = source.containerPos
+        }
+
+        const creepName = this.createHarvester(memory, { [WORK]: source.desiredWorkParts })
+
+        source.harvesters.push(creepName)
+
+        return this.waitNextTick()
+      }
+
+      const harvesterDieing = source.harvesters.map((creepName: string) => Game.creeps[creepName])
+        .filter((creep: Creep | undefined) => creep)
+        .find((creep: Creep) => creep.ticksToLive as number <= creep.body.length * CREEP_SPAWN_TIME + source.distance)
+
+      if (harvesterDieing && !harvesterDieing.memory.replacementOnTheWay) {
+        harvesterDieing.memory.replacementOnTheWay = true
+
         const memory: any = { source: source.id }
 
         if (link) {

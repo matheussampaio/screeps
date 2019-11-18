@@ -108,3 +108,17 @@ export function getFreeCapacity(
 ): number {
   return unit.store.getFreeCapacity(resourceType) || 0
 }
+
+export function isBodyEqual(b1: BodyPartConstant[], b2: BodyPartConstant[]): boolean {
+  if (b1.length !== b2.length) {
+    return false
+  }
+
+  for (let i = 0; i < b1.length; i++) {
+    if (b1[i] !== b2[i]) {
+      return false
+    }
+  }
+
+  return true
+}

@@ -1,7 +1,7 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry, PRIORITY } from '../../core'
-import { CreateBody } from '../../utils/create-body'
+import { ActionsRegistry } from '../../core'
+import { CreateBody, CREEP_PRIORITY } from '../../utils'
 import { CreepCheckStop, CreepRecycler } from '../creep'
 import { ICityContext } from './interfaces'
 import { City } from './city'
@@ -76,7 +76,7 @@ export class CityRecycler extends City {
       body,
       creepName,
       actions: [[CreepCheckStop.name], [CreepRecycler.name]],
-      priority: PRIORITY.VERY_LOW,
+      priority: CREEP_PRIORITY.RECYCLER,
       memory: {}
     })
 
