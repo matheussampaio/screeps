@@ -16,6 +16,12 @@ export class CityDefense extends City {
       filter: t => t.structureType === STRUCTURE_TOWER && t.store.getUsedCapacity(RESOURCE_ENERGY) as number >= 10
     }) as StructureTower[]
 
+    if (Memory.enemies == null) {
+      Memory.enemies = {}
+    }
+
+    Memory.enemies[this.room.name] = enemies.length ? Game.time : undefined
+
     if (enemies.length && !towers.length) {
       return this.enableSafeMode()
     }

@@ -15,4 +15,10 @@ declare global {
     renew?: boolean
     avoidMoving?: boolean
   }
+
+  interface Memory {
+    enemies: {
+      [roomName: string]: number
+    }
+  }
 }

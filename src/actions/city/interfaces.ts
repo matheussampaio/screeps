@@ -3,6 +3,9 @@ declare global {
     counters?: {
       creepCounter?: number
     }
+    enemies: {
+      [roomName: string]: number | undefined
+    }
   }
 
   interface RoomMemory {
@@ -59,6 +62,7 @@ export interface ICityContext {
   linkCreep?: string
   scoutRoom?: string
   scoutCreep?: string
+  guard?: string
   remotes: {
     [roomName: string]: {
       sources: {

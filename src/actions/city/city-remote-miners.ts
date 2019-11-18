@@ -3,7 +3,7 @@ import * as _ from 'lodash'
 import { ActionsRegistry } from '../../core'
 import { ICityContext, IPlanSource } from './interfaces'
 import { City } from './city'
-import { CreepFlee, CreepCheckStop, CreepRemoteHarvester, CreepRemoteHauler, CreepRemoteReserver } from '../creep'
+import { CreepFlee, CreepCheckStop, CreepRemoteHarvester, CreepRemoteHauler, CreepRemoteReserver, CreepRenew, CreepGuard } from '../creep'
 import { CreateBody, CREEP_PRIORITY } from '../../utils'
 import * as utils from '../../utils'
 
@@ -27,6 +27,10 @@ export class CityRemoteMiners extends City {
 
   private createCreeps() {
     let createdSomething = false
+
+    if (Game.creeps[this.context.guard] == null && !this.isCreepNameInQueue(this.context.guard)) {
+      this.context.guard = this.createGuardCreep()
+    }
 
     for (const roomName in this.context.remotes) {
       const remote = this.context.remotes[roomName]
@@ -126,7 +130,7 @@ export class CityRemoteMiners extends City {
   private createReserverCreep(roomName: string) {
     const creepName = utils.getUniqueCreepName('reserver')
 
-    const body = new CreateBody({ minimumEnergy: 650, energyAvailable: this.room.energyCapacityAvailable, hasRoads: false, maxParts: { [CLAIM]: 2 } })
+    const body = new CreateBody({ minimumEnergy: this.room.energyCapacityAvailable, hasRoads: false, maxParts: { [CLAIM]: 2 } })
       .add([CLAIM], { repeat: true })
       .addMoveIfPossible()
       .value()
@@ -139,6 +143,30 @@ export class CityRemoteMiners extends City {
       body,
       actions: [[CreepCheckStop.name], [CreepFlee.name], [CreepRemoteReserver.name]],
       priority: CREEP_PRIORITY.REMOTE_RESERVER
+    })
+
+   return creepName
+  }
+
+  private createGuardCreep() {
+    const creepName = utils.getUniqueCreepName('guard')
+
+    const body = new CreateBody({ minimumEnergy: this.room.energyCapacityAvailable, hasRoads: false, ticksToMove: 1 })
+      .add([HEAL, ATTACK])
+      .add([ATTACK], { repeat: true })
+      .add([TOUGH], { repeat: true })
+      .addMoveIfPossible()
+      .value()
+
+    this.queue.push({
+      memory: {
+        roomsToGuard: Object.keys(this.context.remotes),
+        energy: this.room.energyCapacityAvailable
+      },
+      creepName,
+      body,
+      actions: [[CreepCheckStop.name], [CreepRenew.name], [CreepGuard.name]],
+      priority: CREEP_PRIORITY.REMOTE_GUARD
     })
 
    return creepName

@@ -57,18 +57,18 @@ export class CreepRemoteHarvester extends CreepAction {
     }
 
     // try to build container every 11th tick
-    if (Game.time % 3 === 0 && container instanceof ConstructionSite && this.canBuildStructures()) {
+    if (Game.time % 2 === 0 && container instanceof ConstructionSite && this.canBuildStructures()) {
       try { this.creep.cancelOrder('harvest') } catch {}
       this.creep.build(container)
     }
 
     // try to move on top of container every 10 ticks
-    if (Game.time % 5 === 0 && !this.creep.pos.isEqualTo(container) && !container.pos.lookFor(LOOK_CREEPS).length) {
+    if (Game.time % 2 === 0 && !this.creep.pos.isEqualTo(container) && !container.pos.lookFor(LOOK_CREEPS).length) {
       this.creep.travelTo(container)
     }
 
     // repair container every 95 ticks
-    if (Game.time % 7 === 0 && container instanceof StructureContainer && container.hits < container.hitsMax - 5000 && this.canBuildStructures()) {
+    if (Game.time % 2 === 0 && container instanceof StructureContainer && container.hits < container.hitsMax - 5000 && this.canBuildStructures()) {
       try { this.creep.cancelOrder('harvest') } catch {}
       this.creep.repair(container)
     }
