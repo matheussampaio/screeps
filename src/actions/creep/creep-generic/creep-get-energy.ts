@@ -12,7 +12,7 @@ export class CreepGetEnergy extends Action {
       return this.shiftAndStop()
     }
 
-    if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+    if (!creep.store.getFreeCapacity(RESOURCE_ENERGY)) {
       delete context.source
 
       return this.shiftAndContinue()
@@ -53,7 +53,7 @@ export class CreepGetEnergy extends Action {
     if (creep.pos.isNearTo(resource)) {
       creep.pickup(resource)
     } else {
-      creep.travelTo(resource)
+      creep.travelTo(resource, { range: 1, ignoreCreeps: true })
     }
 
     return this.waitNextTick()
@@ -74,7 +74,7 @@ export class CreepGetEnergy extends Action {
       if (creep.pos.isNearTo(storage)) {
         creep.withdraw(storage, RESOURCE_ENERGY)
       } else {
-        creep.travelTo(storage)
+        creep.travelTo(storage, { range: 1, ignoreCreeps: true })
       }
 
       return this.waitNextTick()
@@ -111,7 +111,7 @@ export class CreepGetEnergy extends Action {
     if (creep.pos.isNearTo(source)) {
       creep.harvest(source)
     } else {
-      creep.travelTo(source)
+      creep.travelTo(source, { range: 1, ignoreCreeps: true })
     }
 
     return this.waitNextTick()

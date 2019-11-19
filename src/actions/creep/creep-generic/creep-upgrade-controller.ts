@@ -40,7 +40,7 @@ export class CreepUpgradeController extends Action {
       const sign = '¯\_(ツ)_/¯'
 
       if (creep.signController(controller, sign) == ERR_NOT_IN_RANGE) {
-        creep.travelTo(controller);
+        creep.travelTo(controller, { range: 1, ignoreCreeps: true });
       }
 
       return this.waitNextTick()
@@ -53,7 +53,7 @@ export class CreepUpgradeController extends Action {
     if (creep.pos.inRangeTo(controller, context.rangeToController)) {
       creep.upgradeController(controller)
     } else {
-      creep.travelTo(controller)
+      creep.travelTo(controller, { range: 1, ignoreCreeps: true })
     }
 
     return this.waitNextTick()

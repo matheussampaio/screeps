@@ -28,7 +28,7 @@ export class CreepBuilder extends Action {
     if (creep.pos.inRangeTo(target, 3)) {
       creep.build(target)
     } else {
-      creep.travelTo(target)
+      creep.travelTo(target, { range: 1, ignoreCreeps: true })
     }
 
     return this.waitNextTick()

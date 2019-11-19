@@ -13,9 +13,7 @@ export class CreepHauler extends Action {
       return this.shiftAndStop()
     }
 
-    const isEmpty = _.sum(_.values(creep.carry)) === 0
-
-    if (isEmpty) {
+    if (!creep.store.getUsedCapacity(RESOURCE_ENERGY)) {
       return this.shiftAndContinue()
     }
 
@@ -27,7 +25,7 @@ export class CreepHauler extends Action {
     }
 
     if (!creep.pos.isNearTo(target)) {
-      creep.travelTo(target)
+      creep.travelTo(target, { range: 1, ignoreCreeps: true })
       return this.waitNextTick()
     }
 

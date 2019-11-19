@@ -14,9 +14,7 @@ export class CreepGeneric extends Action {
       return this.waitNextTick()
     }
 
-    const isEmpty = _.sum(_.values(creep.carry)) === 0
-
-    if (isEmpty) {
+    if (!creep.store.getUsedCapacity(RESOURCE_ENERGY)) {
       return this.unshiftAndContinue(CreepGetEnergy.name)
     }
 
