@@ -2,6 +2,7 @@ import * as _ from 'lodash'
 
 import { ActionsRegistry } from '../../core'
 import { CreepAction } from './creep-action'
+import { CreepRecycle } from './creep-recycle'
 
 @ActionsRegistry.register
 export class CreepGuard extends CreepAction {
@@ -44,7 +45,7 @@ export class CreepGuard extends CreepAction {
       return this.waitNextTick()
     }
 
-    return this.sleep(5)
+    return this.unshiftAndContinue(CreepRecycle.name)
   }
 
   protected get roomsToGuard(): string[] {

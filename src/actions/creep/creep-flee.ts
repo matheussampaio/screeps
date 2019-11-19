@@ -24,6 +24,8 @@ export class CreepFlee extends CreepAction {
       Memory.enemies[this.creep.room.name] = Game.time
 
       return this.unshiftAndContinue(CreepFleeAfraid.name)
+    } else {
+      delete Memory.enemies[this.creep.room.name]
     }
 
     return this.waitNextTick()

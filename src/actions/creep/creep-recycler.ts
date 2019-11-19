@@ -2,6 +2,7 @@ import * as _ from 'lodash'
 
 import { ActionsRegistry, Action } from '../../core'
 import { ICreepContext } from './interfaces'
+import { CreepRecycle } from './creep-recycle'
 
 @ActionsRegistry.register
 export class CreepRecycler extends Action {
@@ -50,9 +51,7 @@ export class CreepRecycler extends Action {
       return this.unshiftAndContinue(CreepRecyclerTransfer.name)
     }
 
-    this.creep.suicide()
-
-    return this.halt()
+    return this.unshiftAndContinue(CreepRecycle.name)
   }
 
   protected get creep(): Creep {

@@ -8,6 +8,14 @@ export class CreepRenew extends CreepAction {
   run(context: any) {
     this.context = context
 
+    if (this.storage == null) {
+      return this.waitNextTick()
+    }
+
+    if (this.storage.store.getUsedCapacity(RESOURCE_ENERGY) <= 12000 || this.room.energyAvailable <= 400) {
+      return this.waitNextTick()
+    }
+
     // maximum creep, renew
     if (this.context.energy !== this.room.energyCapacityAvailable) {
       return this.waitNextTick()

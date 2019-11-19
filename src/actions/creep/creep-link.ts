@@ -2,6 +2,7 @@ import * as _ from 'lodash'
 
 import { ActionsRegistry, Action } from '../../core'
 import * as utils from '../../utils'
+import { CreepRecycle } from './creep-recycle'
 
 @ActionsRegistry.register
 export class CreepLink extends Action {
@@ -11,9 +12,7 @@ export class CreepLink extends Action {
     this.context = context
 
     if (this.creep == null || this.storage == null || this.link == null) {
-      this.creep.suicide()
-
-      return this.halt()
+      return this.unshiftAndContinue(CreepRecycle.name)
     }
 
     if (this.creep.spawning) {
@@ -62,9 +61,7 @@ export class CreepLinkMoveToPosition extends CreepLink {
     this.context = context
 
     if (this.creep == null || this.storage == null || this.link == null) {
-      this.creep.suicide()
-
-      return this.halt()
+      return this.unshiftAndContinue(CreepRecycle.name)
     }
 
     if (this.creep.spawning) {

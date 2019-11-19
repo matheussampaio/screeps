@@ -2,6 +2,7 @@ import * as _ from 'lodash'
 
 import { ActionsRegistry } from '../../core'
 import { CreepAction } from './creep-action'
+import { CreepRecycle } from './creep-recycle'
 
 @ActionsRegistry.register
 export class CreepRemoteHarvester extends CreepAction {
@@ -19,9 +20,7 @@ export class CreepRemoteHarvester extends CreepAction {
     }
 
     if (source == null) {
-      this.creep.suicide()
-
-      return this.halt()
+      return this.unshiftAndContinue(CreepRecycle.name)
     }
 
     // walk to source

@@ -10,17 +10,27 @@ export class CityDefense extends City {
   run(context: ICityContext) {
     this.context = context
 
+    if (Memory.enemies == null) {
+      Memory.enemies = {}
+    }
+
+    for (const roomName in Memory.enemies) {
+      if (Memory.enemies[roomName] as number <= Game.time - 1500) {
+        delete Memory.enemies[roomName]
+      }
+    }
+
     const enemies: Creep[] = this.room.find(FIND_HOSTILE_CREEPS) as Creep[]
 
     const towers: StructureTower[] = this.room.find(FIND_MY_STRUCTURES, {
       filter: t => t.structureType === STRUCTURE_TOWER && t.store.getUsedCapacity(RESOURCE_ENERGY) as number >= 10
     }) as StructureTower[]
 
-    if (Memory.enemies == null) {
-      Memory.enemies = {}
+    if (enemies.length) {
+      Memory.enemies[this.room.name] = enemies.length ? Game.time : undefined
+    } else {
+      delete Memory.enemies[this.room.name]
     }
-
-    Memory.enemies[this.room.name] = enemies.length ? Game.time : undefined
 
     if (enemies.length && !towers.length) {
       return this.enableSafeMode()

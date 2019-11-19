@@ -55,18 +55,22 @@ export class CreepSingleUpgraderGetEnergy extends CreepSingleUpgrader {
       return this.waitNextTick()
     }
 
-    const lowEnergyLimit = (this.controller && this.controller.level === 8) ? 100 : 1000
+    const lowEnergyLimit = (this.controller && this.controller.level === 8) ? 100 : 10000
 
-    if (this.storage && this.storage.isActive() && this.storage.store.getUsedCapacity(RESOURCE_ENERGY) as number > lowEnergyLimit) {
-      if (this.creep.pos.isNearTo(this.storage)) {
-        this.creep.withdraw(this.storage, RESOURCE_ENERGY)
+    if (this.storage && this.storage.isActive()) {
+      if (!this.creep.pos.isNearTo(this.storage)) {
+        this.creep.travelTo(this.storage, { range: 1, ignoreCreeps: true })
 
-        return this.shiftAndStop()
+        return this.waitNextTick()
       }
 
-      this.creep.travelTo(this.storage, { range: 1, ignoreCreeps: true })
+      if (this.storage.store.getUsedCapacity(RESOURCE_ENERGY) as number < lowEnergyLimit) {
+        return this.waitNextTick()
+      }
 
-      return this.waitNextTick()
+      this.creep.withdraw(this.storage, RESOURCE_ENERGY)
+
+      return this.shiftAndStop()
     }
 
     const resource = this.controller.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {

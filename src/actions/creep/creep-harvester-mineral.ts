@@ -1,6 +1,7 @@
 import * as _ from 'lodash'
 
 import { ActionsRegistry, Action } from '../../core'
+import { CreepRecycle } from './creep-recycle'
 
 @ActionsRegistry.register
 export class CreepHarvesterMineral extends Action {
@@ -13,9 +14,7 @@ export class CreepHarvesterMineral extends Action {
 
     // if storage is full, wait
     if (this.storage == null || this.storage.store.getUsedCapacity() >= STORAGE_CAPACITY * 0.8) {
-      this.creep.suicide()
-
-      return this.halt()
+      return this.unshiftAndContinue(CreepRecycle.name)
     }
 
     if (mineral == null) {

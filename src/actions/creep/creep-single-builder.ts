@@ -1,6 +1,7 @@
 import * as _ from 'lodash'
 
 import { ActionsRegistry, Action } from '../../core'
+import { CreepRecycle } from './creep-recycle'
 
 @ActionsRegistry.register
 export class CreepSingleBuilder extends Action {
@@ -28,9 +29,7 @@ export class CreepSingleBuilder extends Action {
     const target: any = this.getConstructionTarget()
 
     if (target == null) {
-      this.creep.suicide()
-
-      return this.halt()
+      return this.unshiftAndContinue(CreepRecycle.name)
     }
 
     if (this.creep.pos.inRangeTo(target, 3)) {

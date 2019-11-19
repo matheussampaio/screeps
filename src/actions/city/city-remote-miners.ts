@@ -16,6 +16,14 @@ export class CityRemoteMiners extends City {
       return this.waitNextTick()
     }
 
+    if (this.storage == null) {
+      return this.waitNextTick()
+    }
+
+    if (this.storage.store.getUsedCapacity(RESOURCE_ENERGY) <= 5000) {
+      return this.waitNextTick()
+    }
+
     if (this.context.remotes == null) {
       return this.unshiftAndContinue(CityRemoteMinersScout.name)
     }
@@ -28,7 +36,9 @@ export class CityRemoteMiners extends City {
   private createCreeps() {
     let createdSomething = false
 
-    if (Game.creeps[this.context.guard] == null && !this.isCreepNameInQueue(this.context.guard)) {
+
+
+    if (Game.creeps[this.context.guard] == null && !this.isCreepNameInQueue(this.context.guard) && Memory.enemies && Object.values(Memory.enemies).length) {
       this.context.guard = this.createGuardCreep()
     }
 

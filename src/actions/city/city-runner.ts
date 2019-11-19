@@ -12,6 +12,8 @@ export class CityRunner extends City {
   run(context: ICityContext) {
     this.context = context
 
+    // console.log(`S=${this.storage ? (this.storage.store.getUsedCapacity() / this.storage.store.getCapacity() * 100).toFixed(2) : 'XX'}% - C=${(this.controller.progress / this.controller.progressTotal * 100).toFixed(2)}% level=${this.controller.level} creeps=${_.size(Game.creeps)} queue=${this.queue.length}`)
+
     return this.replanIfNecessary() ||
       this.maintainStoragers() ||
       this.maintainHarvestersAndHaulers() ||

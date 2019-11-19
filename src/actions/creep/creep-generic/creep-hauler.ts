@@ -2,7 +2,7 @@ import * as _ from 'lodash'
 
 import { ActionsRegistry, Action } from '../../../core'
 import { ICreepGenericContext } from './interfaces'
-import { CreepBuilder } from './creep-builder'
+// import { CreepBuilder } from './creep-builder'
 
 @ActionsRegistry.register
 export class CreepHauler extends Action {
@@ -22,8 +22,8 @@ export class CreepHauler extends Action {
     const target: StructureSpawn | StructureExtension | null = this.getHaulerTarget(creep, context)
 
     if (target == null) {
-      this.logger.debug(`Can't find a target, trying to build sites`, context.creepName)
-      return this.shiftUnshitAndContinue(CreepBuilder.name)
+      // this.logger.debug(`Can't find a target, trying to build sites`, context.creepName)
+      return this.shiftAndStop()
     }
 
     if (!creep.pos.isNearTo(target)) {
