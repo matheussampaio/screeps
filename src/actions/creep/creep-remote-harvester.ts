@@ -23,6 +23,14 @@ export class CreepRemoteHarvester extends CreepAction {
       return this.unshiftAndContinue(CreepRecycle.name)
     }
 
+    if (this.context.containerPos != null) {
+      const result = this.maintainContainer()
+
+      if (result != null) {
+        return result
+      }
+    }
+
     // walk to source
     if (!this.creep.pos.isNearTo(source)) {
       this.creep.travelTo(source, { range: 1 })
@@ -33,14 +41,6 @@ export class CreepRemoteHarvester extends CreepAction {
     // harvest the source
     if (source.energy) {
       this.creep.harvest(source)
-    }
-
-    if (this.context.containerPos != null) {
-      const result = this.maintainContainer()
-
-      if (result != null) {
-        return result
-      }
     }
 
     return this.waitNextTick()
@@ -62,8 +62,10 @@ export class CreepRemoteHarvester extends CreepAction {
     }
 
     // try to move on top of container every 10 ticks
-    if (Game.time % 2 === 0 && !this.creep.pos.isEqualTo(container) && !container.pos.lookFor(LOOK_CREEPS).length) {
+    if (!this.creep.pos.isEqualTo(container) && !container.pos.lookFor(LOOK_CREEPS).length) {
       this.creep.travelTo(container)
+
+      return this.waitNextTick()
     }
 
     // repair container every 95 ticks

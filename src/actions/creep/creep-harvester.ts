@@ -26,20 +26,6 @@ export class CreepHarvester extends CreepAction {
       return this.unshiftAndContinue(CreepRecycle.name)
     }
 
-    // walk to source
-    if (!this.creep.pos.isNearTo(source)) {
-      this.creep.travelTo(source, { range: 1 })
-
-      return this.waitNextTick()
-    }
-
-    this.creep.memory.avoidMoving = true
-
-    // harvest the source
-    if (source.energy) {
-      this.context.working = this.creep.harvest(source) === OK
-    }
-
     if (this.context.linkPos != null) {
       const result = this.maintainLink()
 
@@ -54,6 +40,20 @@ export class CreepHarvester extends CreepAction {
       if (result != null) {
         return result
       }
+    }
+
+    // walk to source
+    if (!this.creep.pos.isNearTo(source)) {
+      this.creep.travelTo(source, { range: 1 })
+
+      return this.waitNextTick()
+    }
+
+    this.creep.memory.avoidMoving = true
+
+    // harvest the source
+    if (source.energy) {
+      this.creep.harvest(source)
     }
 
     if (this.context.link) {
@@ -105,8 +105,10 @@ export class CreepHarvester extends CreepAction {
     }
 
     // try to move on top of container every 10 ticks
-    if (Game.time % 12 === 0 && !this.creep.pos.isEqualTo(container) && !container.pos.lookFor(LOOK_CREEPS).length) {
+    if (!this.creep.pos.isEqualTo(container) && !container.pos.lookFor(LOOK_CREEPS).length) {
       this.creep.travelTo(container)
+
+      return this.waitNextTick()
     }
 
     // repair container every 95 ticks
@@ -124,7 +126,7 @@ export class CreepHarvester extends CreepAction {
   }
 
   private canBuildStructures() {
-    return this.context.working && this.creep.getActiveBodyparts(WORK) && this.creep.getActiveBodyparts(CARRY) && this.creep.store.getUsedCapacity(RESOURCE_ENERGY)
+    return this.creep.getActiveBodyparts(WORK) && this.creep.getActiveBodyparts(CARRY) && this.creep.store.getUsedCapacity(RESOURCE_ENERGY)
   }
 
   private findStructure(hasPos: { x: number, y: number }, structureType: BuildableStructureConstant, prop: string, create: boolean = false): void {
