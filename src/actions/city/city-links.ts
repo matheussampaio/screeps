@@ -70,6 +70,7 @@ export class CityLinks extends City {
     }
 
     const maxParts = {
+      [MOVE]: 1,
       [CARRY]: 16
     }
 
@@ -78,8 +79,7 @@ export class CityLinks extends City {
       creepName,
       body: new CreateBody({
         maxParts,
-        minimumEnergy: 300,
-        energyAvailable: this.room.energyCapacityAvailable,
+        minimumEnergy: this.room.energyCapacityAvailable,
         ticksToMove: 4
       })
       .add([CARRY], { repeat: true })

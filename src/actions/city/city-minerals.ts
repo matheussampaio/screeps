@@ -114,7 +114,6 @@ export class CityMinerals extends City {
       creepName,
       body: new CreateBody({ minimumEnergy: this.room.energyCapacityAvailable, maxParts })
       .add([CARRY], { repeat: true })
-      .addMoveIfPossible()
       .value(),
       actions: [[CreepCheckStop.name], [CreepHaulerMineral.name]],
       priority: CREEP_PRIORITY.HAULER_MINERAL
@@ -130,9 +129,7 @@ export class CityMinerals extends City {
       memory,
       creepName,
       body: new CreateBody({ minimumEnergy: this.room.energyCapacityAvailable, maxParts })
-      .add([CARRY])
       .add([WORK], { repeat: true })
-      .addMoveIfPossible()
       .value(),
       actions: [[CreepCheckStop.name], [CreepHarvesterMineral.name]],
       priority: CREEP_PRIORITY.HARVESTER_MINERAL

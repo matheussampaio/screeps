@@ -101,7 +101,6 @@ export class CityRunner extends City {
       creepName,
       body: new CreateBody({ minimumEnergy: this.room.energyCapacityAvailable, ticksToMove: 2 })
       .add([CARRY, WORK], { repeat: true })
-      .addMoveIfPossible()
       .value(),
       actions: [[CreepCheckStop.name], [CreepSingleBuilder.name]],
       priority: CREEP_PRIORITY.BUILDER
@@ -118,7 +117,7 @@ export class CityRunner extends City {
         energy: this.room.energyCapacityAvailable
       },
       creepName,
-      body: this.controller.level === 8 ? [MOVE, MOVE, CARRY, WORK] : this.upgradersBody,
+      body: this.controller.level === 8 ? [MOVE, CARRY, WORK] : this.upgradersBody,
       actions: [[CreepCheckStop.name], [CreepSingleUpgrader.name], [CreepRenew.name]],
       priority: CREEP_PRIORITY.UPGRADER
     })
@@ -175,7 +174,6 @@ export class CityRunner extends City {
       creepName,
       body: new CreateBody({ minimumEnergy: 300, energyAvailable: this.room.energyCapacityAvailable, ticksToMove: 3, maxParts })
       .add([CARRY, WORK, WORK, WORK, WORK, WORK, WORK])
-      .addMoveIfPossible()
       .value(),
       actions: [[CreepCheckStop.name], [CreepHarvester.name]],
       priority: CREEP_PRIORITY.HARVESTER
