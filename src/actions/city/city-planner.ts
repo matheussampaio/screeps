@@ -161,6 +161,7 @@ export class CityPlanner extends City {
             id: mineral.id,
             harvesters: [],
             haulers: [],
+            repairs: [],
             containerPos: lastPos,
             distance: result.path.length,
             emptySpaces: utils.getEmptySpacesAroundPosition(mineral.pos).length,

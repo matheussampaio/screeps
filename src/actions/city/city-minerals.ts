@@ -3,7 +3,7 @@ import * as _ from 'lodash'
 import { ActionsRegistry } from '../../core'
 import { ICityContext, IPlanMineral } from './interfaces'
 import { City } from './city'
-import { CreepCheckStop, CreepHaulerMineral, CreepHarvesterMineral } from '../creep'
+import { CreepCheckStop, CreepHaulerMineral, CreepHarvesterMineral, CreepRepairMineral } from '../creep'
 import * as utils from '../../utils'
 import { CreateBody, CREEP_PRIORITY } from '../../utils'
 
@@ -61,6 +61,12 @@ export class CityMinerals extends City {
 
     const container = pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_CONTAINER) as StructureContainer
 
+    if (mineralPlan.repairs == null) {
+      mineralPlan.repairs = []
+    }
+
+    mineralPlan.repairs = mineralPlan.repairs.filter((creepName: string) => Game.creeps[creepName] != null)
+
     if (container == null) {
       const constructionSite = pos.lookFor(LOOK_CONSTRUCTION_SITES).find(c => c.structureType === STRUCTURE_CONTAINER)
 
@@ -70,8 +76,12 @@ export class CityMinerals extends City {
 
       this.room.createConstructionSite(pos, STRUCTURE_CONTAINER)
       return this.sleep(10)
-    } else {
-      // TODO: spawn someone to repair the container
+    } else if (container.hits <= CONTAINER_HITS / 2 && !mineralPlan.repairs.length) {
+      const memory = { containerPos: mineralPlan.containerPos }
+
+      const creepName = this.createRepairMineral(memory)
+
+      mineralPlan.repairs.push(creepName)
     }
 
     mineralPlan.harvesters = mineralPlan.harvesters.filter((creepName: string) => Game.creeps[creepName] != null)
@@ -133,6 +143,26 @@ export class CityMinerals extends City {
       .value(),
       actions: [[CreepCheckStop.name], [CreepHarvesterMineral.name]],
       priority: CREEP_PRIORITY.HARVESTER_MINERAL
+    })
+
+    return creepName
+  }
+
+  private createRepairMineral(memory: any): string {
+    const creepName = utils.getUniqueCreepName('repair-min')
+
+    this.queue.push({
+      memory,
+      creepName,
+      body: new CreateBody({
+        minimumEnergy: this.room.energyCapacityAvailable,
+        maxParts: { [WORK]: 5, [MOVE]: 5 },
+        ticksToMove: 2
+      })
+      .add([CARRY, WORK], { repeat: true })
+      .value(),
+      actions: [[CreepCheckStop.name], [CreepRepairMineral.name]],
+      priority: CREEP_PRIORITY.REPAIR_MINERAL
     })
 
     return creepName

@@ -45,6 +45,7 @@ export interface IPlanMineral {
   id: string
   harvesters: string[]
   haulers: string[]
+  repairs: string[]
   distance: number
   emptySpaces: number
   desiredCarryParts: number
