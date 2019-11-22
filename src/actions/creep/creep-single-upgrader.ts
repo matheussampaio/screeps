@@ -55,7 +55,7 @@ export class CreepSingleUpgraderGetEnergy extends CreepSingleUpgrader {
       return this.waitNextTick()
     }
 
-    const lowEnergyLimit = (this.controller && this.controller.level === 8) ? 100 : 10000
+    const lowEnergyLimit = (this.controller && this.controller.level === 8) ? 100 : 15000
 
     if (this.storage && this.storage.isActive()) {
       if (!this.creep.pos.isNearTo(this.storage)) {

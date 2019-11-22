@@ -30,23 +30,27 @@ export class CityRecycler extends City {
       return this.sleep(50)
     }
 
-    const tombstoneWithResource = this.room.find(FIND_TOMBSTONES).some(t => {
-      if (t.store.getUsedCapacity(RESOURCE_ENERGY) >= 300) {
-        return true
-      }
+    const tombstoneWithResource = this.room.find(FIND_TOMBSTONES, {
+      filter: t => {
+        if (t.store.getUsedCapacity(RESOURCE_ENERGY) >= 300) {
+          return true
+        }
 
-      return t.store.getUsedCapacity() - t.store.getUsedCapacity(RESOURCE_ENERGY)
+        return t.store.getUsedCapacity() - t.store.getUsedCapacity(RESOURCE_ENERGY)
+      }
     })
 
-    if (tombstoneWithResource) {
+    if (tombstoneWithResource.length) {
       this.createRecyclerCreep()
 
       return this.sleep(50)
     }
 
-    const ruinsWithResource = this.room.find(FIND_RUINS).some(r => r.store.getUsedCapacity())
+    const ruinsWithResource = this.room.find(FIND_RUINS, {
+      filter: r => r.store.getUsedCapacity()
+    })
 
-    if (ruinsWithResource) {
+    if (ruinsWithResource.length) {
       this.createRecyclerCreep()
 
       return this.sleep(50)
