@@ -1,3 +1,5 @@
+import * as _ from 'lodash'
+
 import { ActionsRegistry } from '../../core'
 import { CreepAction } from './creep-action'
 import { CreepRecycle } from './creep-recycle'
@@ -7,8 +9,6 @@ import * as utils from '../../utils'
 export class CreepStorager extends CreepAction {
   run(context: any) {
     this.context = context
-
-    this.creep.say(`${Game.time % 10}`)
 
     // if no storage, no point in having a storager
     if (this.storage == null || !this.storage.isActive()) {
@@ -36,9 +36,10 @@ export class CreepStorager extends CreepAction {
 
     const neighbors = utils.getNeighborsPositions(this.creep.pos, { range: 1, closeToExits: true })
 
-    const anyResources = neighbors
+    const anyResources = _.chain(neighbors)
       .map(pos => pos.lookFor(LOOK_RESOURCES))
-      .flat()
+      .flatten()
+      .value()
 
     // if close to energy on the floor, collect it
     const energyOnTheFloor = anyResources.filter(r => r.resourceType === RESOURCE_ENERGY).sort((r1, r2) => r2.amount - r1.amount)
@@ -47,9 +48,10 @@ export class CreepStorager extends CreepAction {
       this.creep.pickup(energyOnTheFloor[0])
     }
 
-    const anyStructures = neighbors
+    const anyStructures = _.chain(neighbors)
       .map(pos => pos.lookFor(LOOK_STRUCTURES))
-      .flat()
+      .flatten()
+      .value()
 
     // if close to containers with energy, withdraw some
     if (!this.isFull) {
@@ -78,18 +80,30 @@ export class CreepStorager extends CreepAction {
       return this.waitNextTick()
     }
 
-    // if there is no empty structure near by (or just one, since this one will be filled above), start moving to the next one
-    const nextStructure = this.creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-      ignoreCreeps: true,
-      range: 1,
-      filter: s => {
-        if (emptyStructures.length && s.id === emptyStructures[0].id) {
-          return false
-        }
+    const target = Game.getObjectById(this.context.target) as StructureExtension | StructurePowerSpawn
 
-        return (s.structureType === STRUCTURE_EXTENSION || s.structureType === STRUCTURE_SPAWN) && s.store.getFreeCapacity(RESOURCE_ENERGY) && s.isActive()
+    if (target == null || !target.store.getFreeCapacity()) {
+      delete this.context.target
+
+      // if there is no empty structure near by (or just one, since this one will be filled above), start moving to the next one
+      const nextStructure = this.creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+        ignoreCreeps: true,
+        range: 1,
+        filter: s => {
+          if (emptyStructures.length && s.id === emptyStructures[0].id) {
+            return false
+          }
+
+          return (s.structureType === STRUCTURE_EXTENSION || s.structureType === STRUCTURE_SPAWN) && s.store.getFreeCapacity(RESOURCE_ENERGY) && s.isActive()
+        }
+      })
+
+      if (nextStructure) {
+        this.context.target = nextStructure.id
       }
-    })
+    }
+
+    const nextStructure = Game.getObjectById(this.context.target) as StructureExtension | StructurePowerSpawn
 
     if (nextStructure) {
       this.creep.travelTo(nextStructure, { range: 1, ignoreCreeps: true })
