@@ -161,6 +161,8 @@ export class Traveler {
             }
 
             creepBlocking.move(opposite[direction])
+
+            delete creepBlocking.memory._trav
           }
         }
       }
@@ -497,7 +499,7 @@ export class Traveler {
     if (!this.structureMatrixCache[room.name] || (freshMatrix && Game.time !== this.structureMatrixTick)) {
       this.structureMatrixTick = Game.time
       let matrix = new PathFinder.CostMatrix()
-      this.structureMatrixCache[room.name] = Traveler.addStructuresToMatrix(room, matrix, 1)
+      this.structureMatrixCache[room.name] = Traveler.addFixedCreepsToMatrix(room, Traveler.addStructuresToMatrix(room, matrix, 1))
     }
     return this.structureMatrixCache[room.name]
   }
@@ -552,6 +554,14 @@ export class Traveler {
    */
   public static addCreepsToMatrix(room: Room, matrix: CostMatrix): CostMatrix {
     room.find(FIND_CREEPS).forEach((creep: Creep) => matrix.set(creep.pos.x, creep.pos.y, 0xff) )
+    return matrix
+  }
+
+  public static addFixedCreepsToMatrix(room: Room, matrix: CostMatrix): CostMatrix {
+    room.find(FIND_CREEPS)
+      .filter((creep: Creep) => creep.memory.avoidMoving)
+      .forEach((creep: Creep) => matrix.set(creep.pos.x, creep.pos.y, 0xff))
+
     return matrix
   }
 
