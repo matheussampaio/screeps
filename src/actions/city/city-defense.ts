@@ -40,6 +40,14 @@ export class CityDefense extends City {
       return this.attack(towers, enemies)
     }
 
+    const babyStructures = this.room.find(FIND_STRUCTURES, {
+      filter: s => (s.structureType === STRUCTURE_RAMPART && s.hits <= RAMPART_DECAY_AMOUNT) || (s.structureType === STRUCTURE_ROAD && s.hits <= ROAD_DECAY_AMOUNT)
+    }) as (StructureRampart | StructureRoad)[]
+
+    if (babyStructures.length) {
+      return this.repair(towers, babyStructures)
+    }
+
     const towersWithEnoughEnergyForRepair = towers.filter(t => t.store.getUsedCapacity(RESOURCE_ENERGY) as number >= 500)
 
     if (!towersWithEnoughEnergyForRepair.length) {
@@ -50,23 +58,23 @@ export class CityDefense extends City {
       return this.waitNextTick()
     }
 
+    const wallsHP: { [level: number]: number } = {
+      1: 5000,
+      2: 5000,
+      3: 5000,
+      4: 5000,
+      5: 5000,
+      6: 25000,
+      7: 75000,
+      8: 200000
+    }
+
     const roads = this.room.find(FIND_STRUCTURES, {
       filter: r => r.structureType === STRUCTURE_ROAD && r.hitsMax - r.hits >= 800
     }) as StructureRoad[]
 
     if (roads.length) {
       return this.repair(towersWithEnoughEnergyForRepair, roads)
-    }
-
-    const wallsHP: { [level: number]: number } = {
-      1: 250,
-      2: 500,
-      3: 750,
-      4: 1000,
-      5: 5000,
-      6: 25000,
-      7: 75000,
-      8: 200000
     }
 
     const controller = this.room.controller as StructureController
@@ -82,7 +90,7 @@ export class CityDefense extends City {
     return this.waitNextTick()
   }
 
-  repair(towers: StructureTower[], structures: StructureRoad[] | (StructureWall | StructureRampart)[]) {
+  repair(towers: StructureTower[], structures: (StructureWall | StructureRoad | StructureRampart)[]) {
     structures.sort((a: any, b: any) => a.hits - b.hits)
 
     while(towers.length && structures.length) {
