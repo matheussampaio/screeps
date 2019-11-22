@@ -1,6 +1,6 @@
 import * as _ from 'lodash'
 
-import { ActionsRegistry } from '../../core'
+import { ActionsRegistry, Process } from '../../core'
 import { ICityContext, IPlanSource } from './interfaces'
 import { City } from './city'
 import { CreepFlee, CreepCheckStop, CreepRemoteHarvester, CreepRemoteHauler, CreepRemoteReserver, CreepRenew, CreepGuard } from '../creep'
@@ -9,8 +9,9 @@ import * as utils from '../../utils'
 
 @ActionsRegistry.register
 export class CityRemoteMiners extends City {
-  run(context: ICityContext) {
+  run(context: ICityContext, process: Process) {
     this.context = context
+    this.process = process
 
     if (this.queue.length) {
       return this.waitNextTick()
@@ -36,10 +37,8 @@ export class CityRemoteMiners extends City {
   private createCreeps() {
     let createdSomething = false
 
-
-
     if (Game.creeps[this.context.guard] == null && !this.isCreepNameInQueue(this.context.guard) && Memory.enemies && Object.values(Memory.enemies).length) {
-      this.context.guard = this.createGuardCreep()
+      this.context.guard = this.createGuardCreep(this.process.PID)
     }
 
     for (const roomName in this.context.remotes) {
@@ -158,7 +157,7 @@ export class CityRemoteMiners extends City {
    return creepName
   }
 
-  private createGuardCreep() {
+  private createGuardCreep(pid: number) {
     const creepName = utils.getUniqueCreepName('guard')
 
     const body = new CreateBody({ minimumEnergy: this.room.energyCapacityAvailable, hasRoads: false, ticksToMove: 1 })
@@ -171,7 +170,8 @@ export class CityRemoteMiners extends City {
     this.queue.push({
       memory: {
         roomsToGuard: Object.keys(this.context.remotes),
-        energy: this.room.energyCapacityAvailable
+        energy: this.room.energyCapacityAvailable,
+        cityPID: pid
       },
       creepName,
       body,

@@ -1,13 +1,14 @@
 import * as _ from 'lodash'
 
 import { Action } from '../../core'
-import { ICityContext, ISpawnerItem, IPlanSource } from './interfaces'
+import { ISpawnerItem, IPlanSource } from './interfaces'
 import * as utils from '../../utils'
 
 const cms: any = {}
 
 export class City extends Action {
   protected context: any
+  protected process: any
 
 // With 6 WORK parts, a creep can farm 3600 in 300 ticks (6 * 2 * 300).
 // It's more than enough to farm a 3k source.
@@ -157,12 +158,6 @@ export class City extends Action {
 
   protected isCreepNameInQueue(creepName: string): boolean {
     return this.queue.some(item => item.creepName === creepName)
-  }
-
-  run(context: ICityContext) {
-    this.context = context
-
-    return this.waitNextTick()
   }
 
   protected getMaxWorkPartAllowedByEnergyCapacity(): number {

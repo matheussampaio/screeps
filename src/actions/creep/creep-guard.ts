@@ -80,8 +80,6 @@ export class CreepGuardAttack extends CreepGuard {
   run(context: any) {
     this.context = context
 
-    this.logger.info(`Defending room ${this.creep.room.name}`)
-
     if (this.creep.room.name !== this.context.defendRoom) {
       const pos = new RoomPosition(25, 25, this.context.defendRoom)
 
@@ -93,8 +91,6 @@ export class CreepGuardAttack extends CreepGuard {
     const enemy = this.creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS)
 
     if (enemy == null) {
-      this.logger.info(`Room ${this.creep.room.name} cleaned!`)
-
       delete Memory.enemies[this.creep.room.name]
 
       return this.shiftAndContinue()
