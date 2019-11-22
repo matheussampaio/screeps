@@ -82,7 +82,7 @@ export class CreepStorager extends CreepAction {
 
     const target = Game.getObjectById(this.context.target) as StructureExtension | StructurePowerSpawn
 
-    if (target == null || !target.store.getFreeCapacity()) {
+    if (target == null || !target.store.getFreeCapacity(RESOURCE_ENERGY)) {
       delete this.context.target
 
       // if there is no empty structure near by (or just one, since this one will be filled above), start moving to the next one
@@ -139,6 +139,16 @@ export class CreepStorager extends CreepAction {
 
     if (!this.isFull && !this.isNearToStorage) {
       this.creep.travelTo(this.storage, { range: 1, ignoreCreeps: true })
+
+      return this.waitNextTick()
+    }
+
+    if (this.isFull) {
+      const spawn = this.creep.pos.findClosestByPath(FIND_MY_SPAWNS)
+
+      if (spawn && !this.creep.pos.isNearTo(spawn)) {
+        this.creep.travelTo(spawn, { range: 1, ignoreCreeps: true })
+      }
     }
 
     return this.waitNextTick()

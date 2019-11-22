@@ -559,7 +559,7 @@ export class Traveler {
 
   public static addFixedCreepsToMatrix(room: Room, matrix: CostMatrix): CostMatrix {
     room.find(FIND_CREEPS)
-      .filter((creep: Creep) => creep.memory.avoidMoving)
+      .filter((creep: Creep) => creep.my && creep.memory.avoidMoving)
       .forEach((creep: Creep) => matrix.set(creep.pos.x, creep.pos.y, 0xff))
 
     return matrix
