@@ -2,7 +2,7 @@ import * as _ from 'lodash'
 
 import { ActionsRegistry, ActionResult } from '../../core'
 import { City } from './city'
-import { CreepCheckStop, CreepHarvester, CreepSingleBuilder, CreepSingleHauler, CreepSingleUpgrader, CreepStorager, CreepRenew } from '../creep'
+import { CreepCheckStop, CreepHarvester, CreepSingleBuilder, CreepSingleHauler, CreepSingleUpgrader, CreepStorager, CreepRenew, CreepMiniBuilder } from '../creep'
 import { CreateBody, CREEP_PRIORITY } from '../../utils'
 import { ICityContext } from './interfaces'
 import * as utils from '../../utils'
@@ -91,6 +91,22 @@ export class CityRunner extends City {
     }
 
     return perms
+  }
+
+  private createMiniBuilder(): string {
+    const creepName = utils.getUniqueCreepName('mini-builder')
+
+    this.queue.push({
+      memory: {},
+      creepName,
+      body: new CreateBody({ minimumEnergy: 250 })
+      .add([CARRY, WORK])
+      .value(),
+      actions: [[CreepCheckStop.name], [CreepMiniBuilder.name]],
+      priority: CREEP_PRIORITY.BUILDER
+    })
+
+    return creepName
   }
 
   private createBuilder(): string {
@@ -342,7 +358,17 @@ export class CityRunner extends City {
 
     this.planner.builders = this.builders.filter((creepName: string) => Game.creeps[creepName] != null || this.isCreepNameInQueue(creepName))
 
-    if (this.planner.builders.length === 0 && this.room.find(FIND_MY_CONSTRUCTION_SITES).length) {
+    const constructionSites = this.room.find(FIND_MY_CONSTRUCTION_SITES)
+
+    if (this.planner.builders.length === 0 && constructionSites.find(c => c.structureType === STRUCTURE_WALL || c.structureType === STRUCTURE_RAMPART)) {
+      const creepName = this.createMiniBuilder()
+
+      this.planner.builders.push(creepName)
+
+      return this.waitNextTick()
+    }
+
+    if (this.planner.builders.length === 0 && constructionSites.find(c => c.structureType !== STRUCTURE_WALL && c.structureType !== STRUCTURE_RAMPART)) {
       const creepName = this.createBuilder()
 
       this.planner.builders.push(creepName)

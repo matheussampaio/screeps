@@ -2,19 +2,10 @@ import * as _ from 'lodash'
 
 import { ActionsRegistry, Action } from '../../core'
 import { CreepRecycle } from './creep-recycle'
+import { CreepAction } from './creep-action'
 
 @ActionsRegistry.register
-export class CreepSingleBuilder extends Action {
-  private context: any
-
-  private get creep(): Creep {
-    return Game.creeps[this.context.creepName]
-  }
-
-  private get room(): Room {
-    return Game.rooms[this.creep.memory.roomName]
-  }
-
+export class CreepSingleBuilder extends CreepAction {
   run(context: any) {
     this.context = context
 
@@ -52,7 +43,9 @@ export class CreepSingleBuilder extends Action {
       delete this.context.buildTarget
     }
 
-    const targets = this.room.find(FIND_MY_CONSTRUCTION_SITES).sort((c1, c2) => {
+    const targets = this.room.find(FIND_MY_CONSTRUCTION_SITES, {
+      filter: s => s.structureType !== STRUCTURE_WALL && s.structureType !== STRUCTURE_RAMPART
+    }).sort((c1, c2) => {
       // build smaller contructions first
       if (c1.progressTotal !== c2.progressTotal) {
         return c1.progressTotal - c2.progressTotal
@@ -65,6 +58,33 @@ export class CreepSingleBuilder extends Action {
 
       return c1.pos.getRangeTo(this.creep) - c2.pos.getRangeTo(this.creep)
     })
+
+    if (targets.length === 0) {
+      return null
+    }
+
+    this.context.buildTarget = targets[0].id
+
+    return targets[0]
+  }
+}
+
+@ActionsRegistry.register
+export class CreepMiniBuilder extends CreepSingleBuilder {
+  getConstructionTarget(): any {
+    if (this.context.buildTarget) {
+      const target: any = Game.getObjectById(this.context.buildTarget)
+
+      if (target) {
+        return target
+      }
+
+      delete this.context.buildTarget
+    }
+
+    const targets = this.room.find(FIND_MY_CONSTRUCTION_SITES, {
+      filter: s => s.structureType === STRUCTURE_WALL || s.structureType === STRUCTURE_RAMPART
+    }).sort((c1, c2) => c1.pos.getRangeTo(this.creep) - c2.pos.getRangeTo(this.creep))
 
     if (targets.length === 0) {
       return null
