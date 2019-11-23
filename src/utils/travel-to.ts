@@ -67,15 +67,16 @@ declare global {
 }
 
 type Coord = {x: number, y: number}
-/**
- * To start using Traveler, require it in main.js:
- * Example: var Traveler = require('Traveler.js')
- */
+
 export class Traveler {
   private static structureMatrixCache: {[roomName: string]: CostMatrix} = {}
+  private static structureMatrixTick: number
+
   private static creepMatrixCache: {[roomName: string]: CostMatrix} = {}
   private static creepMatrixTick: number
-  private static structureMatrixTick: number
+
+  private static fixedCreepMatrixCache: {[roomName: string]: CostMatrix} = {}
+  private static fixedCreepMatrixTick: number
 
   /**
    * move creep to destination
@@ -130,7 +131,7 @@ export class Traveler {
     // check if creep is stuck
     if (this.isStuck(creep, state)) {
       state.stuckCount++
-      Traveler.circle(creep.pos, 'magenta', state.stuckCount * .2)
+      Traveler.circle(creep.pos, 'magenta', state.stuckCount * (1 / DEFAULT_STUCK_VALUE))
     } else {
       state.stuckCount = 0
     }
@@ -138,7 +139,7 @@ export class Traveler {
     // handle case where creep is stuck
     if (!options.stuckValue) { options.stuckValue = DEFAULT_STUCK_VALUE }
 
-    if (state.stuckCount && travelData.path.length) {
+    if (state.stuckCount >= 2 && travelData.path.length) {
       const direction = parseInt(travelData.path[0], 10)
       const nextPos = Traveler.positionAtDirection(creep.pos, direction)
 
@@ -213,7 +214,7 @@ export class Traveler {
       let color = 'orange'
       if (ret.incomplete) {
         // uncommenting this is a great way to diagnose creep behavior issues
-        // console.log(`TRAVELER: incomplete path for ${creep.name}`)
+        console.log(`TRAVELER: incomplete path for ${creep.name}`)
         color = 'red'
       }
 
@@ -340,7 +341,7 @@ export class Traveler {
               Traveler.addCreepsToMatrix(room, matrix)
             }
           } else if (options.ignoreCreeps || roomName !== originRoomName) {
-            matrix = this.getStructureMatrix(room, options.freshMatrix)
+            matrix = this.getFixedCreepMatrix(room, options.freshMatrix)
           } else {
             matrix = this.getCreepMatrix(room)
           }
@@ -499,7 +500,7 @@ export class Traveler {
     if (!this.structureMatrixCache[room.name] || (freshMatrix && Game.time !== this.structureMatrixTick)) {
       this.structureMatrixTick = Game.time
       let matrix = new PathFinder.CostMatrix()
-      this.structureMatrixCache[room.name] = Traveler.addFixedCreepsToMatrix(room, Traveler.addStructuresToMatrix(room, matrix, 1))
+      this.structureMatrixCache[room.name] = Traveler.addStructuresToMatrix(room, matrix, 1)
     }
     return this.structureMatrixCache[room.name]
   }
@@ -514,6 +515,15 @@ export class Traveler {
         this.getStructureMatrix(room, true).clone())
     }
     return this.creepMatrixCache[room.name]
+  }
+
+  public static getFixedCreepMatrix(room: Room, freshStructureMatrix?: boolean): CostMatrix {
+    if (!this.fixedCreepMatrixCache[room.name] || Game.time !== this.fixedCreepMatrixTick) {
+      this.fixedCreepMatrixTick = Game.time
+      this.fixedCreepMatrixCache[room.name] = Traveler.addFixedCreepsToMatrix(room,
+        this.getStructureMatrix(room, freshStructureMatrix).clone())
+    }
+    return this.fixedCreepMatrixCache[room.name]
   }
 
   /**
@@ -633,7 +643,7 @@ export class Traveler {
 
 // this might be higher than you wish, setting it lower is a great way to diagnose creep behavior issues. When creeps
 // need to repath to often or they aren't finding valid paths, it can sometimes point to problems elsewhere in your code
-const REPORT_CPU_THRESHOLD = Infinity
+const REPORT_CPU_THRESHOLD = 20
 
 const DEFAULT_MAXOPS = 20000
 const DEFAULT_STUCK_VALUE = 10
