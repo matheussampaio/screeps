@@ -44,7 +44,7 @@ export class CreepFleeAfraid extends CreepAction {
     const pos = new RoomPosition(25, 25, this.room.name)
 
     if (!this.creep.pos.inRangeTo(pos, 20)) {
-      this.creep.travelTo(pos, { ignoreCreeps: false, range: 15 })
+      this.creep.travelTo(pos, { range: 19 })
 
       return this.waitNextTickAll()
     }
@@ -56,7 +56,7 @@ export class CreepFleeAfraid extends CreepAction {
     const result = PathFinder.search(this.creep.pos, goals, { flee: true })
 
     if (result.incomplete) {
-      this.creep.travelTo(this.controller as StructureController)
+      this.creep.travelTo(this.controller as StructureController, { range: 1, ignoreCreeps: true })
 
       return this.waitNextTickAll()
     }

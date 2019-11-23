@@ -15,7 +15,7 @@ export class CreepRemoteReserver extends CreepAction {
     if (this.context.remoteRoom !== this.creep.room.name) {
       const pos = new RoomPosition(25, 25, this.context.remoteRoom)
 
-      this.creep.travelTo(pos, { ignoreCreeps: true, range: 22 })
+      this.creep.travelTo(pos, { range: 22, ignoreCreeps: true })
 
       return this.waitNextTick()
     }

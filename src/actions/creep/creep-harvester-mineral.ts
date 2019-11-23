@@ -29,7 +29,7 @@ export class CreepHarvesterMineral extends Action {
       return this.waitNextTick()
     }
 
-    const extractor: StructureExtractor | null = Game.getObjectById(this.context.extractor || '50744959231ddd1')
+    const extractor: StructureExtractor | null = Game.getObjectById(this.context.extractor)
 
     if (extractor == null) {
       return this.waitNextTick()
@@ -45,7 +45,7 @@ export class CreepHarvesterMineral extends Action {
       const pos = this.room.getPositionAt(x, y) as RoomPosition
 
       if (!this.creep.pos.isEqualTo(pos) && !pos.lookFor(LOOK_CREEPS).length) {
-        this.creep.travelTo(pos)
+        this.creep.travelTo(pos, { ignoreCreeps: true })
       }
     }
 

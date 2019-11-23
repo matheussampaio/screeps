@@ -118,7 +118,7 @@ export class CreepSingleBuilderGetEnergy extends Action {
     }
 
     if (!creep.pos.isNearTo(target)) {
-      creep.travelTo(target, { range: 1 })
+      creep.travelTo(target, { range: 1, ignoreCreeps: true })
 
       return this.waitNextTick()
     }

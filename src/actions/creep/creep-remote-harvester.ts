@@ -14,7 +14,7 @@ export class CreepRemoteHarvester extends CreepAction {
     if (this.context.remoteRoom && this.context.remoteRoom !== this.creep.room.name) {
       const pos = new RoomPosition(25, 25, this.context.remoteRoom)
 
-      this.creep.travelTo(pos, { ignoreCreeps: true, range: 23 })
+      this.creep.travelTo(pos, { range: 23, ignoreCreeps: true })
 
       return this.waitNextTick()
     }
@@ -33,7 +33,7 @@ export class CreepRemoteHarvester extends CreepAction {
 
     // walk to source
     if (!this.creep.pos.isNearTo(source)) {
-      this.creep.travelTo(source, { range: 1 })
+      this.creep.travelTo(source, { range: 1, ignoreCreeps: true })
 
       return this.waitNextTick()
     }
@@ -63,7 +63,7 @@ export class CreepRemoteHarvester extends CreepAction {
 
     // try to move on top of container every 10 ticks
     if (!this.creep.pos.isEqualTo(container) && !container.pos.lookFor(LOOK_CREEPS).length) {
-      this.creep.travelTo(container)
+      this.creep.travelTo(container, { ignoreCreeps: true })
 
       return this.waitNextTick()
     }

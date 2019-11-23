@@ -28,7 +28,7 @@ export class CreepGuard extends CreepAction {
     if (this.creep.room.name !== this.room.name) {
       const pos = new RoomPosition(25, 25, this.room.name)
 
-      this.creep.travelTo(pos, { ignoreCreeps: true, range: 23 })
+      this.creep.travelTo(pos, { range: 23, ignoreCreeps: true })
 
       return this.waitNextTick()
     }
@@ -83,7 +83,7 @@ export class CreepGuardAttack extends CreepGuard {
     if (this.creep.room.name !== this.context.defendRoom) {
       const pos = new RoomPosition(25, 25, this.context.defendRoom)
 
-      this.creep.travelTo(pos, { ignoreCreeps: true, range: 23 })
+      this.creep.travelTo(pos, { range: 23, ignoreCreeps: true })
 
       return this.waitNextTick()
     }

@@ -21,7 +21,7 @@ export class CreepRemoteHauler extends CreepAction {
 
     if (!this.creep.pos.isNearTo(this.storage)) {
       // console.log('moving to storage')
-      this.creep.travelTo(this.storage, { range: 1 })
+      this.creep.travelTo(this.storage, { range: 1, ignoreCreeps: true })
 
       return this.waitNextTick()
     }
@@ -39,14 +39,13 @@ export class CreepRemoteHaulerGetEnergy extends CreepRemoteHauler {
     this.context = context
 
     if (!this.creep.store.getFreeCapacity(RESOURCE_ENERGY)) {
-      // console.log('energy full, shifting')
       return this.shiftAndContinue()
     }
 
     if (this.context.remoteRoom !== this.creep.room.name) {
       const pos = new RoomPosition(25, 25, this.context.remoteRoom)
 
-      this.creep.travelTo(pos, { ignoreCreeps: true, range: 22 })
+      this.creep.travelTo(pos, { range: 22, ignoreCreeps: true })
 
       return this.waitNextTick()
     }
@@ -54,8 +53,7 @@ export class CreepRemoteHaulerGetEnergy extends CreepRemoteHauler {
     const source: Source | null = Game.getObjectById(this.context.source as string)
 
     if (source && !this.creep.pos.inRangeTo(source, 2)) {
-      // console.log('traveling to source')
-      this.creep.travelTo(source, { ignoreCreeps: true, range: 2 })
+      this.creep.travelTo(source, { range: 2, ignoreCreeps: true })
 
       return this.waitNextTick()
     }
@@ -63,7 +61,6 @@ export class CreepRemoteHaulerGetEnergy extends CreepRemoteHauler {
     let result = this.pickUpEnergy()
 
     if (result) {
-      // console.log('picking up energy')
       return result
     }
 
@@ -74,7 +71,6 @@ export class CreepRemoteHaulerGetEnergy extends CreepRemoteHauler {
     const source: Source | null = Game.getObjectById(this.context.source as string)
 
     if (source == null) {
-      // console.log('source is null')
       return this.shiftAndStop()
     }
 
@@ -93,7 +89,7 @@ export class CreepRemoteHaulerGetEnergy extends CreepRemoteHauler {
     if (this.creep.pos.isNearTo(resource)) {
       this.creep.pickup(resource)
     } else {
-      this.creep.travelTo(resource, { range: 1 })
+      this.creep.travelTo(resource, { range: 1, ignoreCreeps: true })
     }
 
     return this.waitNextTick()
@@ -107,7 +103,7 @@ export class CreepRemoteHaulerGetEnergy extends CreepRemoteHauler {
     }
 
     if (!this.creep.pos.isNearTo(container)) {
-      this.creep.travelTo(container, { range: 1 })
+      this.creep.travelTo(container, { range: 1 , ignoreCreeps: true})
       return this.waitNextTick()
     }
 
