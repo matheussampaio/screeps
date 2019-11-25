@@ -15,7 +15,7 @@ export class CityDefense extends City {
     }
 
     for (const roomName in Memory.enemies) {
-      if (Memory.enemies[roomName] as number <= Game.time - 1500) {
+      if (Memory.enemies[roomName].time <= Game.time - 1500) {
         delete Memory.enemies[roomName]
       }
     }
@@ -27,7 +27,10 @@ export class CityDefense extends City {
     }) as StructureTower[]
 
     if (enemies.length) {
-      Memory.enemies[this.room.name] = enemies.length ? Game.time : undefined
+      Memory.enemies[this.room.name] = {
+        time: Game.time,
+        attackPower: utils.getMaxEnemyAttackPower(enemies)
+      }
     } else {
       delete Memory.enemies[this.room.name]
     }

@@ -38,7 +38,12 @@ export class CityRemoteMiners extends City {
     let createdSomething = false
 
     if (Game.creeps[this.context.guard] == null && !this.isCreepNameInQueue(this.context.guard) && Memory.enemies && Object.values(Memory.enemies).length) {
-      this.context.guard = this.createGuardCreep(this.process.PID)
+      const attackPowers = Object.values(Memory.enemies).map(item => item.attackPower)
+      const maximumAttackPower: number = Math.max(...attackPowers)
+      const attackParts = maximumAttackPower / ATTACK_POWER
+      const extraAttackParts = Math.min(2, attackParts * 1.2)
+
+      this.context.guard = this.createGuardCreep(this.process.PID, { [ATTACK]: Math.ceil(attackParts + extraAttackParts) })
     }
 
     for (const roomName in this.context.remotes) {
@@ -157,14 +162,12 @@ export class CityRemoteMiners extends City {
    return creepName
   }
 
-  private createGuardCreep(pid: number) {
+  private createGuardCreep(pid: number, maxParts: Partial<Record<BodyPartConstant, any>>): string {
     const creepName = utils.getUniqueCreepName('guard')
 
-    const body = new CreateBody({ minimumEnergy: this.room.energyCapacityAvailable, hasRoads: false, ticksToMove: 1 })
-      .add([HEAL, ATTACK])
+    const body = new CreateBody({ minimumEnergy: this.room.energyCapacityAvailable, hasRoads: false, ticksToMove: 1, maxParts })
+      .add([TOUGH, TOUGH, TOUGH, TOUGH, ATTACK, ATTACK])
       .add([ATTACK], { repeat: true })
-      .add([TOUGH], { repeat: true })
-      .addMoveIfPossible()
       .value()
 
     this.queue.push({

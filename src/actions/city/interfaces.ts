@@ -4,7 +4,10 @@ declare global {
       creepCounter?: number
     }
     enemies: {
-      [roomName: string]: number | undefined
+      [roomName: string]: {
+        time: number
+        attackPower: number
+      }
     }
   }
 

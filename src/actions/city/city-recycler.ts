@@ -70,7 +70,7 @@ export class CityRecycler extends City {
   }
 
   private createRecyclerCreep() {
-    const body: BodyPartConstant[] = new CreateBody({ minimumEnergy: 300, energyAvailable: this.room.energyAvailable, ticksToMove: 2, maxParts: { [CARRY]: 12 } })
+    const body: BodyPartConstant[] = new CreateBody({ minimumEnergy: 300, energyAvailable: this.room.energyAvailable, ticksToMove: 2, maxParts: { [CARRY]: 10 } })
         .add([CARRY], { repeat: true })
         .value()
 

@@ -136,7 +136,50 @@ export class CreateBody {
       }
     }
 
-    // @TODO: sort body to destroy unvaluable parts first (i.e. TOUGH)
+    const newBody = this.test()
+
+    if (body.sort().toString() !== _.clone(newBody).sort().toString()) {
+      console.log('body', body)
+      console.log('newbody', newBody)
+      throw new Error(`ERROR, body is different ${this.human()}`)
+    }
+
+    // console.log(this.test())
+
+    return newBody
+  }
+
+  private test(): BodyPartConstant[] {
+    const body: BodyPartConstant[] = []
+
+    for (let i = 0; i < this.currentCreepBody[TOUGH]; i++) {
+      body.push(TOUGH)
+    }
+
+    const nonMoveParts: BodyPartConstant[] = []
+
+    for (const part in this.currentCreepBody) {
+      if (part === MOVE || part === TOUGH) {
+        continue
+      }
+
+      for (let i = 0; i < this.currentCreepBody[part as BodyPartConstant]; i++) {
+        nonMoveParts.push(part as BodyPartConstant)
+      }
+    }
+
+    let moveParts = this.currentCreepBody[MOVE] || 1
+    const moveRatio = nonMoveParts.length / moveParts
+
+    while (moveParts) {
+      for (let i = 0; i < moveRatio && nonMoveParts.length; i++) {
+        body.push(nonMoveParts.shift() as BodyPartConstant)
+      }
+
+      body.push(MOVE)
+
+      moveParts--
+    }
 
     return body
   }

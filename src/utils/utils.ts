@@ -122,3 +122,38 @@ export function isBodyEqual(b1: BodyPartConstant[], b2: BodyPartConstant[]): boo
 
   return true
 }
+
+export function getMaxEnemyAttackPower(enemies: Creep[]): number {
+  return Math.max(...enemies.map(getEnemyAttackPower))
+}
+
+export function getEnemyAttackPower(enemy: Creep): number {
+  return enemy.body.reduce((sum, part) => {
+    if (!part.hits) {
+      return sum
+    }
+
+    const bodyValue = getActualBodyValue(part)
+
+    switch (part.type) {
+      case ATTACK:
+        return sum + bodyValue * ATTACK_POWER
+      case RANGED_ATTACK:
+        return sum + bodyValue * RANGED_ATTACK_POWER
+      case HEAL:
+        return sum + bodyValue * HEAL_POWER
+    }
+
+    return sum + 2
+  }, 0)
+}
+
+export function getActualBodyValue(part: BodyPartDefinition): number {
+  if (!part.boost) {
+    return 1
+  }
+
+  const effects = BOOSTS[part.type as string][part.boost]
+
+  return Object.values(effects)[0]
+}

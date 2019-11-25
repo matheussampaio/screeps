@@ -15,30 +15,30 @@ export class CreepRecycler extends CreepAction {
       return this.unshiftAndContinue(CreepRecyclerTransfer.name)
     }
 
-    const tombstone = this.creep.pos.findClosestByPath(FIND_TOMBSTONES, {
+    const tombstones = this.room.find(FIND_TOMBSTONES, {
       filter: t => t.store.getUsedCapacity()
     })
 
-    if (tombstone) {
-      this.context.target = tombstone.id as string
+    if (tombstones.length) {
+      this.context.target = tombstones[0].id as string
 
       return this.unshiftAndContinue(CreepRecyclerGetResourceFromTombstone.name)
     }
 
-    const ruin = this.creep.pos.findClosestByPath(FIND_RUINS, {
+    const ruins = this.room.find(FIND_RUINS, {
       filter: r => r.store.getUsedCapacity()
     })
 
-    if (ruin) {
-      this.context.target = ruin.id as string
+    if (ruins.length) {
+      this.context.target = ruins[0].id as string
 
       return this.unshiftAndContinue(CreepRecyclerGetResourceFromTombstone.name)
     }
 
-    const resource = this.creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES)
+    const resources = this.room.find(FIND_DROPPED_RESOURCES)
 
-    if (resource) {
-      this.context.target = resource.id
+    if (resources.length) {
+      this.context.target = resources[0].id
 
       return this.unshiftAndContinue(CreepRecyclerGetResource.name)
     }

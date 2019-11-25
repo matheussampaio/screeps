@@ -1,5 +1,6 @@
 import { ActionsRegistry } from '../../core'
 import { CreepAction } from './creep-action'
+import * as utils from '../../utils'
 
 @ActionsRegistry.register
 export class CreepFlee extends CreepAction {
@@ -21,7 +22,10 @@ export class CreepFlee extends CreepAction {
     if (enemies.length) {
       this.context.afraidOf = this.creep.room.name
 
-      Memory.enemies[this.creep.room.name] = Game.time
+      Memory.enemies[this.creep.room.name] = {
+        time: Game.time,
+        attackPower: utils.getMaxEnemyAttackPower(enemies)
+      }
 
       return this.unshiftAndContinue(CreepFleeAfraid.name)
     } else {
