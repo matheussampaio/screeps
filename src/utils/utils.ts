@@ -155,5 +155,9 @@ export function getActualBodyValue(part: BodyPartDefinition): number {
 
   const effects = BOOSTS[part.type as string][part.boost]
 
-  return Object.values(effects)[0]
+  const value = Object.values(effects)[0]
+
+  // Boosted TOUGH parts absorb damage 30%/50%/70% and is stored as .7/.5/.3
+  // respectively
+  return part.type === TOUGH ? 1 / value : value
 }
