@@ -50,6 +50,10 @@ export class City extends Action {
     return this.planner.storagers
   }
 
+  protected set storagers(value: string[]) {
+    this.planner.storagers = value
+  }
+
   protected get builders(): string[] {
     if (this.planner.builders == null) {
       this.planner.builders = []
@@ -58,12 +62,20 @@ export class City extends Action {
     return this.planner.builders
   }
 
+  protected set builders(value: string[]) {
+    this.planner.builders = value
+  }
+
   protected get upgraders(): string[] {
     if (this.planner.upgraders == null) {
       this.planner.upgraders = []
     }
 
     return this.planner.upgraders
+  }
+
+  protected set upgraders(value: string[]) {
+    this.planner.upgraders = value
   }
 
   protected get sources(): IPlanSource[] {

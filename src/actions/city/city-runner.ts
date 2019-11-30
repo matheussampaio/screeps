@@ -270,16 +270,20 @@ export class CityRunner extends City {
   }
 
   private maintainUpgraders(): ActionResult | null {
-    if (this.isSpawningCreep(this.planner.upgraders)) {
+    if (this.upgraders == null) {
+      this.upgraders = []
+    }
+
+    if (this.isSpawningCreep(this.upgraders)) {
       return this.waitNextTick()
     }
 
-    this.planner.upgraders = this.upgraders.filter((creepName: string) => Game.creeps[creepName] != null || this.isCreepNameInQueue(creepName))
+    this.upgraders = this.upgraders.filter((creepName: string) => Game.creeps[creepName] != null || this.isCreepNameInQueue(creepName))
 
-    if (this.planner.upgraders.length === 0) {
+    if (this.upgraders.length === 0) {
       const creepName = this.createUpgrader()
 
-      this.planner.upgraders.push(creepName)
+      this.upgraders.push(creepName)
 
       return this.waitNextTick()
     }
@@ -292,22 +296,22 @@ export class CityRunner extends City {
       return null
     }
 
-    if (this.isSpawningCreep(this.planner.storagers)) {
+    if (this.isSpawningCreep(this.storagers)) {
       return this.waitNextTick()
     }
 
-    this.planner.storagers = this.storagers.filter((creepName: string) => Game.creeps[creepName] != null || this.isCreepNameInQueue(creepName))
+    this.storagers = this.storagers.filter((creepName: string) => Game.creeps[creepName] != null || this.isCreepNameInQueue(creepName))
 
-    if (!this.planner.storagers.length) {
+    if (!this.storagers.length) {
       const creepName = this.createStoragers(this.room.energyAvailable)
 
-      this.planner.storagers.push(creepName)
+      this.storagers.push(creepName)
 
       return this.waitNextTick()
     }
 
-    if (this.planner.storagers.length === 1) {
-      const storager = Game.creeps[this.planner.storagers[0]]
+    if (this.storagers.length === 1) {
+      const storager = Game.creeps[this.storagers[0]]
 
       if (storager == null || storager.spawning) {
         return null
@@ -319,7 +323,7 @@ export class CityRunner extends City {
       if (!utils.isBodyEqual(currentBody, desiredBody)) {
         const creepName = this.createStoragers(this.room.energyCapacityAvailable, storager.ticksToLive)
 
-        this.planner.storagers.push(creepName)
+        this.storagers.push(creepName)
 
         return this.waitNextTick()
       }
@@ -330,7 +334,7 @@ export class CityRunner extends City {
       if (storager.ticksToLive as number <= ticksToSpawnCreep + ticksToFillExtensions) {
         const creepName = this.createStoragers(this.room.energyCapacityAvailable, storager.ticksToLive)
 
-        this.planner.storagers.push(creepName)
+        this.storagers.push(creepName)
 
         return this.waitNextTick()
       }
@@ -352,26 +356,26 @@ export class CityRunner extends City {
   }
 
   private maintainBuilders(): ActionResult | null {
-    if (this.isSpawningCreep(this.planner.builders)) {
+    if (this.isSpawningCreep(this.builders)) {
       return this.waitNextTick()
     }
 
-    this.planner.builders = this.builders.filter((creepName: string) => Game.creeps[creepName] != null || this.isCreepNameInQueue(creepName))
+    this.builders = this.builders.filter((creepName: string) => Game.creeps[creepName] != null || this.isCreepNameInQueue(creepName))
 
     const constructionSites = this.room.find(FIND_MY_CONSTRUCTION_SITES)
 
-    if (this.planner.builders.length === 0 && constructionSites.find(c => c.structureType === STRUCTURE_WALL || c.structureType === STRUCTURE_RAMPART)) {
+    if (this.builders.length === 0 && constructionSites.find(c => c.structureType === STRUCTURE_WALL || c.structureType === STRUCTURE_RAMPART)) {
       const creepName = this.createMiniBuilder()
 
-      this.planner.builders.push(creepName)
+      this.builders.push(creepName)
 
       return this.waitNextTick()
     }
 
-    if (this.planner.builders.length === 0 && constructionSites.find(c => c.structureType !== STRUCTURE_WALL && c.structureType !== STRUCTURE_RAMPART)) {
+    if (this.builders.length === 0 && constructionSites.find(c => c.structureType !== STRUCTURE_WALL && c.structureType !== STRUCTURE_RAMPART)) {
       const creepName = this.createBuilder()
 
-      this.planner.builders.push(creepName)
+      this.builders.push(creepName)
 
       return this.waitNextTick()
     }
@@ -380,7 +384,7 @@ export class CityRunner extends City {
   }
 
   private optimizeUpgraders() {
-    if (this.isSpawningCreep(this.planner.upgraders)) {
+    if (this.isSpawningCreep(this.upgraders)) {
       return this.waitNextTick()
     }
 
@@ -390,7 +394,7 @@ export class CityRunner extends City {
       return sum + (currentWorkParts * HARVEST_POWER * 1500)
     }, 0)
 
-    const creepsConsumingEnergy = this.planner.upgraders.concat(this.planner.builders)
+    const creepsConsumingEnergy = this.upgraders.concat(this.builders)
     const energyConsumed = creepsConsumingEnergy.reduce((sum: number, creepName: string) => {
       const currentWorkParts = utils.getActiveBodyPartsFromName(creepName, WORK)
 
@@ -409,7 +413,7 @@ export class CityRunner extends City {
     if (total >= consumeByUpgrader) {
       const creepName = this.createUpgrader()
 
-      this.planner.upgraders.push(creepName)
+      this.upgraders.push(creepName)
 
       return this.waitNextTick()
     }
