@@ -92,14 +92,33 @@ export class CreepGuardAttack extends CreepGuard {
     const enemies = this.creep.room.find(FIND_HOSTILE_CREEPS)
       .sort((c1, c2) => utils.getEnemyAttackPower(c2) - utils.getEnemyAttackPower(c1))
 
-    if (!enemies.length) {
-      delete Memory.enemies[this.creep.room.name]
+    if (enemies.length) {
+      this.attack(enemies.sort((c1, c2) => utils.getEnemyAttackPower(c2) - utils.getEnemyAttackPower(c1)))
 
-      return this.shiftAndContinue()
+      this.creep.travelTo(enemies[0], { range: 1, movingTarget: true })
+
+      return this.waitNextTick()
     }
 
-    const enemiesInRange = enemies.filter(c => this.creep.pos.inRangeTo(c, 3))
-      .sort((c1, c2) => utils.getEnemyAttackPower(c2) - utils.getEnemyAttackPower(c1))
+    const invaderCore = this.creep.room.find(FIND_STRUCTURES, {
+      filter: s => s.structureType === STRUCTURE_INVADER_CORE
+    }) as StructureInvaderCore[]
+
+    if (invaderCore.length) {
+      this.attack(invaderCore)
+
+      this.creep.travelTo(invaderCore[0], { range: 1 })
+
+      return this.waitNextTick()
+    }
+
+    delete Memory.enemies[this.creep.room.name]
+
+    return this.shiftAndContinue()
+  }
+
+  attack(targets: (Creep | StructureInvaderCore)[]) {
+    const enemiesInRange = targets.filter(c => this.creep.pos.inRangeTo(c, 3))
 
     if (this.creep.getActiveBodyparts(RANGED_ATTACK) && enemiesInRange.length) {
       this.creep.rangedAttack(enemiesInRange[0])
@@ -107,17 +126,12 @@ export class CreepGuardAttack extends CreepGuard {
       this.creep.rangedHeal(this.creep)
     }
 
-    const enemiesNear = enemies.filter(c => this.creep.pos.isNearTo(c))
-      .sort((c1, c2) => utils.getEnemyAttackPower(c2) - utils.getEnemyAttackPower(c1))
+    const enemiesNear = targets.filter(c => this.creep.pos.isNearTo(c))
 
     if (this.creep.getActiveBodyparts(ATTACK) && enemiesNear.length) {
       this.creep.attack(enemiesNear[0])
     } else if (this.creep.getActiveBodyparts(HEAL) && this.creep.hits < this.creep.hitsMax) {
       this.creep.heal(this.creep)
     }
-
-    this.creep.travelTo(enemies[0], { range: 1, movingTarget: true })
-
-    return this.waitNextTick()
   }
 }

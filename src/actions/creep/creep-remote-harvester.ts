@@ -14,7 +14,7 @@ export class CreepRemoteHarvester extends CreepAction {
     if (this.context.remoteRoom && this.context.remoteRoom !== this.creep.room.name) {
       const pos = new RoomPosition(25, 25, this.context.remoteRoom)
 
-      this.creep.travelTo(pos, { range: 23, ignoreCreeps: true })
+      this.creep.travelTo(pos, { range: 23, ignoreCreeps: this.creep.room.name === this.room.name })
 
       return this.waitNextTick()
     }
@@ -33,7 +33,7 @@ export class CreepRemoteHarvester extends CreepAction {
 
     // walk to source
     if (!this.creep.pos.isNearTo(source)) {
-      this.creep.travelTo(source, { range: 1, ignoreCreeps: true })
+      this.creep.travelTo(source, { range: 1, ignoreCreeps: this.creep.room.name === this.room.name })
 
       return this.waitNextTick()
     }
@@ -41,6 +41,54 @@ export class CreepRemoteHarvester extends CreepAction {
     // harvest the source
     if (source.energy) {
       this.creep.harvest(source)
+    }
+
+    if (!this.context.roads && this.room.storage) {
+      const sites = this.creep.room.find(FIND_CONSTRUCTION_SITES)
+
+      if (sites.length) {
+        return this.waitNextTick()
+      }
+
+      this.context.roads = true
+
+      const result = PathFinder.search(
+        this.room.storage.pos,
+        { pos: this.creep.pos, range: 1 },
+        {
+          roomCallback: (roomName: string): boolean | CostMatrix => {
+            if (roomName === this.room.name && this.context.cityPID) {
+              const process = this.getProcessByPID(this.context.cityPID)
+
+              const costMatrix = _.get(process, 'memory.planner.costMatrix')
+
+              return PathFinder.CostMatrix.deserialize(costMatrix)
+            }
+
+            return new PathFinder.CostMatrix()
+          },
+          plainCost: 2,
+          swampCost: 5
+        }
+      )
+
+      if (!result.incomplete) {
+        // for (let i = 1; i < result.path.length; i++) {
+        //   const from = result.path[i - 1]
+        //   const to = result.path[i]
+
+        //   if (from.roomName === to.roomName) {
+        //     const room = Game.rooms[from.roomName]
+
+        //     room.visual.line(from.x, from.y, to.x, to.y, { color: 'green' })
+        //   }
+        // }
+
+        result.path
+          .forEach(pos => pos.createConstructionSite(STRUCTURE_ROAD))
+      } else {
+        console.log('PATH INCOMPLETE')
+      }
     }
 
     return this.waitNextTick()

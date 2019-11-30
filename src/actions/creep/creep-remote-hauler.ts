@@ -10,24 +10,57 @@ export class CreepRemoteHauler extends CreepAction {
     this.context = context
 
     if (!this.storage) {
-      // console.log('no storage')
       return this.waitNextTick()
     }
 
-    if (this.creep.store.getFreeCapacity(RESOURCE_ENERGY)) {
-      // console.log('unshift remote hauler get energy')
+    if (!this.creep.store.getUsedCapacity(RESOURCE_ENERGY)) {
       return this.unshiftAndContinue(CreepRemoteHaulerGetEnergy.name)
     }
 
     if (!this.creep.pos.isNearTo(this.storage)) {
-      // console.log('moving to storage')
-      this.creep.travelTo(this.storage, { range: 1, ignoreCreeps: true })
+      this.creep.travelTo(this.storage, { range: 1, ignoreCreeps: this.creep.room.name === this.room.name })
 
       return this.waitNextTick()
     }
 
-    // console.log('transfering')
     this.creep.transfer(this.storage, RESOURCE_ENERGY)
+
+    return this.waitNextTick()
+  }
+}
+
+@ActionsRegistry.register
+export class CreepRemoteHaulerMaintainRoad extends CreepAction {
+  run(context: ICreepContext) {
+    this.context = context
+
+    if (!this.creep.store.getUsedCapacity(RESOURCE_ENERGY) || !this.creep.getActiveBodyparts(WORK)) {
+      return this.waitNextTick()
+    }
+
+    const roadConstruction = this.creep.room.find(FIND_CONSTRUCTION_SITES, {
+      filter: s => s.my && s.structureType === STRUCTURE_ROAD
+    })
+    .sort((r1, r2) => this.creep.pos.getRangeTo(r1) - this.creep.pos.getRangeTo(r2))
+
+    if (roadConstruction.length) {
+      const road = roadConstruction[0]
+
+      if (this.creep.pos.inRangeTo(road, 3)) {
+        this.creep.build(roadConstruction[0])
+      } else {
+        this.creep.travelTo(road, { range: 3, ignoreCreeps: this.creep.room.name === this.room.name })
+      }
+
+      return this.waitNextTickAll()
+    }
+
+    const road = this.creep.pos.lookFor(LOOK_STRUCTURES)
+      .find(s => s.structureType === STRUCTURE_ROAD && s.hits < s.hitsMax)
+
+    if (road) {
+      this.creep.repair(road)
+    }
 
     return this.waitNextTick()
   }
@@ -45,7 +78,7 @@ export class CreepRemoteHaulerGetEnergy extends CreepRemoteHauler {
     if (this.context.remoteRoom !== this.creep.room.name) {
       const pos = new RoomPosition(25, 25, this.context.remoteRoom)
 
-      this.creep.travelTo(pos, { range: 22, ignoreCreeps: true })
+      this.creep.travelTo(pos, { range: 22, ignoreCreeps: this.creep.room.name === this.room.name })
 
       return this.waitNextTick()
     }
@@ -53,7 +86,7 @@ export class CreepRemoteHaulerGetEnergy extends CreepRemoteHauler {
     const source: Source | null = Game.getObjectById(this.context.source as string)
 
     if (source && !this.creep.pos.inRangeTo(source, 2)) {
-      this.creep.travelTo(source, { range: 2, ignoreCreeps: true })
+      this.creep.travelTo(source, { range: 2, ignoreCreeps: this.creep.room.name === this.room.name })
 
       return this.waitNextTick()
     }
@@ -89,7 +122,7 @@ export class CreepRemoteHaulerGetEnergy extends CreepRemoteHauler {
     if (this.creep.pos.isNearTo(resource)) {
       this.creep.pickup(resource)
     } else {
-      this.creep.travelTo(resource, { range: 1, ignoreCreeps: true })
+      this.creep.travelTo(resource, { range: 1, ignoreCreeps: this.creep.room.name === this.room.name })
     }
 
     return this.waitNextTick()
@@ -103,7 +136,7 @@ export class CreepRemoteHaulerGetEnergy extends CreepRemoteHauler {
     }
 
     if (!this.creep.pos.isNearTo(container)) {
-      this.creep.travelTo(container, { range: 1 , ignoreCreeps: true})
+      this.creep.travelTo(container, { range: 1 , ignoreCreeps: this.creep.room.name === this.room.name })
       return this.waitNextTick()
     }
 

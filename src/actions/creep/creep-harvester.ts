@@ -68,13 +68,14 @@ export class CreepHarvester extends CreepAction {
   }
 
   private maintainLink() {
-    const link: StructureLink | ConstructionSite | null = Game.getObjectById(this.context.link)
+    const link: StructureLink | ConstructionSite | null = Game.getObjectById(this.context.link) || this.findStructure<StructureLink>(this.context.linkPos, STRUCTURE_LINK)
 
     // try to create or find an existing container
     if (link == null) {
-      this.findStructure(this.context.linkPos, STRUCTURE_LINK, 'link')
-      return this.waitNextTick()
+      return null
     }
+
+    this.context.link = link.id
 
     // try to build link every 13 tick
     if (Game.time % 13 === 0 && link instanceof ConstructionSite && this.canBuildStructures()) {
@@ -90,13 +91,14 @@ export class CreepHarvester extends CreepAction {
   }
 
   private maintainContainer() {
-    const container: StructureContainer | ConstructionSite | null = Game.getObjectById(this.context.container)
+    const container: StructureContainer | ConstructionSite | null = Game.getObjectById(this.context.container) || this.findStructure<StructureContainer>(this.context.containerPos, STRUCTURE_CONTAINER)
 
     // try to create or find an existing container
     if (container == null) {
-      this.findStructure(this.context.containerPos, STRUCTURE_CONTAINER, 'container', true)
-      return this.waitNextTick()
+      return null
     }
+
+    this.context.container = container.id
 
     // try to build container every 11th tick
     if (Game.time % 11 === 0 && container instanceof ConstructionSite && this.canBuildStructures()) {
@@ -105,7 +107,7 @@ export class CreepHarvester extends CreepAction {
     }
 
     // try to move on top of container every 10 ticks
-    if (!this.creep.pos.isEqualTo(container) && !container.pos.lookFor(LOOK_CREEPS).length) {
+    if (Game.time % 10 === 0 && !this.creep.pos.isEqualTo(container) && !container.pos.lookFor(LOOK_CREEPS).length) {
       this.creep.travelTo(container, { ignoreCreeps: true })
 
       return this.waitNextTick()
@@ -129,29 +131,30 @@ export class CreepHarvester extends CreepAction {
     return this.creep.getActiveBodyparts(WORK) && this.creep.getActiveBodyparts(CARRY) && this.creep.store.getUsedCapacity(RESOURCE_ENERGY)
   }
 
-  private findStructure(hasPos: { x: number, y: number }, structureType: BuildableStructureConstant, prop: string, create: boolean = false): void {
+  private findStructure<T>(hasPos: { x: number, y: number }, structureType: BuildableStructureConstant): T | ConstructionSite | null {
+
     const pos = this.creep.room.getPositionAt(hasPos.x, hasPos.y) as RoomPosition
 
-    const structure = pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === structureType)
+    const structure = pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === structureType) as any
 
     if (structure) {
-      this.context[prop] = structure.id
+      // this.context[prop] = structure.id
 
-      return
+      return structure
     }
 
     const constructionSite = pos.lookFor(LOOK_CONSTRUCTION_SITES).find(c => c.structureType === structureType)
 
     if (constructionSite) {
-      this.context[prop] = constructionSite.id
+      // this.context[prop] = constructionSite.id
 
-      return
+      return constructionSite
     }
 
-    if (create) {
-      this.creep.room.createConstructionSite(hasPos.x, hasPos.y, structureType)
-    }
+    // if (create) {
+    //   this.creep.room.createConstructionSite(hasPos.x, hasPos.y, structureType)
+    // }
 
-    return
+    return null
   }
 }

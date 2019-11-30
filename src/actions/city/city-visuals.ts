@@ -20,6 +20,26 @@ export class CityVisuals extends City {
       }
     }
 
+    if (Game.flags['skeleton'] && this.context.planner.skeletonCostMatrix) {
+      const skeleton = PathFinder.CostMatrix.deserialize(this.context.planner.skeletonCostMatrix)
+
+      for (let x = 0; x < 50; x++) {
+        for (let y = 0; y < 50; y++) {
+          const value = skeleton.get(x, y)
+
+          if (value >= 25) {
+            this.room.visual.circle(x, y, { fill: 'red', radius: 0.5, opacity: 0.15 })
+          }
+
+          if (value === 1) {
+            utils.getNeighborsCoords(x, y)
+              .filter(coord => skeleton.get(coord.x, coord.y) === 1)
+              .forEach(coord => this.room.visual.line(x, y, coord.x, coord.y, { color: 'red', opacity: 0.1 }))
+          }
+        }
+      }
+    }
+
     return this.waitNextTick()
   }
 
@@ -33,7 +53,7 @@ export class CityVisuals extends City {
         const v2 = this.getPos(coord.x, coord.y)
 
         if (v2.includes(STRUCTURE_ROAD)) {
-          this.room.visual.line(x, y, coord.x, coord.y, { color: '#111111' })
+          this.room.visual.line(x, y, coord.x, coord.y, { color: 'green', opacitiy: 0.7 })
         }
       })
     }

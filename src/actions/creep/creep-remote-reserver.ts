@@ -36,11 +36,20 @@ export class CreepRemoteReserver extends CreepAction {
 
     const username = _.get(this.controller, 'owner.username')
 
-    const reservationUsername = _.get(remoteController, 'reservation.username')
-    const ticksToEnd = _.get(remoteController, 'reservation.ticksToEnd')
+    const reservationUsername = _.get(remoteController, 'reservation.username', username)
+    const ticksToEnd = _.get(remoteController, 'reservation.ticksToEnd', 0)
 
-    if (reservationUsername !== username || ticksToEnd < CONTROLLER_RESERVE_MAX - 5) {
+    if (reservationUsername === username && ticksToEnd < CONTROLLER_RESERVE_MAX - 5) {
       this.creep.reserveController(remoteController)
+    } else {
+      this.creep.attackController(remoteController)
+    }
+
+    if (reservationUsername === 'Invader') {
+      Memory.enemies[this.creep.room.name] = {
+        time: Game.time,
+        attackPower: 1000
+      }
     }
 
     return this.waitNextTick()

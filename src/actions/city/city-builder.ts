@@ -3,6 +3,7 @@ import * as _ from 'lodash'
 import { ActionsRegistry } from '../../core'
 import { ICityContext } from './interfaces'
 import { City } from './city'
+import * as utils from '../../utils'
 
 @ActionsRegistry.register
 export class CityBuilder extends City {
@@ -14,13 +15,15 @@ export class CityBuilder extends City {
     }
 
     if (_.size(Game.constructionSites) >= MAX_CONSTRUCTION_SITES) {
-      return this.waitNextTick()
+      return this.sleep(50)
     }
 
-    const constructionSites = this.room.find(FIND_MY_CONSTRUCTION_SITES).length
+    const constructionSites = this.room.find(FIND_MY_CONSTRUCTION_SITES, {
+      filter: s => s.structureType !== STRUCTURE_CONTAINER
+    }).length
 
     if (constructionSites) {
-      return this.sleep(50)
+      return this.sleep(5)
     }
 
     if (this.createConstructionSites()) {
@@ -28,10 +31,39 @@ export class CityBuilder extends City {
     }
 
     if (this.pruneStructuresMissplaced()) {
-      return this.sleep(5)
+      return this.waitNextTick()
     }
 
-    return this.sleep(100)
+    if (this.createLinks()) {
+      return this.waitNextTick()
+    }
+
+    return this.sleep(50)
+  }
+
+  private createLinks(): boolean {
+    const positions = [
+      this.planner.storageLinkPos,
+      ...this.sources.sort((a, b) => b.distance - a.distance).map(s => s.linkPos)
+    ]
+
+    let constructedLink = false
+
+    for (let i = 0; i < CONTROLLER_STRUCTURES[STRUCTURE_LINK][this.controller.level] && positions.length; i++) {
+      const hasPos = positions.shift() as { x: number, y: number }
+
+      const link = this.findLink(hasPos)
+
+      if (link == null) {
+        const pos = this.room.getPositionAt(hasPos.x, hasPos.y) as RoomPosition
+
+        this.room.createConstructionSite(pos, STRUCTURE_LINK)
+
+        constructedLink = true
+      }
+    }
+
+    return constructedLink
   }
 
   private pruneStructuresMissplaced(): boolean {
@@ -89,11 +121,11 @@ export class CityBuilder extends City {
     const constructionOrder: BuildableStructureConstant[] = []
 
     if (this.controller.level >= 2) {
-      constructionOrder.push(STRUCTURE_EXTENSION)
+      constructionOrder.push(STRUCTURE_CONTAINER, STRUCTURE_EXTENSION)
     }
 
     if (this.controller.level >= 3) {
-      constructionOrder.push(STRUCTURE_TOWER, STRUCTURE_ROAD, STRUCTURE_WALL, STRUCTURE_RAMPART)
+      constructionOrder.push(STRUCTURE_TOWER, STRUCTURE_WALL, STRUCTURE_RAMPART)
     }
 
     if (this.controller.level >= 4) {
@@ -121,7 +153,21 @@ export class CityBuilder extends City {
       if (structureCounter < CONTROLLER_STRUCTURES[structureType][this.controller.level]) {
         const positions = this.findStructuresToBeConstructed(structureType)
 
-        positions.forEach(pos => this.room.createConstructionSite(pos.x, pos.y, structureType))
+        for (const pos of positions) {
+          this.room.createConstructionSite(pos.x, pos.y, structureType)
+
+          if (structureType !== STRUCTURE_WALL && structureType !== STRUCTURE_EXTRACTOR && structureType !== STRUCTURE_RAMPART) {
+            const costMatrix = PathFinder.CostMatrix.deserialize(this.planner.costMatrix)
+
+            const result = this.search(pos, costMatrix)
+
+            if (!result.incomplete) {
+              for (const pos of result.path) {
+                this.room.createConstructionSite(pos.x, pos.y, STRUCTURE_ROAD)
+              }
+            }
+          }
+        }
 
         if (positions.length) {
           return true
@@ -133,29 +179,56 @@ export class CityBuilder extends City {
   }
 
   private findStructuresToBeConstructed(structureType: BuildableStructureConstant): RoomPosition[] {
+    const queue = [this.center]
+    const visited = Array(50 * 50).fill(0)
+
     const positions = []
 
-    for (let x = 0; x < 50; x++) {
-      for (let y = 0; y < 50; y++) {
-        const st = this.getPos(x, y)
+    while (queue.length) {
+      const pos = queue.shift() as RoomPosition
+      const idx = pos.y * 50 + pos.x
 
-        if (st.includes(structureType)) {
-          const result = this.room.lookAt(x, y)
+      if (visited[idx]) {
+        continue
+      }
 
-          const isThereAConstructionSite = result.some(item => item.type === LOOK_CONSTRUCTION_SITES)
+      visited[idx] = 1
 
-          if (isThereAConstructionSite) {
-            continue
-          }
+      // queue their neighbors to the be visited
+      const neighbors = utils.getNeighborsPositions(pos, { closeToExits: false })
 
-          const alreadyConstructed = result.find(item => item.structure && item.structure.structureType === structureType)
+      queue.push(...neighbors)
 
-          if (alreadyConstructed) {
-            continue
-          }
+      const { x, y } = pos
 
-          positions.push(this.room.getPositionAt(x, y) as RoomPosition)
+      const st = this.getPos(x, y)
+
+      if (!st.includes(structureType)) {
+        continue
+      }
+
+      const result = this.room.lookAt(x, y)
+
+      const alreadyConstructed = result.find(item => item.structure && item.structure.structureType === structureType)
+
+      if (alreadyConstructed) {
+        continue
+      }
+
+      if (structureType === STRUCTURE_CONTAINER) {
+        const sources = this.room.find(FIND_SOURCES)
+
+        const isHarvesterContainer = sources.some(source => source.pos.isNearTo(pos))
+
+        if (!isHarvesterContainer) {
+          continue
         }
+      }
+
+      if (structureType !== STRUCTURE_WALL && structureType !== STRUCTURE_RAMPART) {
+        return [pos]
+      } else {
+        positions.push(pos)
       }
     }
 

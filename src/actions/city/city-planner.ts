@@ -3,18 +3,19 @@ import * as _ from 'lodash'
 import { ActionsRegistry } from '../../core'
 import * as utils from '../../utils'
 import { RectCoordinates, MinCut, Coordinates } from '../../utils/min-cut'
-import { ICityContext } from './interfaces'
 import { City } from './city'
 
 @ActionsRegistry.register
 export class CityPlanner extends City {
-  run(context: ICityContext) {
+  protected skeleton?: CostMatrix
+
+  run(context: any) {
     this.context = context
 
     this.resetMapIfFlag()
 
     if (this.planner.map == null) {
-      this.replan()
+      return this.unshiftAndContinue(CityPlannerStructure.name, CityPlannerCreate.name)
     }
 
     const maxWorkPartAllowedByEnergyCapacity = this.getMaxWorkPartAllowedByEnergyCapacity()
@@ -34,88 +35,187 @@ export class CityPlanner extends City {
 
         sourcePlan.desiredWorkParts = desiredWorkParts
       }
+
+      this.calculateBestUpgraderBody()
     }
 
-    return this.sleep(5)
+    return this.waitNextTick()
   }
 
-  private replan() {
-    this.planner.plannedAt = Game.time
+  private calculateBestUpgraderBody(): void {
+    // best upgraders body
+    const goal = this.room.find(FIND_MY_SPAWNS).map(source => source.pos)
+    const distance = PathFinder.search(this.controller.pos, goal).path.length
+    const permutations = this.generatePermutations(this.room.energyCapacityAvailable, distance / 3)
 
-    const exits = [
-      FIND_EXIT_TOP,
-      FIND_EXIT_RIGHT,
-      FIND_EXIT_BOTTOM,
-      FIND_EXIT_LEFT
+    let bestEntry: string = ''
+    let bestEficiency = 0
+
+    for (const key in permutations) {
+      const eficiency = permutations[key]
+
+      if (eficiency > bestEficiency) {
+        bestEficiency = eficiency
+        bestEntry = key
+      }
+    }
+
+    this.upgradersBody = bestEntry.split(',') as BodyPartConstant[]
+
+    const positions = [
+      this.planner.storageLinkPos,
+      ...this.sources.sort((a, b) => b.distance - a.distance).map(s => s.linkPos)
     ]
 
-    // block tiles around controller
-    utils.getEmptySpacesAroundPosition(this.controller.pos).forEach(pos => {
-      this.costMatrix.set(pos.x, pos.y, Infinity)
+    for (let i = 0; i < CONTROLLER_STRUCTURES[STRUCTURE_LINK][this.controller.level]; i++) {
+      if (!positions.length) {
+        break
+      }
+
+      const hasPos = positions.shift() as { x: number, y: number }
+
+      const link = this.findLink(hasPos)
+
+      if (link == null) {
+        const pos = this.room.getPositionAt(hasPos.x, hasPos.y) as RoomPosition
+
+        this.room.createConstructionSite(pos, STRUCTURE_LINK)
+
+        break
+      }
+    }
+  }
+
+  private generatePermutations(energy: number, distance: number) {
+    const parts: BodyPartConstant[] = [MOVE, CARRY, WORK]
+    const perms: { [key: string]: number } = {}
+
+    const queue: { energy: number, body: BodyPartConstant[] }[] = [{
+      energy: energy - (BODYPART_COST[MOVE] + BODYPART_COST[CARRY] + BODYPART_COST[WORK]),
+      body: [MOVE, CARRY, WORK]
+    }]
+
+    while (queue.length) {
+      const item = queue.shift()
+
+      if (item == null) {
+        continue
+      }
+
+      this.addPermutation(perms, item.body, distance)
+
+      if (item.body.length >= MAX_CREEP_SIZE) {
+        continue
+      }
+
+      for (const part of parts) {
+        const cost = BODYPART_COST[part]
+
+        if (cost <= item.energy) {
+          const body = [...item.body, part]
+
+          if (this.addPermutation(perms, body, distance)) {
+            queue.push({ energy: item.energy - cost, body })
+          }
+        }
+      }
+    }
+
+    return perms
+  }
+
+  private addPermutation(perms: { [key: string]: number }, body: BodyPartConstant[], distance: number): boolean {
+    const work = body.filter(p => p === WORK).length
+    const move = body.filter(p => p === MOVE).length
+    const carry = body.filter(p => p === CARRY).length
+
+    const index = body.sort().join()
+
+    if (perms[index] != null) {
+      return false
+    }
+
+    perms[index] = this.calculateEficiency({
+      distance,
+      work,
+      move,
+      carry
     })
+
+    return true
+  }
+
+  private calculateEficiency({ distance, work, move, carry }: { distance: number, work: number, move: number, carry: number }): number {
+    if (!move || !carry || !work) {
+      return 0
+    }
+
+    const ticksToArriveAtController = (distance - 3) * Math.ceil(work / move)
+    const ticksGettingEnergy = 1500 / (Math.floor(carry * 50 / work) + 1)
+
+    return (1500 - ticksToArriveAtController - ticksGettingEnergy) * work
+  }
+
+  private resetMapIfFlag() {
+    const flag = Game.flags['reset-map']
+
+    if (flag && flag.room && flag.room.name === this.context.roomName) {
+      flag.remove()
+
+      delete this.context.planner.map
+    }
+  }
+}
+
+
+@ActionsRegistry.register
+export class CityPlannerCreate extends CityPlanner {
+  run(context: any) {
+    this.context = context
+
+    const costMatrix = new PathFinder.CostMatrix()
+
+    this.planner.plannedAt = Game.time
+    this.skeleton = PathFinder.CostMatrix.deserialize(this.context.planner.skeletonCostMatrix)
 
     // block tiles around spawners
     const spawns = this.room.find(FIND_MY_SPAWNS)
 
     for (const spawn of spawns) {
-      this.setPos(spawn.pos.x, spawn.pos.y, [STRUCTURE_SPAWN])
+      this.setPos(costMatrix, spawn.pos.x, spawn.pos.y, [STRUCTURE_SPAWN])
 
       utils.getEmptySpacesAroundPosition(spawn.pos).forEach(pos => {
-        this.setPos(pos.x, pos.y, [STRUCTURE_ROAD])
+        this.setPos(costMatrix, pos.x, pos.y, [STRUCTURE_ROAD])
       })
     }
 
     const sources = this.room.find(FIND_SOURCES)
 
-    // block tiles around sources
-    for (const source of sources) {
-      utils.getNeighborsPositions(source.pos).forEach(pos => {
-        this.costMatrix.set(pos.x, pos.y, Infinity)
-      })
-
-      utils.getEmptySpacesAroundPosition(source.pos).forEach(pos => {
-        this.costMatrix.set(pos.x, pos.y, 5)
-      })
-    }
-
-    const minerals = this.room.find(FIND_MINERALS)
-
-    // block tiles around minerals and place extractor
-    for (const mineral of minerals) {
-      utils.getNeighborsPositions(mineral.pos).forEach(pos => {
-        this.costMatrix.set(pos.x, pos.y, Infinity)
-      })
-
-      utils.getEmptySpacesAroundPosition(mineral.pos).forEach(pos => {
-        this.costMatrix.set(pos.x, pos.y, 5)
-      })
-    }
-
-    this.placeStorage()
+    this.placeStorage(costMatrix)
 
     // block and plan roads to sources
     for (const source of sources) {
-      const result = this.search(source.pos)
+      const result = this.search(source.pos, costMatrix)
 
       if (result.incomplete) {
         continue
       }
 
       for (const pos of result.path.slice(1, result.path.length - 1)) {
-        this.setPos(pos.x, pos.y, [STRUCTURE_ROAD])
+        this.setPos(costMatrix, pos.x, pos.y, [STRUCTURE_ROAD])
       }
 
       const lastPos = result.path[result.path.length - 1] as RoomPosition
 
-      this.setPos(lastPos.x, lastPos.y, [STRUCTURE_CONTAINER])
-      this.costMatrix.set(lastPos.x, lastPos.y, Infinity)
+      this.setPos(costMatrix, lastPos.x, lastPos.y, [STRUCTURE_CONTAINER])
+      costMatrix.set(lastPos.x, lastPos.y, Infinity)
 
       const neighbors = utils.getEmptySpacesAroundPosition(lastPos, { closeToExits: false })
       let linkPos
 
       for (const neighbor of neighbors) {
         if (this.getPos(neighbor.x, neighbor.y).length === 0) {
-          this.setPos(neighbor.x, neighbor.y, [STRUCTURE_LINK])
+          this.setPos(costMatrix, neighbor.x, neighbor.y, [STRUCTURE_LINK])
           linkPos = neighbor
           break
         }
@@ -124,36 +224,41 @@ export class CityPlanner extends City {
       _.defaultsDeep(this.planner, {
         sources: {
           [source.id as string]: {
-            linkPos,
             id: source.id,
             harvesters: [],
             haulers: [],
-            containerPos: lastPos,
-            distance: result.path.length,
-            emptySpaces: utils.getEmptySpacesAroundPosition(source.pos).length,
             desiredWorkParts: 0,
             desiredCarryParts: 0
           }
         }
       })
+
+      const id = source.id as string
+
+      this.planner.sources[id].linkPos = linkPos
+      this.planner.sources[id].containerPos = lastPos
+      this.planner.sources[id].distance = result.path.length
+      this.planner.sources[id].emptySpaces = utils.getEmptySpacesAroundPosition(source.pos).length
     }
+
+    const minerals = this.room.find(FIND_MINERALS)
 
     // block and plan roads to minerals
     for (const mineral of minerals) {
-      const result = this.search(mineral.pos)
+      const result = this.search(mineral.pos, costMatrix)
 
       if (result.incomplete) {
         continue
       }
 
       for (const pos of result.path.slice(1, result.path.length - 1)) {
-        this.setPos(pos.x, pos.y, [STRUCTURE_ROAD])
+        this.setPos(costMatrix, pos.x, pos.y, [STRUCTURE_ROAD])
       }
 
       const lastPos = result.path[result.path.length - 1] as RoomPosition
 
-      this.setPos(lastPos.x, lastPos.y, [STRUCTURE_CONTAINER])
-      this.costMatrix.set(lastPos.x, lastPos.y, Infinity)
+      this.setPos(costMatrix, lastPos.x, lastPos.y, [STRUCTURE_CONTAINER])
+      costMatrix.set(lastPos.x, lastPos.y, Infinity)
 
       _.defaultsDeep(this.planner, {
         minerals: {
@@ -162,14 +267,24 @@ export class CityPlanner extends City {
             harvesters: [],
             haulers: [],
             repairs: [],
-            containerPos: lastPos,
-            distance: result.path.length,
-            emptySpaces: utils.getEmptySpacesAroundPosition(mineral.pos).length,
             desiredCarryParts: 0
           }
         }
       })
+
+      const id = mineral.id as string
+
+      this.planner.minerals[id].containerPos = lastPos
+      this.planner.minerals[id].distance = result.path.length
+      this.planner.minerals[id].emptySpaces = utils.getEmptySpacesAroundPosition(mineral.pos).length
     }
+
+    const exits = [
+      FIND_EXIT_TOP,
+      FIND_EXIT_RIGHT,
+      FIND_EXIT_BOTTOM,
+      FIND_EXIT_LEFT
+    ]
 
     // block and plan roads to exits
     for (const exit of exits) {
@@ -179,35 +294,85 @@ export class CityPlanner extends City {
         continue
       }
 
-      const result = this.search(exitPosition, 1)
+      const result = this.search(exitPosition, costMatrix, 1)
 
       if (result.incomplete) {
         continue
       }
 
       for (const pos of result.path.slice(1)) {
-        this.setPos(pos.x, pos.y, [STRUCTURE_ROAD])
+        this.setPos(costMatrix, pos.x, pos.y, [STRUCTURE_ROAD])
       }
     }
 
-    this.placeSpawners()
+    this.placeSpawners(costMatrix)
 
-    this.placeStructureType(STRUCTURE_TOWER)
+    this.placeStructureType(costMatrix, STRUCTURE_TOWER)
 
-    this.placeStructureType(STRUCTURE_TERMINAL)
+    this.placeStructureType(costMatrix, STRUCTURE_TERMINAL)
 
-    this.placeStructureType(STRUCTURE_EXTENSION)
+    this.placeStructureType(costMatrix, STRUCTURE_EXTENSION)
 
-    this.placeWallsAndRamparts()
+    this.pruneExtraRoads(costMatrix)
 
-    this.placeExtractors()
+    this.placeWallsAndRamparts(costMatrix)
+
+    this.placeExtractors(costMatrix)
+
+    delete this.planner.skeletonCostMatrix
+
+    this.planner.costMatrix = costMatrix.serialize()
+
+    return this.shiftAndStop()
   }
 
-  private placeSpawners() {
+  private pruneExtraRoads(costMatrix: CostMatrix) {
+    const arrowCoordsDx = [
+      [[0, 0], [0, -1], [0, 1], [1, 0]],
+      [[0, 0], [1, 0], [-1, 0], [0, 1]],
+      [[0, 0], [0, 1], [0, -1], [-1, 0]],
+      [[0, 0], [-1, 0], [1, 0], [0, -1]],
+    ]
+
+    for (let x = 1; x < 49; x++) {
+      for (let y = 1; y < 49; y++) {
+        const arrow = arrowCoordsDx.some(coords => coords.every(([dx, dy]) => costMatrix.get(x + dx, y + dy) === 1))
+
+        if (arrow) {
+          costMatrix.set(x, y, 0)
+          this.map[y * 50 + x] = []
+        }
+      }
+    }
+  }
+
+  protected clean(costMatrix: CostMatrix): { x: number, y: number } | null {
+    const arrowCoordsDx = [
+      [[0, 0], [0, -1], [0, 1], [1, 0]],
+      [[0, 0], [1, 0], [-1, 0], [0, 1]],
+      [[0, 0], [0, 1], [0, -1], [-1, 0]],
+      [[0, 0], [-1, 0], [1, 0], [0, -1]],
+    ]
+
+    for (let x = 1; x < 49; x++) {
+      for (let y = 1; y < 49; y++) {
+        const arrow = arrowCoordsDx.some(coords => coords.every(([dx, dy]) => costMatrix.get(x + dx, y + dy) === 1))
+
+        if (arrow) {
+          costMatrix.set(x, y, 25)
+          return { x, y }
+        }
+      }
+    }
+
+    return null
+  }
+
+  private placeSpawners(costMatrix: CostMatrix) {
     const spawners = this.room.find(FIND_MY_SPAWNS)
 
     for (let i = spawners.length; i < CONTROLLER_STRUCTURES[STRUCTURE_SPAWN][8]; i++) {
-      const pos = this.findSuitablePlaceForStructure(STRUCTURE_SPAWN)
+      const pos = this.findSuitablePlaceForStructure(costMatrix, STRUCTURE_SPAWN)
 
       if (pos == null) {
         break
@@ -215,13 +380,13 @@ export class CityPlanner extends City {
 
       // place roads around spawner
       utils.getEmptySpacesAroundPosition(pos)
-        .forEach(pos => this.setPos(pos.x, pos.y, [STRUCTURE_ROAD]))
+        .forEach(pos => this.setPos(costMatrix, pos.x, pos.y, [STRUCTURE_ROAD]))
 
-      this.placeStructure(pos, STRUCTURE_SPAWN)
+      this.placeStructure(costMatrix, pos, STRUCTURE_SPAWN)
     }
   }
 
-  private placeExtractors() {
+  private placeExtractors(costMatrix: CostMatrix) {
     const minerals = this.room.find(FIND_MINERALS)
 
     for (let i = 0; i < CONTROLLER_STRUCTURES[STRUCTURE_EXTRACTOR][8]; i++) {
@@ -231,11 +396,11 @@ export class CityPlanner extends City {
         break
       }
 
-      this.placeStructure(mineral.pos, STRUCTURE_EXTRACTOR)
+      this.placeStructure(costMatrix, mineral.pos, STRUCTURE_EXTRACTOR)
     }
   }
 
-  private placeWallsAndRamparts() {
+  private placeWallsAndRamparts(costMatrix: CostMatrix) {
     const protectedArea: RectCoordinates[] = []
 
     for (let x = 0; x < 50; x++) {
@@ -257,32 +422,20 @@ export class CityPlanner extends City {
       const value = this.getPos(pos.x, pos.y)
 
       if (!value.length) {
-        this.setPos(pos.x, pos.y, [STRUCTURE_WALL])
+        this.setPos(costMatrix, pos.x, pos.y, [STRUCTURE_WALL])
       } else {
-        this.setPos(pos.x, pos.y, [...value, STRUCTURE_RAMPART], true)
+        this.setPos(costMatrix, pos.x, pos.y, [...value, STRUCTURE_RAMPART], true)
       }
     }
   }
 
-  private resetMapIfFlag() {
-    const flag = Game.flags['reset-map']
-
-    if (flag && flag.room && flag.room.name === this.context.roomName) {
-      if (this.room.name !== 'sim') {
-        flag.remove()
-      }
-
-      delete this.context.planner.map
-    }
-  }
-
-  private placeStorage() {
+  private placeStorage(costMatrix: CostMatrix) {
     // place storage in the center
-    this.placeStructure(this.center, STRUCTURE_STORAGE, true)
+    this.placeStructure(costMatrix, this.center, STRUCTURE_STORAGE, true)
 
     // place roads around storage
     utils.getEmptySpacesAroundPosition(this.center)
-      .forEach(pos => this.setPos(pos.x, pos.y, [STRUCTURE_ROAD]))
+      .forEach(pos => this.setPos(costMatrix, pos.x, pos.y, [STRUCTURE_ROAD]))
 
     const positions = utils.getEmptySpacesAroundPosition(this.center, { range: 2, closeToExits: false })
 
@@ -290,27 +443,27 @@ export class CityPlanner extends City {
     for (const pos of positions) {
       const structures = this.getPos(pos.x, pos.y)
 
-      if (structures.length === 0) {
+      if (structures.length === 0 && this.skeleton!.get(pos.x, pos.y) === 25) {
         this.planner.storageLinkPos = pos
-        this.setPos(pos.x, pos.y, [STRUCTURE_LINK])
+        this.setPos(costMatrix, pos.x, pos.y, [STRUCTURE_LINK])
         break
       }
     }
   }
 
-  private placeStructureType(structureType: BuildableStructureConstant) {
+  private placeStructureType(costMatrix: CostMatrix, structureType: BuildableStructureConstant) {
     for (let i = 0; i < CONTROLLER_STRUCTURES[structureType][8]; i++) {
-      const pos = this.findSuitablePlaceForStructure(structureType)
+      const pos = this.findSuitablePlaceForStructure(costMatrix, structureType)
 
       if (pos == null) {
         break
       }
 
-      this.placeStructure(pos, structureType)
+      this.placeStructure(costMatrix, pos, structureType)
     }
   }
 
-  private findSuitablePlaceForStructure(structureType: BuildableStructureConstant): RoomPosition | null {
+  private findSuitablePlaceForStructure(costMatrix: CostMatrix, structureType: BuildableStructureConstant): RoomPosition | null {
     const queue = [this.center]
 
     const visited = Array(50 * 50).fill(0)
@@ -330,6 +483,10 @@ export class CityPlanner extends City {
       const neighbors = utils.getNeighborsPositions(pos, { closeToExits: false })
 
       queue.push(...neighbors)
+
+      if (this.skeleton!.get(pos.x, pos.y) !== 25) {
+        continue
+      }
 
       // if it is a border position, skip it
       if (utils.isPositionCloseToExit(pos)) {
@@ -352,7 +509,7 @@ export class CityPlanner extends City {
       }
 
       // if this position is protected in the cost matrix
-      if (this.costMatrix.get(pos.x, pos.y) >= 50) {
+      if (costMatrix.get(pos.x, pos.y) >= 50) {
         continue
       }
 
@@ -383,26 +540,152 @@ export class CityPlanner extends City {
       }
 
       // if this position has a road connected to it, it's a nice fit
-      // (assuming the road is not a dead end)
-      if (neighbors.find(p => this.getPos(p.x, p.y).includes(STRUCTURE_ROAD))) {
+      if (neighbors.find(p => this.skeleton!.get(p.x, p.y) === 1)) {
         return pos
       }
     }
 
-    console.log(`can't find a place for ${structureType}`)
-
     return null
   }
 
-  private placeStructure(pos: RoomPosition, structureType: BuildableStructureConstant, force: boolean = false) {
-    this.setPos(pos.x, pos.y, [structureType], force)
+  private placeStructure(costMatrix: CostMatrix, pos: RoomPosition, structureType: BuildableStructureConstant, force: boolean = false) {
+    this.setPos(costMatrix, pos.x, pos.y, [structureType], force)
   }
 
-  private search(pos: RoomPosition | RoomPosition[], range = 1): PathFinderPath {
+  protected setPos(costMatrix: CostMatrix, x: number, y: number, value: BuildableStructureConstant[], force: boolean = false) {
+    const idx = y * 50 + x
+
+    if (this.map[idx].length === 0 || force) {
+      this.map[y * 50 + x] = value
+      costMatrix.set(x, y, value.includes(STRUCTURE_ROAD) ? 1 : Infinity)
+    }
+  }
+}
+
+@ActionsRegistry.register
+export class CityPlannerStructure extends CityPlanner {
+  run(context: any) {
+    this.context = context
+
+    const costMatrix = new PathFinder.CostMatrix()
+
+    // block tiles around controller
+    utils.getEmptySpacesAroundPosition(this.controller.pos).forEach(pos => {
+      costMatrix.set(pos.x, pos.y, Infinity)
+    })
+
+    const sources = this.room.find(FIND_SOURCES)
+
+    // block tiles around sources
+    for (const source of sources) {
+      utils.getNeighborsPositions(source.pos).forEach(pos => {
+        costMatrix.set(pos.x, pos.y, Infinity)
+      })
+
+      utils.getEmptySpacesAroundPosition(source.pos).forEach(pos => {
+        costMatrix.set(pos.x, pos.y, 5)
+      })
+    }
+
+    const minerals = this.room.find(FIND_MINERALS)
+
+    // block tiles around minerals and place extractor
+    for (const mineral of minerals) {
+      utils.getNeighborsPositions(mineral.pos).forEach(pos => {
+        costMatrix.set(pos.x, pos.y, Infinity)
+      })
+
+      utils.getEmptySpacesAroundPosition(mineral.pos).forEach(pos => {
+        costMatrix.set(pos.x, pos.y, 5)
+      })
+    }
+
+    this.context.planner.targets = [
+      { range: 1, x: this.controller.pos.x, y: this.controller.pos.y, roomName: this.room.name },
+      ...sources.map(source => ({ range: 1, x: source.pos.x, y: source.pos.y, roomName: source.pos.roomName })),
+      ...minerals.map(mineral => ({ range: 1, x: mineral.pos.x, y: mineral.pos.y, roomName: mineral.pos.roomName })),
+      this.room.find(FIND_EXIT_TOP),
+      this.room.find(FIND_EXIT_RIGHT),
+      this.room.find(FIND_EXIT_BOTTOM),
+      this.room.find(FIND_EXIT_LEFT)
+    ]
+
+    const pos = []
+    const terrain = this.room.getTerrain()
+
+    for (let x = 1; x < 49; x++) {
+      for (let y = 1; y < 49; y++) {
+        if (!(terrain.get(x, y) & TERRAIN_MASK_WALL)) {
+          pos.push({ x, y, roomName: this.room.name })
+        }
+      }
+    }
+
+    this.context.planner.targets.push(..._.shuffle(pos))
+
+    this.context.planner.skeletonCostMatrix = costMatrix.serialize()
+
+    return this.shiftUnshitAndStop(CityPlannerStructureConsume.name)
+  }
+}
+
+@ActionsRegistry.register
+export class CityPlannerStructureConsume extends CityPlannerCreate {
+  run(context: any) {
+    this.context = context
+
+    this.skeleton = PathFinder.CostMatrix.deserialize(this.context.planner.skeletonCostMatrix)
+
+    const target = this.getNextTarget()
+
+    if (target == null) {
+      if (this.clean(this.skeleton)) {
+        this.context.planner.skeletonCostMatrix = this.skeleton.serialize()
+
+        return this.retry()
+      }
+
+      return this.shiftAndContinue()
+    }
+
+    const positions = target.map(({ x, y, roomName }: any) => new RoomPosition(x, y, roomName))
+    const range = _.get(target, '[0].range', 0)
+
+    const result = this.searchInCostMatrix(this.center, positions, this.skeleton, { range })
+
+    if (!result.incomplete) {
+      result.path.unshift(this.center)
+      this.markPath(this.skeleton, result.path, this.room)
+    }
+
+    this.context.planner.skeletonCostMatrix = this.skeleton.serialize()
+
+    return this.retry()
+  }
+
+  private getNextTarget(): { x: number, y: number }[] | null {
+    if (!this.context.planner.targets.length) {
+      return null
+    }
+
+    const target = this.context.planner.targets.shift()
+
+    if (_.isArray(target)) {
+      return target
+    }
+
+    if (this.skeleton && !this.skeleton.get(target.x, target.y)) {
+      return [target]
+    }
+
+    return this.getNextTarget()
+  }
+
+  private searchInCostMatrix(from: RoomPosition, to: RoomPosition | RoomPosition[], costMatrix: CostMatrix, { range = 0 }: { range?: number } = {}): PathFinderPath {
     const opts: PathFinderOpts = {
       roomCallback: (roomName: string): boolean | CostMatrix => {
-        if (roomName === this.room.name) {
-          return this.costMatrix
+        if (roomName === from.roomName) {
+          return costMatrix
         }
 
         return false
@@ -411,11 +694,23 @@ export class CityPlanner extends City {
       swampCost: 5
     }
 
-    const positions = _.isArray(pos) ? pos : [pos]
+    const positions = _.isArray(to) ? to : [to]
 
     const goals = positions.map(pos => ({ pos, range }))
 
-    return PathFinder.search(this.center, goals, opts)
+    return PathFinder.search(from, goals, opts)
+  }
+
+  private markPath(costMatrix: CostMatrix, positions: RoomPosition[], room: Room) {
+    const terrain = room.getTerrain()
+
+    for (const pos of positions) {
+      costMatrix.set(pos.x, pos.y, 1)
+
+      utils.getNeighborsPositions(pos)
+        .filter(pos => !(terrain.get(pos.x, pos.y) & TERRAIN_MASK_WALL))
+        .filter(pos => costMatrix.get(pos.x, pos.y) === 0)
+        .forEach(pos => costMatrix.set(pos.x, pos.y, 25))
+    }
   }
 }
-

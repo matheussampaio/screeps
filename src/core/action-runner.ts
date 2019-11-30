@@ -36,9 +36,7 @@ export class ActionTreeRunner {
   public static logger: Logger = new Logger()
 
   public static tick(bootActions: string[][]) {
-    if (ActionTreeRunner.shouldReset()) {
-      return ActionTreeRunner.reset()
-    }
+    ActionTreeRunner.resetIfFlagExists()
 
     Analytics.reset()
 
@@ -53,11 +51,29 @@ export class ActionTreeRunner {
     Analytics.record()
   }
 
-  private static shouldReset(): boolean {
-    return Game.flags['reset'] != null
-  }
+  private static resetIfFlagExists(): void {
+    const flag = Game.flags['reset']
 
-  private static reset(): void {
+    if (flag == null) {
+      return
+    }
+
+    if (flag.color === COLOR_RED) {
+      for (const roomName in Game.rooms) {
+        const structures = Game.rooms[roomName].find(FIND_STRUCTURES, {
+          filter: s => s.structureType !== STRUCTURE_SPAWN
+        })
+
+        structures.forEach(s => s.destroy())
+
+        const spawns = Game.rooms[roomName].find(FIND_MY_SPAWNS)
+
+        for (let i = 1; i < spawns.length; i++) {
+          spawns[i].destroy()
+        }
+      }
+    }
+
     for (const creepName in Game.creeps) {
       Game.creeps[creepName].suicide()
     }

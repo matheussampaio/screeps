@@ -3,7 +3,7 @@ import * as _ from 'lodash'
 import { ActionsRegistry, Process } from '../../core'
 import { ICityContext, IPlanSource } from './interfaces'
 import { City } from './city'
-import { CreepFlee, CreepCheckStop, CreepRemoteHarvester, CreepRemoteHauler, CreepRemoteReserver, CreepRenew, CreepGuard } from '../creep'
+import { CreepFlee, CreepCheckStop, CreepRemoteHarvester, CreepRemoteHauler, CreepRemoteReserver, CreepRemoteHaulerMaintainRoad, CreepGuard } from '../creep'
 import { CreateBody, CREEP_PRIORITY } from '../../utils'
 import * as utils from '../../utils'
 
@@ -84,7 +84,8 @@ export class CityRemoteMiners extends City {
           const memory: any = {
             source: sourcePlan.id,
             remoteRoom: sourcePlan.roomName,
-            containerPos: sourcePlan.containerPos
+            containerPos: sourcePlan.containerPos,
+            cityPID: this.process.PID
           }
 
           const creepName = this.createHarvester(memory, { [WORK]: sourcePlan.desiredWorkParts })
@@ -113,10 +114,11 @@ export class CityRemoteMiners extends City {
     this.queue.push({
       memory,
       creepName,
-      body: new CreateBody({ minimumEnergy: 300, energyAvailable: this.room.energyCapacityAvailable, maxParts, hasRoads: false })
+      body: new CreateBody({ minimumEnergy: 300, energyAvailable: this.room.energyCapacityAvailable, maxParts })
+      .add([WORK])
       .add([CARRY], { repeat: true })
       .value(),
-      actions: [[CreepCheckStop.name], [CreepFlee.name], [CreepRemoteHauler.name]],
+      actions: [[CreepCheckStop.name], [CreepFlee.name], [CreepRemoteHaulerMaintainRoad.name], [CreepRemoteHauler.name]],
       priority: CREEP_PRIORITY.REMOTE_HAULER
     })
 
@@ -129,7 +131,7 @@ export class CityRemoteMiners extends City {
     this.queue.push({
       memory,
       creepName,
-      body: new CreateBody({ minimumEnergy: 300, energyAvailable: this.room.energyCapacityAvailable, ticksToMove: 3, maxParts, hasRoads: false  })
+      body: new CreateBody({ minimumEnergy: 300, energyAvailable: this.room.energyCapacityAvailable, ticksToMove: 3, maxParts })
       .add([CARRY])
       .add([WORK], { repeat: true })
       .addMoveIfPossible()
@@ -144,7 +146,7 @@ export class CityRemoteMiners extends City {
   private createReserverCreep(roomName: string) {
     const creepName = utils.getUniqueCreepName('reserver')
 
-    const body = new CreateBody({ minimumEnergy: this.room.energyCapacityAvailable, hasRoads: false, maxParts: { [CLAIM]: 2 } })
+    const body = new CreateBody({ minimumEnergy: this.room.energyCapacityAvailable, maxParts: { [CLAIM]: 2 } })
       .add([CLAIM], { repeat: true })
       .addMoveIfPossible()
       .value()
@@ -178,7 +180,7 @@ export class CityRemoteMiners extends City {
       },
       creepName,
       body,
-      actions: [[CreepCheckStop.name], [CreepRenew.name], [CreepGuard.name]],
+      actions: [[CreepCheckStop.name], [CreepGuard.name]],
       priority: CREEP_PRIORITY.REMOTE_GUARD
     })
 

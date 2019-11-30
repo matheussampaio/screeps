@@ -54,6 +54,18 @@ export class City extends Action {
     this.planner.storagers = value
   }
 
+  protected get repairs(): string[] {
+    if (this.planner.repairs == null) {
+      this.planner.repairs = []
+    }
+
+    return this.planner.repairs
+  }
+
+  protected set repairs(value: string[]) {
+    this.planner.repairs = value
+  }
+
   protected get builders(): string[] {
     if (this.planner.builders == null) {
       this.planner.builders = []
@@ -118,31 +130,31 @@ export class City extends Action {
     return this.map[y * 50 + x]
   }
 
-  protected setPos(x: number, y: number, value: BuildableStructureConstant[], force: boolean = false) {
-    const idx = y * 50 + x
+  // protected setPos(x: number, y: number, value: BuildableStructureConstant[], force: boolean = false) {
+  //   const idx = y * 50 + x
 
-    if (this.map[idx].length === 0 || force) {
-      this.map[y * 50 + x] = value
-      this.costMatrix.set(x, y, value.includes(STRUCTURE_ROAD) ? 1 : Infinity)
-    }
-  }
+  //   if (this.map[idx].length === 0 || force) {
+  //     this.map[y * 50 + x] = value
+  //     this.costMatrix.set(x, y, value.includes(STRUCTURE_ROAD) ? 1 : Infinity)
+  //   }
+  // }
 
-  protected get costMatrix(): CostMatrix {
-    const cm = cms[this.room.name] || (cms[this.room.name] = {})
+  // protected get costMatrix(): CostMatrix {
+  //   const cm = cms[this.room.name] || (cms[this.room.name] = {})
 
-    if (cm.time !== Game.time) {
-      cm.time = Game.time
-      cm.matrix = new PathFinder.CostMatrix()
+  //   if (cm.time !== Game.time) {
+  //     cm.time = Game.time
+  //     cm.matrix = new PathFinder.CostMatrix()
 
-      const roads = this.room.find(FIND_STRUCTURES, {
-        filter: s => s.structureType === STRUCTURE_ROAD
-      })
+  //     const roads = this.room.find(FIND_STRUCTURES, {
+  //       filter: s => s.structureType === STRUCTURE_ROAD
+  //     })
 
-      roads.forEach(road => cm.matrix.set(road.pos.x, road.pos.y, 1))
-    }
+  //     roads.forEach(road => cm.matrix.set(road.pos.x, road.pos.y, 1))
+  //   }
 
-    return cm.matrix
-  }
+  //   return cm.matrix
+  // }
 
   protected get center(): RoomPosition {
     if (this.planner.center == null) {
@@ -181,4 +193,47 @@ export class City extends Action {
   protected isSpawningCreep(creepNames: string[]): boolean {
     return creepNames.some(creepName => this.isCreepNameInQueue(creepName) || (Game.creeps[creepName] && Game.creeps[creepName].spawning))
   }
+
+  protected findLink(hasPos: { x: number, y: number } | undefined | null): StructureLink | ConstructionSite | null {
+    if (hasPos == null) {
+      return null
+    }
+
+    const pos = this.room.getPositionAt(hasPos.x, hasPos.y) as RoomPosition
+
+    const structure = pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_LINK) as StructureLink
+
+    if (structure) {
+      return structure
+    }
+
+    const constructionSite = pos.lookFor(LOOK_CONSTRUCTION_SITES).find(c => c.structureType === STRUCTURE_LINK)
+
+    if (constructionSite) {
+      return constructionSite
+    }
+
+    return null
+  }
+
+  protected search(pos: RoomPosition | RoomPosition[], costMatrix: CostMatrix, range = 1): PathFinderPath {
+    const opts: PathFinderOpts = {
+      roomCallback: (roomName: string): boolean | CostMatrix => {
+        if (roomName === this.room.name) {
+          return costMatrix
+        }
+
+        return false
+      },
+      plainCost: 2,
+      swampCost: 5
+    }
+
+    const positions = _.isArray(pos) ? pos : [pos]
+
+    const goals = positions.map(pos => ({ pos, range }))
+
+    return PathFinder.search(this.center, goals, opts)
+  }
+
 }

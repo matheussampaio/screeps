@@ -2,7 +2,7 @@ import * as _ from 'lodash'
 
 import { ActionsRegistry, ActionResult } from '../../core'
 import { City } from './city'
-import { CreepCheckStop, CreepHarvester, CreepSingleBuilder, CreepSingleHauler, CreepSingleUpgrader, CreepStorager, CreepRenew, CreepMiniBuilder } from '../creep'
+import { CreepCheckStop, CreepRepair, CreepHarvester, CreepSingleBuilder, CreepSingleHauler, CreepSingleUpgrader, CreepStorager, CreepRenew, CreepMiniBuilder } from '../creep'
 import { CreateBody, CREEP_PRIORITY } from '../../utils'
 import { ICityContext } from './interfaces'
 import * as utils from '../../utils'
@@ -12,85 +12,13 @@ export class CityRunner extends City {
   run(context: ICityContext) {
     this.context = context
 
-    // console.log(`S=${this.storage ? (this.storage.store.getUsedCapacity() / this.storage.store.getCapacity() * 100).toFixed(2) : 'XX'}% - C=${(this.controller.progress / this.controller.progressTotal * 100).toFixed(2)}% level=${this.controller.level} creeps=${_.size(Game.creeps)} queue=${this.queue.length}`)
-
-    return this.replanIfNecessary() ||
-      this.maintainStoragers() ||
+    return this.maintainStoragers() ||
       this.maintainHarvestersAndHaulers() ||
       this.maintainUpgraders() ||
       this.maintainBuilders() ||
+      this.maintainRepairs() ||
       this.optimizeUpgraders() ||
       this.waitNextTick()
-  }
-
-  private calculateEficiency({ distance, work, move, carry }: { distance: number, work: number, move: number, carry: number }): number {
-    if (!move || !carry || !work) {
-      return 0
-    }
-
-    const ticksToArriveAtController = (distance - 3) * Math.ceil(work / move)
-    const ticksGettingEnergy = 1500 / (Math.floor(carry * 50 / work) + 1)
-
-    return (1500 - ticksToArriveAtController - ticksGettingEnergy) * work
-  }
-
-  private addPermutation(perms: { [key: string]: number }, body: BodyPartConstant[], distance: number): boolean {
-    const work = body.filter(p => p === WORK).length
-    const move = body.filter(p => p === MOVE).length
-    const carry = body.filter(p => p === CARRY).length
-
-    const index = body.sort().join()
-
-    if (perms[index] != null) {
-      return false
-    }
-
-    perms[index] = this.calculateEficiency({
-      distance,
-      work,
-      move,
-      carry
-    })
-
-    return true
-  }
-
-  private generatePermutations(energy: number, distance: number) {
-    const parts: BodyPartConstant[] = [MOVE, CARRY, WORK]
-    const perms: { [key: string]: number } = {}
-
-    const queue: { energy: number, body: BodyPartConstant[] }[] = [{
-      energy: energy - (BODYPART_COST[MOVE] + BODYPART_COST[CARRY] + BODYPART_COST[WORK]),
-      body: [MOVE, CARRY, WORK]
-    }]
-
-    while (queue.length) {
-      const item = queue.shift()
-
-      if (item == null) {
-        continue
-      }
-
-      this.addPermutation(perms, item.body, distance)
-
-      if (item.body.length >= MAX_CREEP_SIZE) {
-        continue
-      }
-
-      for (const part of parts) {
-        const cost = BODYPART_COST[part]
-
-        if (cost <= item.energy) {
-          const body = [...item.body, part]
-
-          if (this.addPermutation(perms, body, distance)) {
-            queue.push({ energy: item.energy - cost, body })
-          }
-        }
-      }
-    }
-
-    return perms
   }
 
   private createMiniBuilder(): string {
@@ -103,6 +31,22 @@ export class CityRunner extends City {
       .add([CARRY, WORK])
       .value(),
       actions: [[CreepCheckStop.name], [CreepMiniBuilder.name]],
+      priority: CREEP_PRIORITY.BUILDER
+    })
+
+    return creepName
+  }
+
+  private createRepair(): string {
+    const creepName = utils.getUniqueCreepName('repair')
+
+    this.queue.push({
+      memory: {},
+      creepName,
+      body: new CreateBody({ minimumEnergy: this.room.energyCapacityAvailable, ticksToMove: 1 })
+      .add([CARRY, WORK], { repeat: true })
+      .value(),
+      actions: [[CreepCheckStop.name], [CreepRepair.name]],
       priority: CREEP_PRIORITY.BUILDER
     })
 
@@ -198,77 +142,6 @@ export class CityRunner extends City {
     return creepName
   }
 
-  private plan(): void {
-    this.planner.energyCapacityAvailable = this.room.energyCapacityAvailable
-    this.planner.rcl = this.controller.level
-    this.planner.time = Game.time
-
-    // best upgraders body
-    const goal = this.room.find(FIND_MY_SPAWNS).map(source => source.pos)
-    const distance = PathFinder.search(this.controller.pos, goal).path.length
-    const permutations = this.generatePermutations(this.room.energyCapacityAvailable, distance / 3)
-
-    let bestEntry: string = ''
-    let bestEficiency = 0
-
-    for (const key in permutations) {
-      const eficiency = permutations[key]
-
-      if (eficiency > bestEficiency) {
-        bestEficiency = eficiency
-        bestEntry = key
-      }
-    }
-
-    this.upgradersBody = bestEntry.split(',') as BodyPartConstant[]
-
-    const positions = [
-      this.planner.storageLinkPos,
-      ...this.sources.sort((a, b) => b.distance - a.distance).map(s => s.linkPos)
-    ]
-
-    // build sources
-    for (let i = 0; i < CONTROLLER_STRUCTURES[STRUCTURE_LINK][this.controller.level]; i++) {
-      if (!positions.length) {
-        break
-      }
-
-      const hasPos = positions.shift() as { x: number, y: number }
-
-      const link = this.findLink(hasPos)
-
-      if (link == null) {
-        const pos = this.room.getPositionAt(hasPos.x, hasPos.y) as RoomPosition
-
-        this.room.createConstructionSite(pos, STRUCTURE_LINK)
-
-        break
-      }
-    }
-  }
-
-  private findLink(hasPos: { x: number, y: number } | undefined | null): StructureLink | ConstructionSite | null {
-    if (hasPos == null) {
-      return null
-    }
-
-    const pos = this.room.getPositionAt(hasPos.x, hasPos.y) as RoomPosition
-
-    const structure = pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_LINK) as StructureLink
-
-    if (structure) {
-      return structure
-    }
-
-    const constructionSite = pos.lookFor(LOOK_CONSTRUCTION_SITES).find(c => c.structureType === STRUCTURE_LINK)
-
-    if (constructionSite) {
-      return constructionSite
-    }
-
-    return null
-  }
-
   private maintainUpgraders(): ActionResult | null {
     if (this.upgraders == null) {
       this.upgraders = []
@@ -343,13 +216,31 @@ export class CityRunner extends City {
     return null
   }
 
-  private replanIfNecessary(): null {
-    const extensionConstructed = this.room.energyCapacityAvailable !== this.planner.energyCapacityAvailable
-    const rclChanged = this.planner.rcl !== this.controller.level
-    const time = Game.time - (this.planner.time || 0) >= 1000
+  private maintainRepairs(): ActionResult | null {
+    const towers = this.room.find(FIND_MY_STRUCTURES, {
+      filter: s => s.structureType === STRUCTURE_TOWER
+    })
 
-    if (extensionConstructed || rclChanged || time) {
-      this.plan()
+    if (towers.length || this.isSpawningCreep(this.repairs)) {
+      return this.waitNextTick()
+    }
+
+    this.repairs = this.repairs.filter((creepName: string) => Game.creeps[creepName] != null || this.isCreepNameInQueue(creepName))
+
+    if (this.repairs.length) {
+      return null
+    }
+
+    const repairStructures = this.room.find(FIND_STRUCTURES, {
+      filter: s => s.structureType !== STRUCTURE_WALL && s.structureType !== STRUCTURE_RAMPART && s.hits < s.hitsMax
+    })
+
+    if (repairStructures.length) {
+      const creepName = this.createRepair()
+
+      this.repairs.push(creepName)
+
+      return this.waitNextTick()
     }
 
     return null
@@ -476,7 +367,7 @@ export class CityRunner extends City {
         .filter((creep: Creep | undefined) => creep)
         .find((creep: Creep) => creep.ticksToLive as number <= creep.body.length * CREEP_SPAWN_TIME + source.distance)
 
-      if (harvesterDieing && !harvesterDieing.memory.replacementOnTheWay) {
+      if (harvesterDieing && !harvesterDieing.memory.replacementOnTheWay && currentWorkParts <= source.desiredWorkParts) {
         harvesterDieing.memory.replacementOnTheWay = true
 
         const memory: any = { source: source.id }
