@@ -27,11 +27,25 @@ export function getNeighborsPositions(pos: RoomPosition, { range = 1, closeToExi
   return positions.filter(pos => !isPositionCloseToExit(pos))
 }
 
-export function isExitPosition(pos: RoomPosition | { x: number, y: number }): boolean {
-  return pos.x === 0 || pos.y === 0 || pos.x === 49 || pos.y === 49
+export function isExitPosition(pos: RoomPosition): boolean {
+  if (pos.x > 0 && pos.y > 0 && pos.x < 49 && pos.y < 49) {
+    return false
+  }
+
+  const room = Game.rooms[pos.roomName]
+
+  // if we don't have vision of the room, everything in ther border is assumed
+  // as an exit
+  if (room == null) {
+    return true
+  }
+
+  const terrain = room.getTerrain()
+
+  return !(terrain.get(pos.x, pos.y) & TERRAIN_MASK_WALL)
 }
 
-export function isPositionCloseToExit(pos: RoomPosition | { x: number, y: number }): boolean {
+export function isPositionCloseToExit(pos: RoomPosition): boolean {
   if (isExitPosition(pos)) {
     return true
   }
@@ -41,7 +55,7 @@ export function isPositionCloseToExit(pos: RoomPosition | { x: number, y: number
     return false
   }
 
-  const neighbors = getNeighborsCoords(pos.x, pos.y, 1)
+  const neighbors = getNeighborsPositions(pos)
 
   return neighbors.some(p => isExitPosition(p))
 }
