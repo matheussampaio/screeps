@@ -65,7 +65,23 @@ export class CreepRemoteHarvester extends CreepAction {
               return PathFinder.CostMatrix.deserialize(costMatrix)
             }
 
-            return new PathFinder.CostMatrix()
+            const room = Game.rooms[roomName]
+
+            const costMatrix =  new PathFinder.CostMatrix()
+
+            if (room) {
+              room.find(FIND_STRUCTURES, {
+                filter: s => s.structureType === STRUCTURE_ROAD
+              })
+              .forEach(s => costMatrix.set(s.pos.x, s.pos.y, 1))
+
+              room.find(FIND_CONSTRUCTION_SITES, {
+                filter: s => s.structureType === STRUCTURE_ROAD
+              })
+              .forEach(s => costMatrix.set(s.pos.x, s.pos.y, 1))
+            }
+
+            return costMatrix
           },
           plainCost: 2,
           swampCost: 5
