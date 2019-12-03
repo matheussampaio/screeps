@@ -98,7 +98,7 @@ export class ActionTreeRunner {
   private static run() {
     ActionTreeRunner.logger.debug('ActionTreeRunner::run::start')
 
-    while (ActionTreeRunner.queue.length) {
+    while (ActionTreeRunner.queue.length && Game.cpu.bucket >= 500) {
       const process: Process | undefined = ActionTreeRunner.queue.shift()
 
       if (process) {

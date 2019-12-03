@@ -11,7 +11,7 @@ export class CityBuilder extends City {
     this.context = context
 
     if (this.map == null) {
-      return this.waitNextTick()
+      return this.sleep(50)
     }
 
     if (_.size(Game.constructionSites) >= MAX_CONSTRUCTION_SITES) {
@@ -23,19 +23,19 @@ export class CityBuilder extends City {
     }).length
 
     if (constructionSites) {
-      return this.sleep(5)
+      return this.sleep(50)
     }
 
     if (this.createConstructionSites()) {
-      return this.waitNextTick()
+      return this.sleep(50)
     }
 
     if (this.pruneStructuresMissplaced()) {
-      return this.waitNextTick()
+      return this.sleep(50)
     }
 
     if (this.createLinks()) {
-      return this.waitNextTick()
+      return this.sleep(50)
     }
 
     return this.sleep(50)
