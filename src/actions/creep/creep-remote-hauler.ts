@@ -38,6 +38,10 @@ export class CreepRemoteHaulerMaintainRoad extends CreepAction {
       return this.waitNextTick()
     }
 
+    if (this.creep.room.name === this.room.name) {
+      return this.waitNextTick()
+    }
+
     const roadConstruction = this.creep.room.find(FIND_CONSTRUCTION_SITES, {
       filter: s => s.my && s.structureType === STRUCTURE_ROAD
     })

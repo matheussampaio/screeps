@@ -61,6 +61,8 @@ export class CityDefense extends City {
       return this.waitNextTick()
     }
 
+    const isStorageAlmostFull = this.storage && this.storage.store.getFreeCapacity() <= 20000
+
     const wallsHP: { [level: number]: number } = {
       1: 5000,
       2: 5000,
@@ -83,7 +85,7 @@ export class CityDefense extends City {
     const controller = this.room.controller as StructureController
 
     const walls = this.room.find(FIND_STRUCTURES, {
-      filter: r => (r.structureType === STRUCTURE_WALL || r.structureType === STRUCTURE_RAMPART) && r.hits < wallsHP[controller.level]
+      filter: r => (r.structureType === STRUCTURE_WALL || r.structureType === STRUCTURE_RAMPART) && r.hits < (isStorageAlmostFull ? Infinity : wallsHP[controller.level])
     }) as (StructureWall | StructureRampart)[]
 
     if (walls.length) {

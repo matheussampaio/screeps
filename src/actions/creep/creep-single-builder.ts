@@ -20,8 +20,15 @@ export class CreepSingleBuilder extends CreepAction {
     const target: any = this.getConstructionTarget()
 
     if (target == null) {
-      return this.unshiftAndContinue(CreepRecycle.name)
+      if (this.context.alreadyWaited) {
+        return this.unshiftAndContinue(CreepRecycle.name)
+      } else {
+        this.context.alreadyWaited = true
+        return this.sleep(5)
+      }
     }
+
+    delete this.context.alreadyWaited
 
     if (this.creep.pos.inRangeTo(target, 3)) {
       this.creep.build(target)
@@ -175,5 +182,3 @@ export class CreepSingleBuilderGetEnergy extends Action {
     return null
   }
 }
-
-

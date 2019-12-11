@@ -5,6 +5,18 @@ import { ICityContext } from './interfaces'
 import { City } from './city'
 import * as utils from '../../utils'
 
+interface ConstructionSiteCache {
+  tick: number
+  rooms: {
+    [roomName: string]: ConstructionSite[]
+  }
+}
+
+const _cache: ConstructionSiteCache = {
+  tick: 0,
+  rooms: {}
+}
+
 @ActionsRegistry.register
 export class CityBuilder extends City {
   run(context: ICityContext) {
@@ -18,12 +30,8 @@ export class CityBuilder extends City {
       return this.sleep(50)
     }
 
-    const constructionSites = this.room.find(FIND_MY_CONSTRUCTION_SITES, {
-      filter: s => s.structureType !== STRUCTURE_CONTAINER
-    }).length
-
-    if (constructionSites) {
-      return this.sleep(50)
+    if (this.constructionSites.length) {
+      return this.sleep(Math.max(...this.constructionSites.map(s => (s.progressTotal - s.progressTotal) / 25)))
     }
 
     if (this.createConstructionSites()) {
@@ -39,6 +47,15 @@ export class CityBuilder extends City {
     }
 
     return this.sleep(50)
+  }
+
+  private get constructionSites(): ConstructionSite[] {
+    if (_cache.tick !== Game.time) {
+      _cache.tick = Game.time
+      _cache.rooms = _.groupBy(Game.constructionSites, 'room.name')
+    }
+
+    return _cache.rooms[this.room.name] || []
   }
 
   private createLinks(): boolean {
@@ -67,18 +84,18 @@ export class CityBuilder extends City {
   }
 
   private pruneStructuresMissplaced(): boolean {
-    return this.prune(STRUCTURE_ROAD, 10) ||
-      this.prune(STRUCTURE_EXTENSION, 1) ||
-      this.prune(STRUCTURE_TOWER, 1) ||
-      this.prune(STRUCTURE_STORAGE, 1) ||
-      this.prune(STRUCTURE_LINK, 1) ||
-      this.prune(STRUCTURE_TERMINAL, 1) ||
-      this.prune(STRUCTURE_LAB, 1) ||
-      this.prune(STRUCTURE_WALL, 50) ||
-      this.prune(STRUCTURE_RAMPART, 50)
+    return this.prune(STRUCTURE_ROAD) ||
+      this.prune(STRUCTURE_WALL) ||
+      this.prune(STRUCTURE_RAMPART) ||
+      this.prune(STRUCTURE_EXTENSION) ||
+      this.prune(STRUCTURE_TOWER) ||
+      this.prune(STRUCTURE_LINK) ||
+      this.prune(STRUCTURE_TERMINAL) ||
+      this.prune(STRUCTURE_LAB) ||
+      this.prune(STRUCTURE_STORAGE)
   }
 
-  private prune(structureType: BuildableStructureConstant, maxPrune = 100): boolean {
+  private prune(structureType: BuildableStructureConstant, maxPrune = Infinity): boolean {
     const structures = this.room.find(FIND_STRUCTURES, {
       filter: s => s.structureType === structureType
     })
@@ -145,40 +162,44 @@ export class CityBuilder extends City {
     }
 
     const structures = this.room.find(FIND_STRUCTURES)
-    const sites = this.room.find(FIND_CONSTRUCTION_SITES)
+
+    const positions = this.findStructuresToBeConstructed()
 
     for (const structureType of constructionOrder) {
-      const structureCounter = structures.filter(s => s.structureType === structureType).length + sites.filter(s => s.structureType === structureType).length
+      const structureCounter = structures.filter(s => s.structureType === structureType).length + this.constructionSites.filter(s => s.structureType === structureType).length
 
-      if (structureCounter < CONTROLLER_STRUCTURES[structureType][this.controller.level]) {
-        const positions = this.findStructuresToBeConstructed(structureType)
+      if (structureCounter >= CONTROLLER_STRUCTURES[structureType][this.controller.level]) {
+        continue
+      }
 
-        for (const pos of positions) {
-          this.room.createConstructionSite(pos.x, pos.y, structureType)
+      const constructionSitesPositions = positions.filter(e => e.structureType === structureType)
 
-          if (structureType !== STRUCTURE_WALL && structureType !== STRUCTURE_EXTRACTOR && structureType !== STRUCTURE_RAMPART) {
-            const costMatrix = PathFinder.CostMatrix.deserialize(this.planner.costMatrix)
+      for (const site of constructionSitesPositions) {
+        this.room.createConstructionSite(site.pos.x, site.pos.y, structureType)
 
-            const result = this.search(pos, costMatrix)
+        if (structureType !== STRUCTURE_WALL && structureType !== STRUCTURE_EXTRACTOR && structureType !== STRUCTURE_RAMPART) {
+          const costMatrix = PathFinder.CostMatrix.deserialize(this.planner.costMatrix)
 
-            if (!result.incomplete) {
-              for (const pos of result.path) {
-                this.room.createConstructionSite(pos.x, pos.y, STRUCTURE_ROAD)
-              }
+          const result = this.search(site.pos, costMatrix)
+
+          if (!result.incomplete) {
+            for (const pos of result.path) {
+              this.room.createConstructionSite(pos.x, pos.y, STRUCTURE_ROAD)
             }
           }
         }
+      }
 
-        if (positions.length) {
-          return true
-        }
+      if (constructionSitesPositions.length) {
+        console.log('created', structureType, positions)
+        return true
       }
     }
 
     return false
   }
 
-  private findStructuresToBeConstructed(structureType: BuildableStructureConstant): RoomPosition[] {
+  private findStructuresToBeConstructed(): { pos: RoomPosition, structureType: BuildableStructureConstant }[] {
     const queue = [this.center]
     const visited = Array(50 * 50).fill(0)
 
@@ -201,34 +222,36 @@ export class CityBuilder extends City {
 
       const { x, y } = pos
 
-      const st = this.getPos(x, y)
+      const structuresToBeConstructed = this.getPos(x, y)
 
-      if (!st.includes(structureType)) {
-        continue
-      }
+      for (const structureType of structuresToBeConstructed) {
+        const result = this.room.lookAt(x, y)
 
-      const result = this.room.lookAt(x, y)
+        const alreadyConstructed = result.find(item => item.structure && item.structure.structureType === structureType)
 
-      const alreadyConstructed = result.find(item => item.structure && item.structure.structureType === structureType)
-
-      if (alreadyConstructed) {
-        continue
-      }
-
-      if (structureType === STRUCTURE_CONTAINER) {
-        const sources = this.room.find(FIND_SOURCES)
-
-        const isHarvesterContainer = sources.some(source => source.pos.isNearTo(pos))
-
-        if (!isHarvesterContainer) {
+        if (alreadyConstructed) {
           continue
         }
-      }
 
-      if (structureType !== STRUCTURE_WALL && structureType !== STRUCTURE_RAMPART) {
-        return [pos]
-      } else {
-        positions.push(pos)
+        if (structureType !== STRUCTURE_ROAD && structureType !== STRUCTURE_RAMPART) {
+          const hasAConstructionThere = result.find(item => item.structure && item.structure.structureType !== structureType)
+
+          if (hasAConstructionThere) {
+            continue
+          }
+        }
+
+        if (structureType === STRUCTURE_CONTAINER) {
+          const sources = this.room.find(FIND_SOURCES)
+
+          const isHarvesterContainer = sources.some(source => source.pos.isNearTo(pos))
+
+          if (!isHarvesterContainer) {
+            continue
+          }
+        }
+
+        positions.push({ pos, structureType })
       }
     }
 
