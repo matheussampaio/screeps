@@ -27,10 +27,10 @@ export class CreepSingleHauler extends CreepAction {
       return this.waitNextTick()
     }
 
-    if (this.creep.pos.inRangeTo(this.controller, 2)) {
+    if (this.creep.pos.inRangeTo(this.controller, 3)) {
       this.creep.drop(RESOURCE_ENERGY)
     } else {
-      this.creep.travelTo(this.controller, { range: 1, ignoreCreeps: true })
+      this.creep.travelTo(this.controller, { range: 3, ignoreCreeps: true })
     }
 
     return this.waitNextTick()
