@@ -99,9 +99,9 @@ export class CreepRemoteHarvester extends CreepAction {
               if (structures.indexOf(STRUCTURE_ROAD) === -1) {
                 structures.push(STRUCTURE_ROAD)
               }
-            } else {
-              pos.createConstructionSite(STRUCTURE_ROAD)
             }
+          
+            pos.createConstructionSite(STRUCTURE_ROAD)
           })
       } else {
         console.log('PATH INCOMPLETE')
