@@ -89,19 +89,20 @@ export class CreepRemoteHarvester extends CreepAction {
       )
 
       if (!result.incomplete) {
-        // for (let i = 1; i < result.path.length; i++) {
-        //   const from = result.path[i - 1]
-        //   const to = result.path[i]
-
-        //   if (from.roomName === to.roomName) {
-        //     const room = Game.rooms[from.roomName]
-
-        //     room.visual.line(from.x, from.y, to.x, to.y, { color: 'green' })
-        //   }
-        // }
-
         result.path
-          .forEach(pos => pos.createConstructionSite(STRUCTURE_ROAD))
+          .forEach(pos => {
+            const room = Game.rooms[pos.roomName]
+
+            if (room && room.memory.map) {
+              const structures = room.memory.map[pos.y * 50 + pos.x]
+
+              if (structures.indexOf(STRUCTURE_ROAD) === -1) {
+                structures.push(STRUCTURE_ROAD)
+              }
+            } else {
+              pos.createConstructionSite(STRUCTURE_ROAD)
+            }
+          })
       } else {
         console.log('PATH INCOMPLETE')
       }
