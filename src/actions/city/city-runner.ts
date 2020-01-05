@@ -323,13 +323,13 @@ export class CityRunner extends City {
         continue
       }
 
-      const currentWorkParts: number = Math.min(this.OPTIMUM_WORK_PARTS_PER_SOURCE, utils.getActiveBodyPartsFromName(source.harvesters, WORK))
+      const currentWorkParts: number = utils.getActiveBodyPartsFromName(source.harvesters, WORK)
       const currentCarryParts: number = utils.getActiveBodyPartsFromName(source.haulers, CARRY)
 
       // While the Hauler is traveling from source to storage and back, the
       // Harvester should produce: WORK_PARTS * HARVEST_POWER * DISTANCE * 2
       // Our Haulers should have enough CARRY parts to carry all that energy.
-      const energyProduced = source.distance * currentWorkParts * HARVEST_POWER * 2
+      const energyProduced = source.distance * Math.min(this.OPTIMUM_WORK_PARTS_PER_SOURCE, currentWorkParts) * HARVEST_POWER * 2
 
       source.desiredCarryParts = energyProduced / CARRY_CAPACITY
 
