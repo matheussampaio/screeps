@@ -95,7 +95,11 @@ export class CreepHarvester extends CreepAction {
 
     // try to create or find an existing container
     if (container == null) {
-      return null
+      const { x, y } = this.context.containerPos
+
+      this.creep.room.createConstructionSite(x, y, STRUCTURE_CONTAINER)
+
+      return this.waitNextTick()
     }
 
     this.context.container = container.id
@@ -138,22 +142,14 @@ export class CreepHarvester extends CreepAction {
     const structure = pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === structureType) as any
 
     if (structure) {
-      // this.context[prop] = structure.id
-
       return structure
     }
 
     const constructionSite = pos.lookFor(LOOK_CONSTRUCTION_SITES).find(c => c.structureType === structureType)
 
     if (constructionSite) {
-      // this.context[prop] = constructionSite.id
-
       return constructionSite
     }
-
-    // if (create) {
-    //   this.creep.room.createConstructionSite(hasPos.x, hasPos.y, structureType)
-    // }
 
     return null
   }

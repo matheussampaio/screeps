@@ -128,6 +128,15 @@ export class City extends Action {
     return this.map[y * 50 + x]
   }
 
+  protected setPos(costMatrix: CostMatrix, x: number, y: number, value: BuildableStructureConstant[], force: boolean = false) {
+    const idx = y * 50 + x
+
+    if (this.map[idx].length === 0 || force) {
+      this.map[y * 50 + x] = value
+      costMatrix.set(x, y, value.includes(STRUCTURE_ROAD) ? 1 : Infinity)
+    }
+  }
+
   protected get center(): RoomPosition {
     if (this.planner.center == null) {
       const queue = utils.getEmptySpacesAroundPosition(this.controller.pos, { range: 3, closeToExits: false })

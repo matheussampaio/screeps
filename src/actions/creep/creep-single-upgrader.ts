@@ -13,10 +13,6 @@ export class CreepSingleUpgrader extends CreepAction {
       return this.waitNextTick()
     }
 
-    if (this.controller.level === 8 && CONTROLLER_DOWNGRADE[8] - this.controller.ticksToDowngrade <= 200) {
-      return this.waitNextTick()
-    }
-
     if (!this.creep.pos.inRangeTo(this.controller, 3)) {
       this.creep.travelTo(this.controller, { range: 3, ignoreCreeps: true })
       return this.waitNextTick()

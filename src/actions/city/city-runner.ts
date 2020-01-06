@@ -77,7 +77,7 @@ export class CityRunner extends City {
         energy: this.room.energyCapacityAvailable
       },
       creepName,
-      body: this.controller.level === 8 ? [MOVE, CARRY, WORK] : this.upgradersBody,
+      body: this.controller.level === 8 ? [MOVE, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK] : this.upgradersBody,
       actions: [[CreepCheckStop.name], [CreepSingleUpgrader.name], [CreepRenew.name]],
       priority: CREEP_PRIORITY.UPGRADER
     })

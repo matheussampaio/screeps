@@ -138,7 +138,7 @@ export class CityBuilder extends City {
     const constructionOrder: BuildableStructureConstant[] = []
 
     if (this.controller.level >= 2) {
-      constructionOrder.push(STRUCTURE_CONTAINER, STRUCTURE_EXTENSION)
+      constructionOrder.push(STRUCTURE_EXTENSION)
     }
 
     if (this.controller.level >= 3) {
@@ -146,7 +146,7 @@ export class CityBuilder extends City {
     }
 
     if (this.controller.level >= 4) {
-      constructionOrder.push(STRUCTURE_STORAGE)
+      constructionOrder.push(STRUCTURE_STORAGE, STRUCTURE_ROAD)
     }
 
     if (this.controller.level >= 6) {
@@ -185,13 +185,18 @@ export class CityBuilder extends City {
           if (!result.incomplete) {
             for (const pos of result.path) {
               this.room.createConstructionSite(pos.x, pos.y, STRUCTURE_ROAD)
+
+              const structures = this.map[pos.y * 50 + pos.x]
+
+              if (structures.indexOf(STRUCTURE_ROAD) === -1) {
+                structures.push(STRUCTURE_ROAD)
+              }
             }
           }
         }
       }
 
       if (constructionSitesPositions.length) {
-        console.log('created', structureType, positions)
         return true
       }
     }
@@ -237,16 +242,6 @@ export class CityBuilder extends City {
           const hasAConstructionThere = result.find(item => item.structure && item.structure.structureType !== structureType)
 
           if (hasAConstructionThere) {
-            continue
-          }
-        }
-
-        if (structureType === STRUCTURE_CONTAINER) {
-          const sources = this.room.find(FIND_SOURCES)
-
-          const isHarvesterContainer = sources.some(source => source.pos.isNearTo(pos))
-
-          if (!isHarvesterContainer) {
             continue
           }
         }
