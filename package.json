@@ -39,7 +39,7 @@
     "dotenv": "8.2.0",
     "gulp": "4.0.2",
     "gulp-screeps": "1.0.8",
-    "lodash": "3.10.1",
+    "lodash": "4.17.19",
     "nodemon": "1.19.4",
     "prettier": "1.19.1",
     "rollup": "1.27.0",
