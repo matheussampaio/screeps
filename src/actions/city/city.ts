@@ -118,7 +118,7 @@ export class City extends Action {
 
   protected get map(): BuildableStructureConstant[][] {
     if (this.room.memory.map == null) {
-      this.room.memory.map = this.planner.map || Array(50 * 50).fill([])
+      this.room.memory.map = Array(50 * 50).fill([])
     }
 
     return this.room.memory.map

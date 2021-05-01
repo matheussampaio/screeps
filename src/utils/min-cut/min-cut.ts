@@ -64,7 +64,7 @@ export class MinCut {
       for (let x = r.x1; x < r.x2 + 1; x++) {
         for (let y = r.y1; y < r.y2 + 1; y++) {
           const neighborToToExit = surr.map(([dx, dy]) => [x + dx, y + dy])
-            .some(([dx, dy]) => room2d[dx][dy] === RoomCellType.TO_EXIT)
+            .some(([dx, dy]) => room2d[dx] != null && room2d[dx][dy] === RoomCellType.TO_EXIT)
 
           if (x === r.x1 || x === r.x2 || y === r.y1 || y === r.y2 || neighborToToExit) {
             if (room2d[x][y] === RoomCellType.NORMAL) {
@@ -73,7 +73,6 @@ export class MinCut {
           } else {
             room2d[x][y] = RoomCellType.UNWALKABLE
           }
-
         }
       }
     }

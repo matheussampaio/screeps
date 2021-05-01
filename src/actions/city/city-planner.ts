@@ -14,7 +14,7 @@ export class CityPlanner extends City {
 
     this.resetMapIfFlag()
 
-    if (this.planner.map == null) {
+    if (this.room.memory.map == null) {
       return this.unshiftAndContinue(CityPlannerStructure.name, CityPlannerCreate.name)
     }
 
@@ -162,7 +162,7 @@ export class CityPlanner extends City {
     if (flag && flag.room && flag.room.name === this.context.roomName) {
       flag.remove()
 
-      delete this.context.planner.map
+      delete this.room.memory.map
     }
   }
 }
@@ -334,6 +334,7 @@ export class CityPlannerCreate extends CityPlanner {
       [[0, 0], [-1, 0], [1, 0], [0, -1]],
     ]
 
+
     for (let x = 1; x < 49; x++) {
       for (let y = 1; y < 49; y++) {
         const arrow = arrowCoordsDx.some(coords => coords.every(([dx, dy]) => costMatrix.get(x + dx, y + dy) === 1))
@@ -407,7 +408,7 @@ export class CityPlannerCreate extends CityPlanner {
       for (let y = 0; y < 50; y++) {
         const value = this.getPos(x, y)
 
-        if (value.length && !value.includes(STRUCTURE_ROAD) && !value.includes(STRUCTURE_LINK) &&!value.includes(STRUCTURE_CONTAINER) && !value.includes(STRUCTURE_EXTRACTOR)) {
+        if (value.length && !value.includes(STRUCTURE_ROAD) && !value.includes(STRUCTURE_LINK) && !value.includes(STRUCTURE_CONTAINER) && !value.includes(STRUCTURE_EXTRACTOR)) {
           protectedArea.push({ x1: x - 1, y1: y - 1, x2: x + 1, y2: y + 1})
         }
       }
