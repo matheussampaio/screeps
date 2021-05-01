@@ -139,12 +139,8 @@ export class CreateBody {
     const newBody = this.test()
 
     if (body.sort().toString() !== _.clone(newBody).sort().toString()) {
-      console.log('body', body)
-      console.log('newbody', newBody)
       throw new Error(`ERROR, body is different ${this.human()}`)
     }
-
-    // console.log(this.test())
 
     return newBody
   }
