@@ -4,6 +4,18 @@ import { ActionsRegistry, Action } from '../../core'
 import { CreepRecycle } from './creep-recycle'
 import { CreepAction } from './creep-action'
 
+const STRUCTURE_TYPE_ORDER: { [key: string]: number } = {
+  [STRUCTURE_EXTENSION]: 0,
+  [STRUCTURE_SPAWN]: 1,
+  [STRUCTURE_CONTAINER]: 2,
+  [STRUCTURE_TOWER]: 3,
+  [STRUCTURE_ROAD]: 7,
+  [STRUCTURE_WALL]: 4,
+  [STRUCTURE_RAMPART]: 5,
+  [STRUCTURE_STORAGE]: 6,
+  [STRUCTURE_LINK]: 8
+}
+
 @ActionsRegistry.register
 export class CreepSingleBuilder extends CreepAction {
   run(context: any) {
@@ -53,17 +65,11 @@ export class CreepSingleBuilder extends CreepAction {
     const targets = this.room.find(FIND_MY_CONSTRUCTION_SITES, {
       filter: s => s.structureType !== STRUCTURE_WALL && s.structureType !== STRUCTURE_RAMPART
     }).sort((c1, c2) => {
-      // build smaller contructions first
-      if (c1.progressTotal !== c2.progressTotal) {
-        return c1.progressTotal - c2.progressTotal
-      }
-
-      // build constructions closer to finish
-      if (c1.progress !== c2.progress) {
+      if (c1.structureType === c2.structureType) {
         return c2.progress - c1.progress
       }
 
-      return c1.pos.getRangeTo(this.creep) - c2.pos.getRangeTo(this.creep)
+      return STRUCTURE_TYPE_ORDER[c1.structureType] - STRUCTURE_TYPE_ORDER[c2.structureType]
     })
 
     if (targets.length === 0) {
