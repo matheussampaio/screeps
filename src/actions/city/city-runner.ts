@@ -263,7 +263,7 @@ export class CityRunner extends City {
       return this.waitNextTick()
     }
 
-    if (this.builders.length === 0 && constructionSites.find(c => c.structureType !== STRUCTURE_WALL && c.structureType !== STRUCTURE_RAMPART)) {
+    if (this.builders.length < 3 && constructionSites.find(c => c.structureType !== STRUCTURE_WALL && c.structureType !== STRUCTURE_RAMPART)) {
       const creepName = this.createBuilder()
 
       this.builders.push(creepName)
