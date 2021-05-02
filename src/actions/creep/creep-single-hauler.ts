@@ -13,7 +13,7 @@ export class CreepSingleHauler extends CreepAction {
       return this.unshiftAndContinue(CreepSingleHaulerGetEnergy.name)
     }
 
-    const target: StructureSpawn | StructureExtension | StructureStorage | StructureTower | StructureContainer | null = this.findTransferTarget()
+    const target: StructureSpawn | StructureExtension | StructureStorage | StructureTower | StructureContainer | Creep | null = this.findTransferTarget()
 
     if (target) {
       return this.unshiftAndContinue(CreepSingleHaulerTransfer.name)
@@ -36,14 +36,14 @@ export class CreepSingleHauler extends CreepAction {
     return this.waitNextTick()
   }
 
-  findTransferTarget(): StructureExtension | StructureTower | StructureSpawn | StructureStorage | StructureContainer | null {
+  findTransferTarget(): StructureExtension | StructureTower | StructureSpawn | StructureStorage | StructureContainer | Creep | null {
     if (this.storage && this.storage.isActive() && this.storage.store.getFreeCapacity(RESOURCE_ENERGY)) {
       this.context.target = this.storage.id as string
       return this.storage
     }
 
     if (this.context.target) {
-      const target: StructureSpawn | StructureExtension | StructureStorage | null = Game.getObjectById(this.context.target)
+      const target: StructureSpawn | StructureExtension | null = Game.getObjectById(this.context.target)
 
       if (target && target.isActive() && target.store.getFreeCapacity(RESOURCE_ENERGY)) {
         return target
@@ -64,21 +64,23 @@ export class CreepSingleHauler extends CreepAction {
 
     const extension: StructureExtension | null = this.creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
       filter: (s: StructureExtension) => {
-        return s.structureType === STRUCTURE_EXTENSION && s.isActive() && s.store.getFreeCapacity(RESOURCE_ENERGY)
+        return s.structureType === STRUCTURE_EXTENSION && s.isActive() && s.store.getFreeCapacity(RESOURCE_ENERGY) && !this.isReserved(s.id)
       }
     }) as StructureExtension | null
 
     if (extension) {
       this.context.target = extension.id as string
+      this.markReserved(extension.id)
       return extension
     }
 
     const spawn: StructureSpawn | null = this.creep.pos.findClosestByPath(FIND_MY_SPAWNS, {
-      filter: (s: StructureSpawn) => s.isActive() && s.store.getFreeCapacity(RESOURCE_ENERGY)
+      filter: (s: StructureSpawn) => s.isActive() && s.store.getFreeCapacity(RESOURCE_ENERGY) && !this.isReserved(s.id)
     })
 
     if (spawn) {
       this.context.target = spawn.id as string
+      this.markReserved(spawn.id)
       return spawn
     }
 
@@ -92,6 +94,17 @@ export class CreepSingleHauler extends CreepAction {
       this.context.target = tower.id as string
 
       return tower
+    }
+
+    const creep: Creep | null = this.creep.pos.findClosestByPath(FIND_MY_CREEPS, {
+      filter: (c: Creep) => c.name.includes('builder') && !this.isReserved(c.id) && c.store.getFreeCapacity(RESOURCE_ENERGY)
+    })
+
+    if (creep) {
+      this.context.target = creep.id as string
+      this.markReserved(creep.id)
+
+      return creep
     }
 
     if (this.controller) {
@@ -110,6 +123,30 @@ export class CreepSingleHauler extends CreepAction {
 
     return null
   }
+
+  protected isReserved(id: string): boolean {
+    if (this.room.memory.reserved == null) {
+      this.room.memory.reserved = {}
+    }
+
+    return this.room.memory.reserved[id] != null && Game.creeps[this.room.memory.reserved[id]] != null
+  }
+
+  protected markReserved(id: string): void {
+    if (this.room.memory.reserved == null) {
+      this.room.memory.reserved = {}
+    }
+
+    this.room.memory.reserved[id] = this.creep.name
+  }
+
+  protected clearReserved(id: string): void {
+    if (this.room.memory.reserved == null) {
+      this.room.memory.reserved = {}
+    }
+
+    delete this.room.memory.reserved[id]
+  }
 }
 
 @ActionsRegistry.register
@@ -117,10 +154,15 @@ export class CreepSingleHaulerTransfer extends CreepSingleHauler {
   run(context: ICreepContext) {
     this.context = context
 
-    const target: StructureSpawn | StructureExtension | StructureStorage | StructureTower | null = Game.getObjectById(this.context.target as string)
+    const target: StructureSpawn | StructureExtension | StructureStorage | StructureTower | Creep | null = Game.getObjectById(this.context.target as string)
 
     if (target == null || !target.store.getFreeCapacity(RESOURCE_ENERGY)) {
       delete this.context.target
+
+      if (target != null) {
+        this.clearReserved(target.id)
+      }
+
       return this.shiftAndContinue()
     }
 
@@ -130,6 +172,8 @@ export class CreepSingleHaulerTransfer extends CreepSingleHauler {
     }
 
     this.creep.transfer(target, RESOURCE_ENERGY)
+
+    this.clearReserved(target.id)
 
     delete this.context.target
 

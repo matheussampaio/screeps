@@ -14,6 +14,9 @@ declare global {
   interface RoomMemory {
     PID: number
     map: BuildableStructureConstant[][]
+    reserved: {
+      [k: string]: string
+    }
   }
 }
 

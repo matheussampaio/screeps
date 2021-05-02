@@ -73,6 +73,8 @@ export class CreepStorager extends CreepAction {
     // if close to an empty structure, transfer energy to it
     if (emptyStructures.length) {
       this.creep.transfer(emptyStructures[0], RESOURCE_ENERGY)
+
+      this.clearReserved(emptyStructures[0].id)
     }
 
     // if there is another empty structure nearby, wait to fill it next tick
@@ -85,6 +87,10 @@ export class CreepStorager extends CreepAction {
     if (target == null || !target.store.getFreeCapacity(RESOURCE_ENERGY)) {
       delete this.context.target
 
+      if (target != null) {
+        this.clearReserved(target.id)
+      }
+
       // if there is no empty structure near by (or just one, since this one will be filled above), start moving to the next one
       const nextStructure = this.creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
         ignoreCreeps: true,
@@ -94,12 +100,17 @@ export class CreepStorager extends CreepAction {
             return false
           }
 
+          if (this.isReserved(s.id)) {
+            return false
+          }
+
           return (s.structureType === STRUCTURE_EXTENSION || s.structureType === STRUCTURE_SPAWN) && s.store.getFreeCapacity(RESOURCE_ENERGY) && s.isActive()
         }
       })
 
       if (nextStructure) {
         this.context.target = nextStructure.id
+        this.markReserved(nextStructure.id)
       }
     }
 
@@ -152,6 +163,30 @@ export class CreepStorager extends CreepAction {
     }
 
     return this.waitNextTick()
+  }
+
+  protected isReserved(id: string): boolean {
+    if (this.room.memory.reserved == null) {
+      this.room.memory.reserved = {}
+    }
+
+    return this.room.memory.reserved[id] != null && Game.creeps[this.room.memory.reserved[id]] != null
+  }
+
+  protected markReserved(id: string): void {
+    if (this.room.memory.reserved == null) {
+      this.room.memory.reserved = {}
+    }
+
+    this.room.memory.reserved[id] = this.creep.name
+  }
+
+  protected clearReserved(id: string): void {
+    if (this.room.memory.reserved == null) {
+      this.room.memory.reserved = {}
+    }
+
+    delete this.room.memory.reserved[id]
   }
 
   protected get hasEnergy(): boolean {
