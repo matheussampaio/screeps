@@ -175,7 +175,7 @@ export class CityRunner extends City {
 
     this.storagers = this.storagers.filter((creepName: string) => Game.creeps[creepName] != null || this.isCreepNameInQueue(creepName))
 
-    if (!this.storagers.length) {
+    if (this.storagers.length < 2) {
       const creepName = this.createStoragers(this.room.energyAvailable)
 
       this.storagers.push(creepName)
@@ -183,33 +183,35 @@ export class CityRunner extends City {
       return this.waitNextTick()
     }
 
-    if (this.storagers.length === 1) {
-      const storager = Game.creeps[this.storagers[0]]
+    if (this.storagers.length === 2) {
+      for (let i = 0; i < this.storagers.length; i++) {
+        const storager = Game.creeps[this.storagers[i]]
 
-      if (storager == null || storager.spawning) {
-        return null
-      }
+        if (storager == null || storager.spawning) {
+          return null
+        }
 
-      const currentBody = storager.body.map(p => p.type)
-      const desiredBody = this.getStoragersBody(this.room.energyCapacityAvailable)
+        const currentBody = storager.body.map(p => p.type)
+        const desiredBody = this.getStoragersBody(this.room.energyCapacityAvailable)
 
-      if (!utils.isBodyEqual(currentBody, desiredBody)) {
-        const creepName = this.createStoragers(this.room.energyCapacityAvailable, storager.ticksToLive)
+        if (!utils.isBodyEqual(currentBody, desiredBody)) {
+          const creepName = this.createStoragers(this.room.energyCapacityAvailable, storager.ticksToLive)
 
-        this.storagers.push(creepName)
+          this.storagers.push(creepName)
 
-        return this.waitNextTick()
-      }
+          return this.waitNextTick()
+        }
 
-      const ticksToSpawnCreep = desiredBody.length * CREEP_SPAWN_TIME
-      const ticksToFillExtensions = this.room.energyCapacityAvailable / EXTENSION_ENERGY_CAPACITY[this.controller.level]
+        const ticksToSpawnCreep = desiredBody.length * CREEP_SPAWN_TIME
+        const ticksToFillExtensions = this.room.energyCapacityAvailable / EXTENSION_ENERGY_CAPACITY[this.controller.level]
 
-      if (storager.ticksToLive as number <= ticksToSpawnCreep + ticksToFillExtensions) {
-        const creepName = this.createStoragers(this.room.energyCapacityAvailable, storager.ticksToLive)
+        if (storager.ticksToLive as number <= ticksToSpawnCreep + ticksToFillExtensions) {
+          const creepName = this.createStoragers(this.room.energyCapacityAvailable, storager.ticksToLive)
 
-        this.storagers.push(creepName)
+          this.storagers.push(creepName)
 
-        return this.waitNextTick()
+          return this.waitNextTick()
+        }
       }
     }
 
