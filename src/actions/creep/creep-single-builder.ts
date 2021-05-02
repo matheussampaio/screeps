@@ -65,11 +65,15 @@ export class CreepSingleBuilder extends CreepAction {
     const targets = this.room.find(FIND_MY_CONSTRUCTION_SITES, {
       filter: s => s.structureType !== STRUCTURE_WALL && s.structureType !== STRUCTURE_RAMPART
     }).sort((c1, c2) => {
-      if (c1.structureType === c2.structureType) {
+      if (c1.structureType !== c2.structureType) {
+        return STRUCTURE_TYPE_ORDER[c1.structureType] - STRUCTURE_TYPE_ORDER[c2.structureType]
+      }
+
+      if (c1.progress !== c2.progress) {
         return c2.progress - c1.progress
       }
 
-      return STRUCTURE_TYPE_ORDER[c1.structureType] - STRUCTURE_TYPE_ORDER[c2.structureType]
+      return c1.pos.getRangeTo(this.creep) - c2.pos.getRangeTo(this.creep)
     })
 
     if (targets.length === 0) {
