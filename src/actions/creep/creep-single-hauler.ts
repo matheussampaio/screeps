@@ -140,18 +140,6 @@ export class CreepSingleHauler extends CreepAction {
       return Game.getObjectById(this.context.target)
     }
 
-    // towers.sort((t1: StructureTower, t2: StructureTower) => (
-    //   t2.store.getFreeCapacity(RESOURCE_ENERGY) as number) - (t1.store.getFreeCapacity(RESOURCE_ENERGY) as number)
-    // )
-
-    // if (towers.length) {
-    //   const tower = towers[0]
-
-    //   this.context.target = tower.id as string
-
-    //   return tower
-    // }
-
     const creeps = this.room.find(FIND_MY_CREEPS, {
       filter: (c: Creep) => c.my && c.name.includes('builder') && !this.isReserved(c.id) && c.store.getFreeCapacity(RESOURCE_ENERGY) && this.creep.pos.getRangeTo(c.pos) <= 25
     }) as Creep[]
