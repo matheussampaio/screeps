@@ -10,6 +10,12 @@ export class CreepSingleHauler extends CreepAction {
     this.context = context
 
     if (this.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+      for (const id in this.room.memory.reserved) {
+        if (this.room.memory.reserved[id] === this.creep.name) {
+          delete this.room.memory.reserved[id]
+        }
+      }
+
       return this.unshiftAndContinue(CreepSingleHaulerGetEnergy.name)
     }
 
@@ -58,7 +64,7 @@ export class CreepSingleHauler extends CreepAction {
     if (this.context.target) {
       const target: StructureSpawn | StructureExtension | null = Game.getObjectById(this.context.target)
 
-      if (target && target.isActive() && target.store.getFreeCapacity(RESOURCE_ENERGY)) {
+      if (target && target.store.getFreeCapacity(RESOURCE_ENERGY)) {
         return target
       }
     }
