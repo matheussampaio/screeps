@@ -36,7 +36,7 @@ export class CreepSingleHauler extends CreepAction {
     if (this.creep.pos.inRangeTo(this.controller, 3)) {
       this.creep.drop(RESOURCE_ENERGY)
     } else {
-      this.creep.travelTo(this.controller, { range: 3, ignoreCreeps: true })
+      this.creep.travelTo(this.controller, { range: 3, ignoreCreeps: this.creep.pos.getRangeTo(this.controller) > 5 })
     }
 
     return this.waitNextTick()
@@ -245,7 +245,7 @@ export class CreepSingleHaulerTransfer extends CreepSingleHauler {
     }
 
     if (!this.creep.pos.isNearTo(target)) {
-      this.creep.travelTo(target, { range: 1, ignoreCreeps: true })
+      this.creep.travelTo(target, { range: 1, ignoreCreeps: this.creep.pos.getRangeTo(target) > 3 })
       return this.waitNextTick()
     }
 
@@ -303,7 +303,7 @@ export class CreepSingleHaulerGetEnergy extends CreepSingleHauler {
     if (this.creep.pos.isNearTo(resource)) {
       this.creep.pickup(resource)
     } else {
-      this.creep.travelTo(resource, { range: 1, ignoreCreeps: true })
+      this.creep.travelTo(resource, { range: 1, ignoreCreeps: this.creep.pos.getRangeTo(resource) > 3 })
     }
 
     return this.waitNextTick()
@@ -317,7 +317,7 @@ export class CreepSingleHaulerGetEnergy extends CreepSingleHauler {
     }
 
     if (!this.creep.pos.isNearTo(container)) {
-      this.creep.travelTo(container, { range: 1, ignoreCreeps: true })
+      this.creep.travelTo(container, { range: 1, ignoreCreeps: this.creep.pos.getRangeTo(container) > 3 })
       return this.waitNextTick()
     }
 

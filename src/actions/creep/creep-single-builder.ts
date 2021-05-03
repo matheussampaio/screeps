@@ -74,7 +74,7 @@ export class CreepSingleBuilder extends CreepAction {
         return c2.progress - c1.progress
       }
 
-      return c1.pos.getRangeTo(this.creep) - c2.pos.getRangeTo(this.creep)
+      return this.creep.pos.getRangeTo(c1.pos) - this.creep.pos.getRangeTo(c2.pos)
     })
 
     if (targets.length === 0) {

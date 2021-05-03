@@ -33,7 +33,7 @@ export class CreepRemoteHarvester extends CreepAction {
 
     // walk to source
     if (!this.creep.pos.isNearTo(source)) {
-      this.creep.travelTo(source, { range: 1, ignoreCreeps: this.creep.room.name === this.room.name })
+      this.creep.travelTo(source, { range: 1, ignoreCreeps: this.creep.room.name === this.room.name && this.creep.pos.getRangeTo(source) > 5})
 
       return this.waitNextTick()
     }
@@ -100,7 +100,7 @@ export class CreepRemoteHarvester extends CreepAction {
                 structures.push(STRUCTURE_ROAD)
               }
             }
-          
+
             pos.createConstructionSite(STRUCTURE_ROAD)
           })
       } else {
@@ -128,7 +128,7 @@ export class CreepRemoteHarvester extends CreepAction {
 
     // try to move on top of container every 10 ticks
     if (!this.creep.pos.isEqualTo(container) && !container.pos.lookFor(LOOK_CREEPS).length) {
-      this.creep.travelTo(container, { ignoreCreeps: true })
+      this.creep.travelTo(container, { ignoreCreeps: this.creep.pos.getRangeTo(container) > 5 })
 
       return this.waitNextTick()
     }
