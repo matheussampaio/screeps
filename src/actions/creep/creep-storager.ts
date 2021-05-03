@@ -15,6 +15,22 @@ export class CreepStorager extends CreepAction {
       return this.unshiftAndContinue(CreepRecycle.name)
     }
 
+    const neighbors = utils.getNeighborsPositions(this.creep.pos, { range: 1, closeToExits: true })
+
+    const anyResources = _.chain(neighbors)
+      .map(pos => pos.lookFor(LOOK_RESOURCES))
+      .flatten()
+      .value()
+
+    // if close to energy on the floor, collect it
+    const energyOnTheFloor = anyResources
+      .filter(r => r.resourceType === RESOURCE_ENERGY)
+      .sort((r1, r2) => r2.amount - r1.amount)
+
+    if (!this.isFull && energyOnTheFloor.length) {
+      this.creep.pickup(energyOnTheFloor[0])
+    }
+
     if (!this.hasEnergy) {
       this.clearAllReservesByThisCreep()
 
@@ -35,22 +51,6 @@ export class CreepStorager extends CreepAction {
       this.creep.withdraw(this.storage, RESOURCE_ENERGY)
     } else if (this.terminal && !this.isFull && this.creep.pos.isNearTo(this.terminal) && this.terminal.store.getUsedCapacity(RESOURCE_ENERGY)) {
       this.creep.withdraw(this.terminal, RESOURCE_ENERGY)
-    }
-
-    const neighbors = utils.getNeighborsPositions(this.creep.pos, { range: 1, closeToExits: true })
-
-    const anyResources = _.chain(neighbors)
-      .map(pos => pos.lookFor(LOOK_RESOURCES))
-      .flatten()
-      .value()
-
-    // if close to energy on the floor, collect it
-    const energyOnTheFloor = anyResources
-      .filter(r => r.resourceType === RESOURCE_ENERGY)
-      .sort((r1, r2) => r2.amount - r1.amount)
-
-    if (!this.isFull && energyOnTheFloor.length) {
-      this.creep.pickup(energyOnTheFloor[0])
     }
 
     const anyStructures = _.chain(neighbors)
