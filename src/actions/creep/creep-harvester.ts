@@ -111,7 +111,7 @@ export class CreepHarvester extends CreepAction {
     }
 
     // try to move on top of container every 10 ticks
-    if (Game.time % 10 === 0 && !this.creep.pos.isEqualTo(container) && !container.pos.lookFor(LOOK_CREEPS).length) {
+    if (!this.creep.pos.isEqualTo(container) && !container.pos.lookFor(LOOK_CREEPS).length) {
       this.creep.travelTo(container, { ignoreCreeps: true })
 
       return this.waitNextTick()
