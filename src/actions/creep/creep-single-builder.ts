@@ -25,10 +25,6 @@ export class CreepSingleBuilder extends CreepAction {
       return this.halt()
     }
 
-    if (this.creep.store.getUsedCapacity() === 0) {
-      return this.unshiftAndContinue(CreepSingleBuilderGetEnergy.name)
-    }
-
     const target: any = this.getConstructionTarget()
 
     if (target == null) {
@@ -43,9 +39,14 @@ export class CreepSingleBuilder extends CreepAction {
     delete this.context.alreadyWaited
 
     if (this.creep.pos.inRangeTo(target, 3)) {
+      if (this.creep.store.getUsedCapacity() === 0) {
+        return this.waitNextTick()
+        // return this.unshiftAndContinue(CreepSingleBuilderGetEnergy.name)
+      }
+
       this.creep.build(target)
     } else {
-      this.creep.travelTo(target, { range: 3 })
+      this.creep.travelTo(target, { range: 3, ignoreCreeps: false })
     }
 
     return this.waitNextTick()
