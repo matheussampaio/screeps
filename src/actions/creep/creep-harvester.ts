@@ -83,8 +83,12 @@ export class CreepHarvester extends CreepAction {
       this.creep.build(link)
     }
 
-    if (link instanceof StructureLink && this.creep.pos.isNearTo(link) && link.store.getFreeCapacity(RESOURCE_ENERGY) && this.creep.store.getFreeCapacity() as number < this.creep.getActiveBodyparts(WORK) * 2) {
-      this.creep.transfer(link, RESOURCE_ENERGY)
+    if (link instanceof StructureLink) {
+      if (!this.creep.pos.isNearTo(link)) {
+        this.creep.travelTo(link, { range: 1, ignoreCreeps: false })
+      } else if (link.store.getFreeCapacity(RESOURCE_ENERGY) && this.creep.store.getFreeCapacity() as number < this.creep.getActiveBodyparts(WORK) * 2) {
+        this.creep.transfer(link, RESOURCE_ENERGY)
+      }
     }
 
     return null
