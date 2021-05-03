@@ -42,6 +42,19 @@ export class CreepSingleHauler extends CreepAction {
       return this.storage
     }
 
+    if (this.context.targets == null) {
+      this.context.targets = []
+    }
+
+    if (this.context.target == null && this.context.targets.length) {
+      this.context.targets = this.context.targets.map((id: string) => Game.getObjectById(id))
+        .filter((obj: any) => obj != null)
+        .sort((o1: any, o2: any) => this.creep.pos.getRangeTo(o1.pos) - this.creep.pos.getRangeTo(o2.pos))
+        .map((o1: any) => o1.id) as string[]
+
+      this.context.target = this.context.targets.shift()
+    }
+
     if (this.context.target) {
       const target: StructureSpawn | StructureExtension | null = Game.getObjectById(this.context.target)
 
@@ -50,61 +63,128 @@ export class CreepSingleHauler extends CreepAction {
       }
     }
 
+    let energyAvailable: number = this.creep.store.getUsedCapacity(RESOURCE_ENERGY)
+
     const towers: StructureTower[] = this.room.find(FIND_MY_STRUCTURES, {
-      filter: s => s.structureType === STRUCTURE_TOWER && s.isActive() && s.store.getFreeCapacity(RESOURCE_ENERGY)
+      filter: s => s.structureType === STRUCTURE_TOWER && s.my && s.isActive() && s.store.getFreeCapacity(RESOURCE_ENERGY) && !this.isReserved(s.id) && this.creep.pos.getRangeTo(s.pos) <= 25
     }) as StructureTower[]
 
-    const emptyTower = towers.find(tower => tower.store.getUsedCapacity(RESOURCE_ENERGY) as number < 250)
+    const emptyTowers = towers.filter(tower => tower.store.getUsedCapacity(RESOURCE_ENERGY) as number < 250)
+      .sort((t1, t2) => this.creep.pos.getRangeTo(t1) - this.creep.pos.getRangeTo(t2))
 
-    if (emptyTower) {
-      this.context.target = emptyTower.id as string
+    for (let i = 0; i < emptyTowers.length && energyAvailable; i++) {
+      const tower = emptyTowers[i]
 
-      return emptyTower
+      this.context.targets.push(tower.id)
+
+      this.markReserved(tower.id)
+
+      energyAvailable -= tower.store.getFreeCapacity(RESOURCE_ENERGY)
     }
 
-    const extension: StructureExtension | null = this.creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+    if (!energyAvailable) {
+      this.context.target = this.context.targets.shift()
+
+      return Game.getObjectById(this.context.target)
+    }
+
+    const extensions = this.room.find(FIND_MY_STRUCTURES, {
       filter: (s: StructureExtension) => {
-        return s.structureType === STRUCTURE_EXTENSION && s.isActive() && s.store.getFreeCapacity(RESOURCE_ENERGY) && !this.isReserved(s.id)
+        return s.structureType === STRUCTURE_EXTENSION && s.my && s.isActive() && s.store.getFreeCapacity(RESOURCE_ENERGY) && !this.isReserved(s.id) && this.creep.pos.getRangeTo(s.pos) <= 25
       }
-    }) as StructureExtension | null
+    }) as StructureExtension[]
 
-    if (extension) {
-      this.context.target = extension.id as string
+    extensions.sort((e1, e2) => this.creep.pos.getRangeTo(e1) - this.creep.pos.getRangeTo(e2))
+
+    for (let i = 0; i < extensions.length && energyAvailable; i++) {
+      const extension = extensions[i]
+
+      this.context.targets.push(extension.id)
+
       this.markReserved(extension.id)
-      return extension
+
+      energyAvailable -= extension.store.getFreeCapacity(RESOURCE_ENERGY)
     }
 
-    const spawn: StructureSpawn | null = this.creep.pos.findClosestByPath(FIND_MY_SPAWNS, {
-      filter: (s: StructureSpawn) => s.isActive() && s.store.getFreeCapacity(RESOURCE_ENERGY) && !this.isReserved(s.id)
-    })
+    if (!energyAvailable) {
+      this.context.target = this.context.targets.shift()
 
-    if (spawn) {
-      this.context.target = spawn.id as string
+      return Game.getObjectById(this.context.target)
+    }
+
+    const spawns = this.room.find(FIND_MY_SPAWNS, {
+      filter: (s: StructureSpawn) => s.my && s.isActive() && s.store.getFreeCapacity(RESOURCE_ENERGY) && !this.isReserved(s.id) && this.creep.pos.getRangeTo(s.pos) <= 25
+    }) as StructureSpawn[]
+
+    spawns.sort((e1, e2) => this.creep.pos.getRangeTo(e1) - this.creep.pos.getRangeTo(e2))
+
+    for (let i = 0; i < spawns.length && energyAvailable; i++) {
+      const spawn = spawns[i]
+
+      this.context.targets.push(spawn.id)
+
       this.markReserved(spawn.id)
-      return spawn
+
+      energyAvailable -= spawn.store.getFreeCapacity(RESOURCE_ENERGY)
     }
 
-    towers.sort((t1: StructureTower, t2: StructureTower) => (
-      t2.store.getFreeCapacity(RESOURCE_ENERGY) as number) - (t1.store.getFreeCapacity(RESOURCE_ENERGY) as number)
-    )
+    if (!energyAvailable) {
+      this.context.target = this.context.targets.shift()
 
-    if (towers.length) {
-      const tower = towers[0]
-
-      this.context.target = tower.id as string
-
-      return tower
+      return Game.getObjectById(this.context.target)
     }
 
-    const creep: Creep | null = this.creep.pos.findClosestByPath(FIND_MY_CREEPS, {
-      filter: (c: Creep) => c.name.includes('builder') && !this.isReserved(c.id) && c.store.getFreeCapacity(RESOURCE_ENERGY)
-    })
+    // towers.sort((t1: StructureTower, t2: StructureTower) => (
+    //   t2.store.getFreeCapacity(RESOURCE_ENERGY) as number) - (t1.store.getFreeCapacity(RESOURCE_ENERGY) as number)
+    // )
 
-    if (creep) {
-      this.context.target = creep.id as string
+    // if (towers.length) {
+    //   const tower = towers[0]
+
+    //   this.context.target = tower.id as string
+
+    //   return tower
+    // }
+
+    const creeps = this.room.find(FIND_MY_CREEPS, {
+      filter: (c: Creep) => c.my && c.name.includes('builder') && !this.isReserved(c.id) && c.store.getFreeCapacity(RESOURCE_ENERGY) && this.creep.pos.getRangeTo(c.pos) <= 25
+    }) as Creep[]
+
+    creeps.sort((e1, e2) => this.creep.pos.getRangeTo(e1) - this.creep.pos.getRangeTo(e2))
+
+    for (let i = 0; i < creeps.length && energyAvailable; i++) {
+      const creep = creeps[i]
+
+      this.context.targets.push(creep.id)
+
       this.markReserved(creep.id)
 
-      return creep
+      energyAvailable -= creep.store.getFreeCapacity(RESOURCE_ENERGY)
+    }
+
+    if (!energyAvailable) {
+      this.context.target = this.context.targets.shift()
+
+      return Game.getObjectById(this.context.target)
+    }
+
+    const halfEmptyTowers = towers.filter(tower => tower.store.getUsedCapacity(RESOURCE_ENERGY) as number > 250 && tower.store.getFreeCapacity(RESOURCE_ENERGY) >= 100)
+      .sort((t1, t2) => this.creep.pos.getRangeTo(t1) - this.creep.pos.getRangeTo(t2))
+
+    for (let i = 0; i < halfEmptyTowers.length && energyAvailable; i++) {
+      const tower = halfEmptyTowers[i]
+
+      this.context.targets.push(tower.id)
+
+      this.markReserved(tower.id)
+
+      energyAvailable -= tower.store.getFreeCapacity(RESOURCE_ENERGY)
+    }
+
+    if (this.context.targets.length) {
+      this.context.target = this.context.targets.shift()
+
+      return Game.getObjectById(this.context.target)
     }
 
     if (this.controller) {
@@ -129,7 +209,11 @@ export class CreepSingleHauler extends CreepAction {
       this.room.memory.reserved = {}
     }
 
-    return this.room.memory.reserved[id] != null && Game.creeps[this.room.memory.reserved[id]] != null
+    const reservedBy = this.room.memory.reserved[id]
+    const reservedExists = Game.creeps[reservedBy] != null
+    const isReservedByAnotherCreep = reservedBy !== this.creep.id
+
+    return reservedBy != null && reservedExists && isReservedByAnotherCreep
   }
 
   protected markReserved(id: string): void {
