@@ -12,12 +12,15 @@ export class CityRunner extends City {
   run(context: ICityContext) {
     this.context = context
 
-    return this.maintainStoragers() ||
-      this.maintainHarvestersAndHaulers() ||
-      this.maintainUpgraders() ||
-      this.maintainBuilders() ||
-      this.maintainRepairs() ||
-      this.optimizeUpgraders() ||
+    const results = [
+      this.maintainHarvestersAndHaulers(),
+      this.maintainUpgraders(),
+      this.maintainBuilders(),
+      this.maintainRepairs(),
+      this.maintainStoragers()
+    ]
+
+    return (this.queue.length === 0 && this.optimizeUpgraders()) ||
       this.waitNextTick()
   }
 
@@ -60,7 +63,7 @@ export class CityRunner extends City {
       memory: {},
       creepName,
       body: new CreateBody({ minimumEnergy: this.room.energyCapacityAvailable, ticksToMove: 2 })
-      .add([CARRY, WORK], { repeat: true })
+      .add([CARRY, WORK, CARRY], { repeat: true })
       .value(),
       actions: [[CreepCheckStop.name], [CreepSingleBuilder.name]],
       priority: CREEP_PRIORITY.BUILDER
@@ -265,7 +268,7 @@ export class CityRunner extends City {
       return this.waitNextTick()
     }
 
-    if (this.builders.length < 3 && constructionSites.find(c => c.structureType !== STRUCTURE_WALL && c.structureType !== STRUCTURE_RAMPART)) {
+    if (this.builders.length < 1 && constructionSites.find(c => c.structureType !== STRUCTURE_WALL && c.structureType !== STRUCTURE_RAMPART)) {
       const creepName = this.createBuilder()
 
       this.builders.push(creepName)
