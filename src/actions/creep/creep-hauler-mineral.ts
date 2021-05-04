@@ -10,7 +10,7 @@ export class CreepHaulerMineral extends Action {
   run(context: ICreepContext) {
     this.context = context
 
-    if (this.storage == null) {
+    if (this.storage == null && this.terminal == null) {
       return this.sleep(5)
     }
 
@@ -18,22 +18,25 @@ export class CreepHaulerMineral extends Action {
       return this.unshiftAndContinue(CreepHaulerGetMineral.name)
     }
 
-    // if storage is full, wait
-    if (this.storage.store.getUsedCapacity() >= STORAGE_CAPACITY * 0.8) {
-      this.creep.suicide()
+    const isTerminalFull = this.terminal ? this.terminal.store.getFreeCapacity() < this.creep.store.getUsedCapacity() : true
+    const isStorageFull = this.storage ? this.storage.store.getFreeCapacity() < this.creep.store.getUsedCapacity() : true
 
-      return this.halt()
+    // if terminal is full, wait
+    if (isTerminalFull && isStorageFull) {
+      return this.sleep(5)
     }
 
-    // move to storage
-    if (!this.creep.pos.isNearTo(this.storage)) {
-      this.creep.travelTo(this.storage, { range: 1, ignoreCreeps: true })
+    const target = isTerminalFull ? this.storage : this.terminal
+
+    // move to target
+    if (!this.creep.pos.isNearTo(target)) {
+      this.creep.travelTo(target, { range: 1, ignoreCreeps: true })
       return this.waitNextTick()
     }
 
-    // start transfering to storage
+    // start transfering to target
     for (const resource in this.creep.store) {
-      this.creep.transfer(this.storage, resource as ResourceConstant)
+      this.creep.transfer(target, resource as ResourceConstant)
 
       return this.waitNextTick()
     }
@@ -51,6 +54,10 @@ export class CreepHaulerMineral extends Action {
 
   protected get storage(): StructureStorage | undefined {
     return this.room.storage
+  }
+
+  protected get terminal(): StructureTerminal | undefined {
+    return this.room.terminal
   }
 }
 
