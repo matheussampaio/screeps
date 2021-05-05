@@ -109,19 +109,8 @@ export class CreepStorager extends CreepAction {
     }
 
     // if everything is full, check if things can be moved to the terminal
-    if (
-      this.terminal &&
-      this.terminal.store.getUsedCapacity() <= TERMINAL_CAPACITY * 0.75 &&
-      this.storage.store.getUsedCapacity() - this.storage.store.getUsedCapacity(RESOURCE_ENERGY)
-    ) {
+    if (this.terminal && this.terminal.store.getFreeCapacity()) {
       return this.unshiftAndContinue(CreepStoragerTransferResourcesToTerminal.name)
-    }
-
-    // if the creep is not full and nothing else to do, go refill and prep for the future.
-    if (!this.isFull && !this.isNearToStorage) {
-      this.creep.travelTo(this.storage, { range: 1, ignoreCreeps: true })
-
-      return this.waitNextTick()
     }
 
     // if creep is full and nothing else to do, visit the spawn to renew the creep.
