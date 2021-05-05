@@ -643,7 +643,7 @@ export class Traveler {
 
 // this might be higher than you wish, setting it lower is a great way to diagnose creep behavior issues. When creeps
 // need to repath to often or they aren't finding valid paths, it can sometimes point to problems elsewhere in your code
-const REPORT_CPU_THRESHOLD = 20
+const REPORT_CPU_THRESHOLD = 50
 
 const DEFAULT_MAXOPS = 20000
 const DEFAULT_STUCK_VALUE = 10
