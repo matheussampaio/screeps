@@ -24,6 +24,10 @@ export class City extends Action {
     return this.room.storage
   }
 
+  protected get terminal(): StructureTerminal | undefined {
+    return this.room.terminal
+  }
+
   protected get queue(): ISpawnerItem[] {
     if (this.context.queue == null) {
       this.context.queue = []
