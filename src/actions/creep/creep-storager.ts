@@ -330,46 +330,78 @@ export class CreepStoragerTransferResourcesToTerminal extends CreepStorager {
   run(context: any) {
     this.context = context
 
+    // se storage ou terminal nao existir, para e volta pro normal
     if (this.storage == null || this.terminal == null) {
+      this.context.transfering = false
+      return this.shiftAndStop();
+    }
+
+    // se storage e creep vazios, para
+    if (!this.storage.store.getUsedCapacity() && !this.creep.store.getUsedCapacity()) {
+      this.context.transfering = false
       return this.shiftAndStop()
     }
 
-    if (this.creep.store.getUsedCapacity(RESOURCE_ENERGY)) {
-      if (this.creep.pos.isNearTo(this.storage)) {
-        this.creep.transfer(this.storage, RESOURCE_ENERGY)
-      } else {
-        this.creep.travelTo(this.storage, { range: 1, ignoreCreeps: true })
-      }
-
-      return this.waitNextTick()
+    // se storage soh tiver energia, para
+    if (this.storage.store.getUsedCapacity() === this.storage.store.getUsedCapacity(RESOURCE_ENERGY)) {
+      this.context.transfering = false
+      return this.shiftAndStop()
     }
 
-    if (!this.creep.store.getUsedCapacity()) {
-      if (this.creep.pos.isNearTo(this.storage)) {
-        for (const resource in this.storage.store) {
-          if (resource === RESOURCE_ENERGY) {
-            continue
-          }
-
-          this.creep.withdraw(this.storage, resource as ResourceConstant)
-        }
-      } else {
-        this.creep.travelTo(this.storage, { range: 1, ignoreCreeps: true })
-      }
-
-      return this.waitNextTick()
+    // se terminal tiver cheio, volta pro normal
+    if (!this.terminal.store.getFreeCapacity()) {
+      this.context.transfering = false
+      return this.shiftAndStop()
     }
 
-    if (this.creep.pos.isNearTo(this.terminal)) {
-      for (const resource in this.creep.store) {
-        this.creep.transfer(this.terminal, resource as ResourceConstant)
-
+    if (this.context.transfering) {
+      // se tiver vazio, terminou de transferir, voltar ao normal
+      if (!this.creep.store.getUsedCapacity()) {
+        this.context.transfering = false
         return this.shiftAndStop()
       }
-    } else {
-      this.creep.travelTo(this.terminal, { range: 1, ignoreCreeps: true })
-    }
 
-    return this.waitNextTick()
+      // walk to terminal
+      if (!this.creep.pos.isNearTo(this.terminal)) {
+        this.creep.travelTo(this.terminal, { range: 1, ignoreCreeps: true });
+        return this.waitNextTick();
+      }
+
+      for (const resource in this.creep.store) {
+        this.creep.transfer(this.terminal, resource)
+        return this.waitNextTick();
+      }
+    } else {
+      // se tiver cheio, começar a transferir
+      if (!this.creep.store.getFreeCapacity()) {
+        this.context.transfering = true
+        return this.waitNextTick()
+      }
+
+      // se n tiver cheio, mas o storage estiver vazio, começar a transferir
+      if (this.creep.store.getUsedCapacity() && !this.storage.store.getUsedCapacity()) {
+        this.context.transfering = true
+        return this.waitNextTick()
+      }
+
+      // walk to storage to pick anything
+      if (!this.creep.pos.isNearTo(this.storage)) {
+        this.creep.travelTo(this.storage, { range: 1, ignoreCreeps: true });
+        return this.waitNextTick();
+      }
+
+      const resources = _.shuffle(Object.keys(this.storage.store))
+
+      // pick up anything
+      for (const resource of resources) {
+        if (resource === RESOURCE_ENERGY && this.storage.store.getUsedCapacity(resource) < 100000) {
+          continue
+        }
+        this.creep.withdraw(this.storage, resource);
+        return this.waitNextTick()
+      }
+      return this.waitNextTick()
+    }
+    return this.waitNextTick();
   }
 }

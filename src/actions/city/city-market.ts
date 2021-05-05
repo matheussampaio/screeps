@@ -24,9 +24,13 @@ export class CityMarket extends City {
     return this.sellResource() || this.sellEnergy() || this.waitNextTick()
   }
   sellEnergy() {
-    const RESOURCES_TO_SELL = 10000
+    if (this.terminal == null) {
+      return null
+    }
 
-    if (this.terminal == null || this.terminal.store.getUsedCapacity(RESOURCE_ENERGY) < RESOURCES_TO_SELL * 2) {
+    const RESOURCES_TO_SELL = Math.min(10000, this.terminal.store.getUsedCapacity(RESOURCE_ENERGY))
+
+    if (this.terminal.store.getUsedCapacity(RESOURCE_ENERGY) < RESOURCES_TO_SELL * 2) {
       return null
     }
 
@@ -67,13 +71,13 @@ export class CityMarket extends City {
     return this.waitNextTick()
   }
   sellResource() {
-    const RESOURCES_TO_SELL = 2500
-
     if (this.terminal == null) {
       return null
     }
 
     for (const resourceType in this.terminal.store) {
+      const RESOURCES_TO_SELL = Math.min(2500, this.terminal.store.getUsedCapacity(RESOURCE_KEANIUM))
+
       if (resourceType === RESOURCE_ENERGY) {
         continue
       }
