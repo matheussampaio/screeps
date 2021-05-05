@@ -28,6 +28,10 @@ export class CreepHaulerMineral extends Action {
 
     const target = isTerminalFull ? this.storage : this.terminal
 
+    if (target == null) {
+      return this.sleep(25)
+    }
+
     // move to target
     if (!this.creep.pos.isNearTo(target)) {
       this.creep.travelTo(target, { range: 1, ignoreCreeps: true })
