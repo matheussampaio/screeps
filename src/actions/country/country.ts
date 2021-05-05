@@ -1,7 +1,7 @@
 import * as _ from 'lodash'
 
 import { ActionsRegistry, Action, ACTIONS_RESULT } from '../../core'
-import { CityRunner, RoomStopIfConflict, CitySpawner, ICityContext, CityDefense, CityEmergency, CityPlanner, CityLinks, CityMinerals, CityRecycler, CityRemoteMiners, CityVisuals } from '../city'
+import { CityRunner, RoomStopIfConflict, CitySpawner, ICityContext, CityDefense, CityEmergency, CityPlanner, CityLinks, CityMinerals, CityRecycler, CityRemoteMiners, CityVisuals, CityMarket } from '../city'
 import { CityBuilder } from '../city/city-builder'
 import { ICountryContext } from './interfaces'
 
@@ -40,6 +40,7 @@ export class Country extends Action {
             [CitySpawner.name],
             [CityPlanner.name],
             [CityBuilder.name],
+            [CityMarket.name],
             [CityVisuals.name]
           ],
           name: `City-${roomName}`
