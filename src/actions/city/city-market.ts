@@ -26,7 +26,7 @@ export class CityMarket extends City {
   sellEnergy() {
     const RESOURCES_TO_SELL = 10000
 
-    if (this.terminal.store.getUsedCapacity(RESOURCE_ENERGY) < RESOURCES_TO_SELL * 2) {
+    if (this.terminal == null || this.terminal.store.getUsedCapacity(RESOURCE_ENERGY) < RESOURCES_TO_SELL * 2) {
       return null
     }
 
@@ -38,16 +38,15 @@ export class CityMarket extends City {
 
     const avgEnergySellPrice = (history.reduce((sum, curr) => sum + curr.avgPrice, 0) / history.length)
 
-
     const orders = Game.market.getAllOrders({ type: ORDER_BUY, resourceType: RESOURCE_ENERGY })
       .map(o => {
-        const amount = Math.min(RESOURCES_TO_SELL, o.remainingAmount)
-        const energyCost = Game.market.calcTransactionCost(1, this.room.name, o.roomName)
+        const energyCost = Game.market.calcTransactionCost(1, this.room.name, o.roomName as string)
 
-        o.energyCost = energyCost
-        o.actualPrice = o.price - energyCost * avgEnergySellPrice
-
-        return o
+        return {
+          ...o,
+          energyCost,
+          actualPrice: o.price - energyCost * avgEnergySellPrice
+        }
       })
 
     orders.sort((o1, o2) => o2.actualPrice - o1.actualPrice)
@@ -70,12 +69,16 @@ export class CityMarket extends City {
   sellResource() {
     const RESOURCES_TO_SELL = 2500
 
+    if (this.terminal == null) {
+      return null
+    }
+
     for (const resourceType in this.terminal.store) {
       if (resourceType === RESOURCE_ENERGY) {
         continue
       }
 
-      const history = Game.market.getHistory(resourceType)
+      const history = Game.market.getHistory(resourceType as ResourceConstant)
 
       if (history.length === 0) {
         return null
@@ -83,15 +86,15 @@ export class CityMarket extends City {
 
       const avgResourceSellPrice = history.reduce((sum, curr) => sum + curr.avgPrice, 0) / history.length
 
-      const orders = Game.market.getAllOrders({ type: ORDER_BUY, resourceType })
-        .map(o => {
-          const amount = Math.min(RESOURCES_TO_SELL, o.remainingAmount)
-          const energyCost = Game.market.calcTransactionCost(1, this.room.name, o.roomName)
+      const orders = Game.market.getAllOrders({ type: ORDER_BUY, resourceType: resourceType as ResourceConstant })
+        .map((o: Order) => {
+          const energyCost = Game.market.calcTransactionCost(1, this.room.name, o.roomName as string)
 
-          o.energyCost = energyCost
-          o.actualPrice = o.price - energyCost * avgResourceSellPrice
-
-          return o
+          return {
+            ...o,
+            energyCost,
+            actualPrice: o.price - energyCost * avgResourceSellPrice
+          }
         })
 
       orders.sort((o1, o2) => o2.actualPrice - o1.actualPrice)
