@@ -2,9 +2,16 @@
   "name": "screeps-server",
   "version": "1.0.0",
   "private": true,
+  "author": "Matheus Sampaio <matheus@sampaio.us>",
+  "license": "MIT",
+  "scripts": {
+    "init": "screeps init",
+    "start": "screeps start"
+    "cli": "screeps cli"
+  },
   "dependencies": {
-    "screeps": "^4.0.5",
-    "screepsmod-admin-utils": "^1.9.0",
-    "screepsmod-auth": "^2.4.7"
+    "screeps": "^4.2.14",
+    "screepsmod-admin-utils": "^1.29.0",
+    "screepsmod-auth": "^2.7.1"
   }
 }
